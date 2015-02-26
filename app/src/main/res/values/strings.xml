@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">btle_android</string>
+
+    <string name="title_section1">BLE devices</string>
+    <string name="title_section2">DeviceHive Settings</string>
+    <string name="title_section3">DeviceHive Log</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_example"> </string>
+
+    <string name="action_settings">Settings</string>
+    <string name="unknown_device">Unkown device</string>
+</resources>
