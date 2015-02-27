@@ -18,7 +18,7 @@ import java.util.ArrayList;
 
 public class BleDeviceHiveLog extends Fragment{
     public BleDeviceHiveLog() {
-        this.strings = new ArrayList<>();
+        this.strings = new ArrayList<String>();
     }
 
     TextView textView;

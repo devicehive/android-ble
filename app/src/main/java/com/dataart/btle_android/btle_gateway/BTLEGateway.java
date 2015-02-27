@@ -151,7 +151,7 @@ public class BTLEGateway {
         ArrayList<BTLEDevice> devices = bluetoothServerGateway.getDiscoveredDevices();
         String json = new Gson().toJson(devices);
 
-        HashMap<String, String> result = new HashMap<>();
+        HashMap<String, String> result = new HashMap<String, String>();
         result.put("result", json);
 
         Notification notification = new Notification("discoveredDevices", result);

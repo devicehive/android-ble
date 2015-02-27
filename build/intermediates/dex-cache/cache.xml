@@ -2,32 +2,32 @@
 <items version="2" >
 
     <item
-        jar="/Users/alrybakov/.gradle/caches/modules-2/files-2.1/com.google.code.gson/gson/2.3/5fc52c41ef0239d1093a1eb7c3697036183677ce/gson-2.3.jar"
-        jumboMode="false"
-        revision="21.1.2"
-        sha1="5fc52c41ef0239d1093a1eb7c3697036183677ce">
-        <dex dex="/Users/alrybakov/Work/BTLE/btle_android/app/build/intermediates/pre-dexed/debug/gson-2.3-3dc29b888350f5ab138d87bb6ad297b128419e5c.jar" />
-    </item>
-    <item
-        jar="/Users/alrybakov/Work/BTLE/btle_android/app/build/intermediates/exploded-aar/com.android.support/support-v4/21.0.3/classes.jar"
-        jumboMode="false"
-        revision="21.1.2"
-        sha1="2c91c949a45a21cdecf26e03951e46c7beec9ad8">
-        <dex dex="/Users/alrybakov/Work/BTLE/btle_android/app/build/intermediates/pre-dexed/debug/classes-1dcd5684a398f1c2f02ff9e5b4d6060e63a8314f.jar" />
-    </item>
-    <item
-        jar="/Users/alrybakov/android-sdk-macosx/extras/android/m2repository/com/android/support/support-annotations/21.0.3/support-annotations-21.0.3.jar"
-        jumboMode="false"
-        revision="21.1.2"
-        sha1="4b74cefe1f0c1b819e7260c8627a14674e37fd35">
-        <dex dex="/Users/alrybakov/Work/BTLE/btle_android/app/build/intermediates/pre-dexed/debug/support-annotations-21.0.3-2e0881a9d9b8c8223bc460d4d7d8b57b2fc40eff.jar" />
-    </item>
-    <item
-        jar="/Users/alrybakov/Work/BTLE/btle_android/app/build/intermediates/exploded-aar/com.android.support/support-v4/21.0.3/libs/internal_impl-21.0.3.jar"
+        jar="/home/lcf/android-btle/app/build/intermediates/exploded-aar/com.android.support/support-v4/21.0.3/libs/internal_impl-21.0.3.jar"
         jumboMode="false"
         revision="21.1.2"
         sha1="01ec05bfbafcc07646ba813000bf2ef11742dd03">
-        <dex dex="/Users/alrybakov/Work/BTLE/btle_android/app/build/intermediates/pre-dexed/debug/internal_impl-21.0.3-3ba34f057b161b68c5d4240e433a4716e19e3067.jar" />
+        <dex dex="/home/lcf/android-btle/app/build/intermediates/pre-dexed/debug/internal_impl-21.0.3-7a9eade00c3ddc3c00e07a02a2bffdb259a7c4e2.jar" />
+    </item>
+    <item
+        jar="/home/lcf/android-btle/app/build/intermediates/exploded-aar/com.android.support/support-v4/21.0.3/classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="2c91c949a45a21cdecf26e03951e46c7beec9ad8">
+        <dex dex="/home/lcf/android-btle/app/build/intermediates/pre-dexed/debug/classes-09d447e807dcf5c95aadbe081eb99296cedfa0f4.jar" />
+    </item>
+    <item
+        jar="/home/lcf/Android/Sdk/extras/android/m2repository/com/android/support/support-annotations/21.0.3/support-annotations-21.0.3.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="4b74cefe1f0c1b819e7260c8627a14674e37fd35">
+        <dex dex="/home/lcf/android-btle/app/build/intermediates/pre-dexed/debug/support-annotations-21.0.3-d90300de04621419d4fc80ea762f72256e29b3a2.jar" />
+    </item>
+    <item
+        jar="/home/lcf/.gradle/caches/modules-2/files-2.1/com.google.code.gson/gson/2.3/5fc52c41ef0239d1093a1eb7c3697036183677ce/gson-2.3.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="5fc52c41ef0239d1093a1eb7c3697036183677ce">
+        <dex dex="/home/lcf/android-btle/app/build/intermediates/pre-dexed/debug/gson-2.3-74018330af253f6fc6520e022ba33f388e1c3214.jar" />
     </item>
 
 </items>
