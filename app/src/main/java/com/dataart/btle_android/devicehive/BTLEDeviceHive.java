@@ -194,14 +194,16 @@ public class BTLEDeviceHive extends Device {
         BTLEDeviceHive device = new BTLEDeviceHive(context);
         device.setDebugLoggingEnabled(true);
 
-        final BTLEDevicePreferences prefs = new BTLEDevicePreferences(context);
+        final BTLEDevicePreferences prefs = new BTLEDevicePreferences();
         String serverUrl = prefs.getServerUrl();
-        serverUrl = null;
+
         if (serverUrl == null) {
             serverUrl = DeviceHiveConfig.API_ENDPOINT;
             prefs.setServerUrlSync(serverUrl);
         }
-        device.setApiEnpointUrl(DeviceHiveConfig.API_ENDPOINT);
+
+        device.setApiEnpointUrl(serverUrl);
+
         return device;
     }
 

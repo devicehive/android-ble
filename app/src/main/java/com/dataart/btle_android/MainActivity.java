@@ -6,12 +6,14 @@ import android.app.ActionBar;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.support.v4.widget.DrawerLayout;
+import android.widget.EditText;
 
 import com.dataart.android.devicehive.Command;
 import com.dataart.android.devicehive.Notification;
@@ -19,6 +21,7 @@ import com.dataart.btle_android.Fragments.BleDevicesFragment;
 import com.dataart.btle_android.btle_gateway.BTLEGateway;
 import com.dataart.btle_android.btle_gateway.BluetoothServer;
 import com.dataart.btle_android.devicehive.BTLEDeviceHive;
+import com.dataart.btle_android.devicehive.BTLEDevicePreferences;
 
 
 public class MainActivity extends Activity
@@ -40,19 +43,83 @@ public class MainActivity extends Activity
     BTLEDeviceHive deviceHive;
     BTLEGateway gateway;
 
+    EditText serverUrlEdit;
+    EditText usernameEdit;
+    EditText passwordEdit;
+    BTLEDevicePreferences prefs;
+
+
+    void init() {
+    setContentView(R.layout.activity_settings);
+
+    serverUrlEdit = (EditText) findViewById(R.id.server_url_edit);
+    usernameEdit = (EditText) findViewById(R.id.username_edit);
+    passwordEdit = (EditText) findViewById(R.id.password_edit);
+
+    prefs = new BTLEDevicePreferences();
+
+    findViewById(R.id.undo_button).setOnClickListener(
+            new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            resetValues();
+        }
+    });
+    findViewById(R.id.save_button).setOnClickListener(
+            new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            saveValues();
+        }
+    });
+
+    resetValues();
+}
+
+    private void resetValues() {
+        serverUrlEdit.setText(prefs.getServerUrl());
+        usernameEdit.setText(prefs.getUsername());
+        passwordEdit.setText(prefs.getPassword());
+    }
+
+    private void saveValues() {
+        final String serverUrl = serverUrlEdit.getText().toString();
+        final String username = usernameEdit.getText().toString();
+        final String password = passwordEdit.getText().toString();
+        if (TextUtils.isEmpty(serverUrl)) {
+            serverUrlEdit.setError("Server URL is required");
+        } else if (TextUtils.isEmpty(username)) {
+            usernameEdit.setError("Username is required");
+        } else if (TextUtils.isEmpty(password)) {
+            passwordEdit.setError("Password is required");
+        } else {
+            prefs.setCredentialsSync(username, password);
+            prefs.setServerUrlSync(serverUrl);
+
+            deviceHive.setApiEnpointUrl(serverUrl);
+
+
+            //finish();
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        if(false) {
+            setContentView(R.layout.activity_main);
 
-        mNavigationDrawerFragment = (NavigationDrawerFragment)
-                getFragmentManager().findFragmentById(R.id.navigation_drawer);
-        mTitle = getTitle();
+            mNavigationDrawerFragment = (NavigationDrawerFragment)
+                    getFragmentManager().findFragmentById(R.id.navigation_drawer);
+            mTitle = getTitle();
 
-        // Set up the drawer.
-        mNavigationDrawerFragment.setUp(
-                R.id.navigation_drawer,
-                (DrawerLayout) findViewById(R.id.drawer_layout));
+            // Set up the drawer.
+            mNavigationDrawerFragment.setUp(
+                    R.id.navigation_drawer,
+                    (DrawerLayout) findViewById(R.id.drawer_layout));
+        }
+
+
 
         bluetoothServerGateway = new BluetoothServer();
         //bluetoothServerGateway.scanStart(this);
@@ -64,6 +131,7 @@ public class MainActivity extends Activity
 
         //deviceHive.addDeviceListener(this);
         deviceHive.addCommandListener(this);
+
         //deviceHive.addNotificationListener(this);
         //deviceInfoFragment.setDeviceData(deviceHive.getDeviceData());
         if (!deviceHive.isRegistered()) {
@@ -72,6 +140,8 @@ public class MainActivity extends Activity
         } else {
             deviceHive.startProcessingCommands();
         }
+
+        init();
     }
 
     @Override

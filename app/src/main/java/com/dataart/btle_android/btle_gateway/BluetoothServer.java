@@ -135,7 +135,8 @@ public class BluetoothServer extends BluetoothGattCallback {
        if(result != null) {
            //services = result.getScanRecord().getServiceUuids();
            // TODO will it work?
-           services = Arrays.asList(result.getDevice().getUuids());
+           ParcelUuid[] uuid = result.getDevice().getUuids();
+           services = Arrays.asList(uuid);
        }
                //services = result.getScanRecord().getServiceData()
 
@@ -187,7 +188,10 @@ public class BluetoothServer extends BluetoothGattCallback {
                 public void onServicesDiscovered(BluetoothGatt gatt, int status) {
                     super.onServicesDiscovered(gatt, status);
 
+
+
                     for (BluetoothGattService service : gatt.getServices()) {
+
                         List<BluetoothGattCharacteristic> characteristics = service.getCharacteristics();
 
                         for (BluetoothGattCharacteristic characteristic : characteristics) {

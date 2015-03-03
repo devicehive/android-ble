@@ -12,7 +12,14 @@ public class BTLEApplication extends Application {
     public void onCreate() {
         super.onCreate();
 
+        application = this;
         device = BTLEDeviceHive.newInstance(getApplicationContext());
+
+    }
+
+    static BTLEApplication application;
+    public static BTLEApplication getApplication() {
+        return application;
     }
 
     BTLEDeviceHive device;
@@ -20,4 +27,6 @@ public class BTLEApplication extends Application {
     public BTLEDeviceHive getDevice() {
         return device;
     }
+
+
 }

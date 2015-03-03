@@ -6,6 +6,9 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.ResultReceiver;
 
+import com.dataart.btle_android.BTLEApplication;
+import com.dataart.btle_android.devicehive.BTLEDevicePreferences;
+
 /**
  * Network command execution configuration data.
  */
@@ -41,9 +44,14 @@ public class NetworkCommandConfig implements Parcelable {
 		this.username = username;
 		this.password = password;
 
-        //TODO: check this
-        this.username = "su";
-        this.password = "asdASDqwe123";
+        BTLEDevicePreferences preferences = new BTLEDevicePreferences();
+        this.username = preferences.getUsername();
+        this.password = preferences.getPassword();
+
+
+//        //TODO: check this
+//        this.username = "su";
+//        this.password = "asdASDqwe123";
 	}
 
 	/**
