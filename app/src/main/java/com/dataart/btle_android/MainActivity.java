@@ -80,6 +80,7 @@ public class MainActivity extends Activity
         serverUrlEdit.setText(prefs.getServerUrl());
         usernameEdit.setText(prefs.getUsername());
         passwordEdit.setText(prefs.getPassword());
+        deviceHive.setApiEnpointUrl(prefs.getServerUrl());
     }
 
     private void saveValues() {
