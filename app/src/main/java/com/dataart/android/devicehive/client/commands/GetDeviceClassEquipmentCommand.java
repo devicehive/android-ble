@@ -57,9 +57,9 @@ public class GetDeviceClassEquipmentCommand extends DeviceClientCommand {
 
 		ArrayList<EquipmentData> equipment;
 
-		DeviceClassEquipment(int id, String name, String version,
+		DeviceClassEquipment(String name, String version,
 				boolean isPermanent, int offlineTimeout) {
-			super(id, name, version, isPermanent, offlineTimeout);
+			super(name, version, isPermanent, offlineTimeout);
 		}
 
 	}

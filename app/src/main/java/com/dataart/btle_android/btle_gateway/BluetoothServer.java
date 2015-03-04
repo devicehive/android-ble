@@ -353,17 +353,10 @@ public class BluetoothServer extends BluetoothGattCallback {
 
                         gatt.setCharacteristicNotification(characteristic, isOn);
 
-                        List<BluetoothGattDescriptor>  descriptors = characteristic.getDescriptors();
-
-                        for(BluetoothGattDescriptor descriptor : descriptors) {
-                            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-                            gatt.writeDescriptor(descriptor);
-                        }
-
-//                        BluetoothGattDescriptor descriptor = characteristic.getDescriptor(
-//                                UUID.fromString(SampleGattAttributes.CLIENT_CHARACTERISTIC_CONFIG));
-//                        descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-//                        gatt.writeDescriptor(descriptor);
+                        BluetoothGattDescriptor descriptor = characteristic.getDescriptor(
+                                UUID.fromString("00002902-0000-1000-8000-00805f9b34fb"));
+                        descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+                        gatt.writeDescriptor(descriptor);
 
                     }
 

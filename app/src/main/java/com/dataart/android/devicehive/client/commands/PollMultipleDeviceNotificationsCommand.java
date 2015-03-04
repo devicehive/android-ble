@@ -128,14 +128,14 @@ public class PollMultipleDeviceNotificationsCommand extends
 			return deviceGuid;
 		}
 
-		/* package */DeviceNotification(int id, String name, String timestamp,
+		/* package */DeviceNotification(String name, String timestamp,
 				Serializable parameters) {
-			super(id, name, timestamp, parameters);
+			super(name, timestamp, parameters);
 		}
 
 		/* package */DeviceNotification(String deviceGuid,
 				Notification notification) {
-			super(notification.getId(), notification.getName(), notification
+			super(notification.getName(), notification
 					.getTimestamp(), notification.getParameters());
 			this.deviceGuid = deviceGuid;
 		}
