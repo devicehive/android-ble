@@ -20,6 +20,8 @@ public class BTLEGateway {
     public static final String COMMAND_GATT_CHARACTERISTICS = "gatt/characteristics";
     public static final String COMMAND_GATT_READ = "gatt/read";
     public static final String COMMAND_GATT_WRITE = "gatt/write";
+    private static final String COMMAND_GATT_NOTIFICATION = "gatt/notifications";
+    private static final String COMMAND_GATT_NOTIFICATION_STOP = "gatt/notifications/stop";
 
     BluetoothServer bluetoothServerGateway;
 
@@ -130,6 +132,49 @@ public class BTLEGateway {
                         dh.sendNotification(notification);
                     }
                 });
+            }else if (COMMAND_GATT_NOTIFICATION.equals(name)) {
+                HashMap<String, Object> params = (HashMap<String, Object>) command.getParameters();
+                String deviceUUID = (String) params.get("device");
+                String serviceUUID = (String) params.get("serviceUUID");
+                String characteristicUUID = (String) params.get("characteristicUUID");
+
+                bluetoothServerGateway.gattNotofications(context, deviceUUID, serviceUUID, characteristicUUID, true, new GattCharachteristicCallBack() {
+                    @Override
+                    public void characteristicsList(ArrayList<BTLECharacteristic> characteristics) {
+
+                    }
+
+                    @Override
+                    public void onRead(byte[] value) {
+                        String sValue = Utils.printHexBinary(value);
+                        String json = new Gson().toJson(sValue);
+                        Notification notification = new Notification(COMMAND_GATT_NOTIFICATION, json);
+                        dh.sendNotification(notification);
+                    }
+                });
+
+            }
+            else if (COMMAND_GATT_NOTIFICATION_STOP.equals(name)) {
+                HashMap<String, Object> params = (HashMap<String, Object>) command.getParameters();
+                String deviceUUID = (String) params.get("device");
+                String serviceUUID = (String) params.get("serviceUUID");
+                String characteristicUUID = (String) params.get("characteristicUUID");
+
+                bluetoothServerGateway.gattNotofications(context, deviceUUID, serviceUUID, characteristicUUID, false, new GattCharachteristicCallBack() {
+                    @Override
+                    public void characteristicsList(ArrayList<BTLECharacteristic> characteristics) {
+
+                    }
+
+                    @Override
+                    public void onRead(byte[] value) {
+                        String sValue = Utils.printHexBinary(value);
+                        String json = new Gson().toJson(sValue);
+                        Notification notification = new Notification(COMMAND_GATT_NOTIFICATION_STOP, json);
+                        dh.sendNotification(notification);
+                    }
+                });
+
             }
 
         }
