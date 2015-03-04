@@ -355,7 +355,9 @@ public class BluetoothServer extends BluetoothGattCallback {
 
                         BluetoothGattDescriptor descriptor = characteristic.getDescriptor(
                                 UUID.fromString("00002902-0000-1000-8000-00805f9b34fb"));
-                        descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+                        descriptor.setValue(isOn ?
+                                BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE :
+                                BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
                         gatt.writeDescriptor(descriptor);
 
                     }
