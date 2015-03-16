@@ -4,14 +4,17 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothManager;
+import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
-import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.dataart.android.devicehive.Command;
 import com.dataart.android.devicehive.Notification;
@@ -40,7 +43,7 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
      */
     private CharSequence mTitle;
 
-    private BluetoothServer bluetoothServerGateway;
+    //private BluetoothServer bluetoothServerGateway;
     private BTLEDeviceHive deviceHive;
     private BTLEGateway gateway;
 
@@ -49,17 +52,37 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        /**
+         * check BLE is supported on the device
+         * */
+
+         if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+            Toast.makeText(this, R.string.error_message_ble_not_supported, Toast.LENGTH_SHORT).show();
+            finish();
+        }
+
+        final BluetoothManager bluetoothManager =
+                (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+
+        final BluetoothAdapter mBluetoothAdapter = bluetoothManager.getAdapter();
+
+        /**
+         * Checks if Bluetooth is supported on the device
+         * */
+
+         if (mBluetoothAdapter == null) {
+            Toast.makeText(this, R.string.error_message_ble_not_supported, Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getFragmentManager().findFragmentById(R.id.navigation_drawer);
         mTitle = getTitle();
-
-        // Set up the drawer
         mNavigationDrawerFragment.setUp(R.id.navigation_drawer, (DrawerLayout) findViewById(R.id.drawer_layout));
 
-        bluetoothServerGateway = new BluetoothServer();
-        //bluetoothServerGateway.scanStart(this);
-
-        gateway = new BTLEGateway(bluetoothServerGateway);
+        //bluetoothServerGateway = new BluetoothServer();
+        gateway = new BTLEGateway(new BluetoothServer());
 
         final BTLEApplication app = (BTLEApplication) getApplication();
         deviceHive = app.getDevice();
@@ -69,18 +92,16 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
         //deviceInfoFragment.setDeviceData(deviceHive.getDeviceData());
         if (!deviceHive.isRegistered()) {
             deviceHive.registerDevice();
-            deviceHive.startProcessingCommands();
-        } else {
-            deviceHive.startProcessingCommands();
         }
+        deviceHive.startProcessingCommands();
     }
+
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         deviceHive.removeCommandListener(this);
         deviceHive.stopProcessingCommands();
-
     }
 
     @Override
@@ -98,7 +119,6 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
                     @Override
                     public void onApiEnpointUrlChanged(String apiEndPointUrl) {
                         deviceHive.setApiEnpointUrl(apiEndPointUrl);
-                        Log.d("TAG", "Settings were saved");
                     }
                 });
                 break;
@@ -131,20 +151,6 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
         actionBar.setDisplayShowTitleEnabled(true);
         actionBar.setTitle(mTitle);
-    }
-
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        if (mNavigationDrawerFragment != null && !mNavigationDrawerFragment.isDrawerOpen()) {
-            // Only show items in the action bar relevant to this screen
-            // if the drawer is not showing. Otherwise, let the drawer
-            // decide what to show in the action bar.
-            getMenuInflater().inflate(R.menu.main, menu);
-            restoreActionBar();
-            return true;
-        }
-        return super.onCreateOptionsMenu(menu);
     }
 
     @Override

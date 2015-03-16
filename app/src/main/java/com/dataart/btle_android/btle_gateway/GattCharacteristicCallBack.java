@@ -3,7 +3,7 @@ package com.dataart.btle_android.btle_gateway;
 import java.util.ArrayList;
 
 
-public class GattCharachteristicCallBack {
+public class GattCharacteristicCallBack {
 
     public void characteristicsList(ArrayList<BTLECharacteristic> characteristics) {
     }

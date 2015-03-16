@@ -11,6 +11,7 @@ import com.dataart.btle_android.devicehive.BTLEDeviceHive;
 public class BTLEApplication extends Application {
 
     private static BTLEApplication application;
+
     private BTLEDeviceHive device;
 
     @Override

@@ -11,6 +11,7 @@ import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.os.ParcelUuid;
+import android.text.TextUtils;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -24,38 +25,56 @@ import java.util.Arrays;
 public class BluetoothServer extends BluetoothGattCallback {
 
     public static final int COMMAND_SCAN_DEALY = 10 * 1000; // 10 sec
+    public static final String TAG = "BTLE Device Hive";
 
     private BluetoothAdapter bluetoothAdapter = null;
-
     private ArrayList<LeScanResult> deviceList;
-
-    private class LeScanResult {
-
-        public LeScanResult(BluetoothDevice device, int rssi, byte[] scanRecord) {
-            mDevice = device;
-            mRssi = rssi;
-            mScanRecord = scanRecord;
-        }
-
-        public BluetoothDevice getDevice() {
-            return mDevice;
-        }
-
-        public int getRssi() {
-            return mRssi;
-        }
-
-        public byte[] getScanRecord() {
-            return mScanRecord;
-        }
-
-        private BluetoothDevice mDevice;
-        private int mRssi;
-        private byte[] mScanRecord;
-    }
 
     public BluetoothServer() {
         deviceList = new ArrayList<LeScanResult>();
+    }
+
+    public ArrayList<BTLEDevice> getDiscoveredDevices() {
+        final ArrayList<BTLEDevice> devices = new ArrayList<BTLEDevice>();
+        for (LeScanResult result : deviceList) {
+            String name = "Unknown name";
+            String address = "Unknown address";
+            if (!TextUtils.isEmpty(result.getDevice().getName())) {
+                name = result.getDevice().getName();
+            }
+            if (!TextUtils.isEmpty(result.getDevice().getAddress())) {
+                address = result.getDevice().getAddress();
+            }
+            final BTLEDevice device = new BTLEDevice(name, address);
+            devices.add(device);
+        }
+        return devices;
+    }
+
+    public void scanStart(Context context) {
+        if (bluetoothAdapter == null) {
+            final BluetoothManager bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
+            Log.d(TAG, "Start BLE Scan");
+            bluetoothAdapter = bluetoothManager.getAdapter();
+        }
+        bluetoothAdapter.startLeScan(new BluetoothAdapter.LeScanCallback() {
+
+            @Override
+            public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
+                addDevice(new LeScanResult(device, rssi, scanRecord));
+            }
+        });
+    }
+
+    public void scanStop() {
+        Log.d(TAG, "Stop BLE Scan");
+        bluetoothAdapter.stopLeScan(new BluetoothAdapter.LeScanCallback() {
+            @Override
+            public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
+                addDevice(new LeScanResult(device, rssi, scanRecord));
+            }
+        });
+        //TODO: send device info
     }
 
     protected void addDevice(LeScanResult device) {
@@ -65,62 +84,14 @@ public class BluetoothServer extends BluetoothGattCallback {
             }
         }
         deviceList.add(device);
-        Log.d("TAG", "BTdeviceName " + device.getDevice().getName());
-        Log.d("TAG", "BTdeviceAdress " + device.getDevice().getAddress());
-        Log.d("TAG", "scanRecord " + device.getScanRecord().toString());
-    }
-
-
-    public ArrayList<BTLEDevice> getDiscoveredDevices() {
-        ArrayList<BTLEDevice> devices = new ArrayList<BTLEDevice>();
-
-        for (LeScanResult result : deviceList) {
-            String name = "Unknown name";
-            String address = "Unknown address";
-            if (result.getDevice().getName() != null) {
-                name = result.getDevice().getName();
-            }
-            if (result.getDevice().getAddress() != null) {
-                address = result.getDevice().getAddress();
-            }
-            BTLEDevice device = new BTLEDevice(name, address);
-            devices.add(device);
-        }
-
-        return devices;
-
-    }
-
-
-    public void scanStart(Context context) {
-        if (bluetoothAdapter == null) {
-            final BluetoothManager bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
-            Log.d("TAG", "Start BLE Scan ");
-            bluetoothAdapter = bluetoothManager.getAdapter();
-        }
-        bluetoothAdapter.startLeScan(new BluetoothAdapter.LeScanCallback() {
-            @Override
-            public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
-                addDevice(new LeScanResult(device, rssi, scanRecord));
-            }
-        });
-    }
-
-    public void scanStop() {
-        Log.d("TAG", "Stop BLE Scan ");
-        bluetoothAdapter.stopLeScan(new BluetoothAdapter.LeScanCallback() {
-            @Override
-            public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
-                addDevice(new LeScanResult(device, rssi, scanRecord));
-            }
-        });
-        //TODO: send devce info
-
+        Log.d(TAG, "BTdeviceName " + device.getDevice().getName());
+        Log.d(TAG, "BTdeviceAdress " + device.getDevice().getAddress());
+        Log.d(TAG, "scanRecord " + device.getScanRecord().toString());
     }
 
     public List<ParcelUuid> gattPrimary(String mac) {
         List<ParcelUuid> services = null;
-        LeScanResult result = getResultByUDID(mac);
+        final LeScanResult result = getResultByUDID(mac);
         if (result != null) {
             //services = result.getScanRecord().getServiceUuids();
             // TODO will it work?
@@ -129,7 +100,6 @@ public class BluetoothServer extends BluetoothGattCallback {
         }
         //services = result.getScanRecord().getServiceData()
         return services;
-
     }
 
     private LeScanResult getResultByUDID(String mac) {
@@ -143,14 +113,12 @@ public class BluetoothServer extends BluetoothGattCallback {
         return result;
     }
 
-
-    public void gattCharacteristics(final String mac, Context context, final GattCharachteristicCallBack callBack) {
-        LeScanResult result = getResultByUDID(mac);
-
+    public void gattCharacteristics(final String mac, final Context context, final GattCharacteristicCallBack callback) {
+        final LeScanResult result = getResultByUDID(mac);
         final ArrayList<BTLECharacteristic> allCharacteristics = new ArrayList<BTLECharacteristic>();
-
         if (result != null) {
             final BluetoothGatt gatt = result.getDevice().connectGatt(context, false, new BluetoothGattCallback() {
+
                 @Override
                 public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
                     super.onConnectionStateChange(gatt, status, newState);
@@ -162,15 +130,14 @@ public class BluetoothServer extends BluetoothGattCallback {
                 @Override
                 public void onServicesDiscovered(BluetoothGatt gatt, int status) {
                     super.onServicesDiscovered(gatt, status);
-
                     for (BluetoothGattService service : gatt.getServices()) {
-                        List<BluetoothGattCharacteristic> characteristics = service.getCharacteristics();
+                        final List<BluetoothGattCharacteristic> characteristics = service.getCharacteristics();
                         for (BluetoothGattCharacteristic characteristic : characteristics) {
                             BTLECharacteristic btlch = new BTLECharacteristic(mac, service.getUuid().toString(), characteristic.getUuid().toString());
                             allCharacteristics.add(btlch);
                         }
                     }
-                    callBack.characteristicsList(allCharacteristics);
+                    callback.characteristicsList(allCharacteristics);
                     gatt.disconnect();
                 }
             });
@@ -178,15 +145,15 @@ public class BluetoothServer extends BluetoothGattCallback {
     }
 
 
-    public void gattRead(Context context, final String deviceUUID, final String serviceUUID, final String characteristicUUID, final GattCharachteristicCallBack gattCharachteristicCallBack) {
+    public void gattRead(Context context, final String deviceUUID, final String serviceUUID, final String characteristicUUID, final GattCharacteristicCallBack gattCharachteristicCallBack) {
         LeScanResult result = getResultByUDID(deviceUUID);
         if (result != null) {
-            BluetoothGatt gatt = result.getDevice().connectGatt(context, false, new BluetoothGattCallback() {
+            final BluetoothGatt gatt = result.getDevice().connectGatt(context, false, new BluetoothGattCallback() {
+
                 @Override
                 public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
                     super.onCharacteristicRead(gatt, characteristic, status);
                     gattCharachteristicCallBack.onRead(characteristic.getValue());
-                    //
                 }
 
                 @Override
@@ -205,7 +172,6 @@ public class BluetoothServer extends BluetoothGattCallback {
                 @Override
                 public void onServicesDiscovered(BluetoothGatt gatt, int status) {
                     super.onServicesDiscovered(gatt, status);
-
                     BluetoothGattService service = gatt.getService(UUID.fromString(serviceUUID));
                     if (service != null) {
                         BluetoothGattCharacteristic characteristic = service.getCharacteristic(UUID.fromString(characteristicUUID));
@@ -215,20 +181,19 @@ public class BluetoothServer extends BluetoothGattCallback {
                             gatt.readCharacteristic(characteristic);
                         }
                     }
-
                 }
             });
         }
     }
 
-    public void gattWrite(Context context, final String deviceUUID, final String serviceUUID, final String characteristicUUID, final byte[] value, final GattCharachteristicCallBack gattCharachteristicCallBack) {
-        LeScanResult result = getResultByUDID(deviceUUID);
-        BluetoothGatt gatt = result.getDevice().connectGatt(context, false, new BluetoothGattCallback() {
+    public void gattWrite(Context context, final String deviceUUID, final String serviceUUID, final String characteristicUUID, final byte[] value, final GattCharacteristicCallBack gattCharachteristicCallBack) {
+        final LeScanResult result = getResultByUDID(deviceUUID);
+        final BluetoothGatt gatt = result.getDevice().connectGatt(context, false, new BluetoothGattCallback() {
+
             @Override
             public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
                 super.onCharacteristicRead(gatt, characteristic, status);
                 gattCharachteristicCallBack.onRead(characteristic.getValue());
-                //
             }
 
             @Override
@@ -254,7 +219,6 @@ public class BluetoothServer extends BluetoothGattCallback {
                     BluetoothGattCharacteristic characteristic = service.getCharacteristic(UUID.fromString(characteristicUUID));
 
                     if (characteristic != null) {
-
                         characteristic.setValue(value);
                         gatt.writeCharacteristic(characteristic);
                     }
@@ -264,8 +228,8 @@ public class BluetoothServer extends BluetoothGattCallback {
         });
     }
 
-    public void gattNotofications(Context context, final String deviceUUID, final String serviceUUID, final String characteristicUUID, final boolean isOn, final GattCharachteristicCallBack gattCharachteristicCallBack) {
-        LeScanResult result = getResultByUDID(deviceUUID);
+    public void gattNotifications(Context context, final String deviceUUID, final String serviceUUID, final String characteristicUUID, final boolean isOn, final GattCharacteristicCallBack gattCharachteristicCallBack) {
+        final LeScanResult result = getResultByUDID(deviceUUID);
         if (result != null) {
             BluetoothGatt gatt = result.getDevice().connectGatt(context, false, new BluetoothGattCallback() {
                 @Override
@@ -290,8 +254,7 @@ public class BluetoothServer extends BluetoothGattCallback {
                 @Override
                 public void onServicesDiscovered(BluetoothGatt gatt, int status) {
                     super.onServicesDiscovered(gatt, status);
-
-                    BluetoothGattService service = gatt.getService(UUID.fromString(serviceUUID));
+                    final BluetoothGattService service = gatt.getService(UUID.fromString(serviceUUID));
                     if (service != null) {
                         BluetoothGattCharacteristic characteristic = service.getCharacteristic(UUID.fromString(characteristicUUID));
 
@@ -303,17 +266,40 @@ public class BluetoothServer extends BluetoothGattCallback {
                                 BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE :
                                 BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
                         gatt.writeDescriptor(descriptor);
-
                     }
                 }
 
                 @Override
                 public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
                     super.onCharacteristicChanged(gatt, characteristic);
-
                     gattCharachteristicCallBack.onRead(characteristic.getValue());
                 }
             });
+        }
+    }
+
+    private class LeScanResult {
+
+        private BluetoothDevice mDevice;
+        private int mRssi;
+        private byte[] mScanRecord;
+
+        public LeScanResult(BluetoothDevice device, int rssi, byte[] scanRecord) {
+            mDevice = device;
+            mRssi = rssi;
+            mScanRecord = scanRecord;
+        }
+
+        public BluetoothDevice getDevice() {
+            return mDevice;
+        }
+
+        public int getRssi() {
+            return mRssi;
+        }
+
+        public byte[] getScanRecord() {
+            return mScanRecord;
         }
     }
 

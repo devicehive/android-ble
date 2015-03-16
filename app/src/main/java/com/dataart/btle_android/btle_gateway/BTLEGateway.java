@@ -66,7 +66,7 @@ public class BTLEGateway {
                 HashMap<String, Object> params = (HashMap<String, Object>) command.getParameters();
                 String deviceName = (String) params.get("device");
 
-                bluetoothServerGateway.gattCharacteristics(deviceName, context, new GattCharachteristicCallBack() {
+                bluetoothServerGateway.gattCharacteristics(deviceName, context, new GattCharacteristicCallBack() {
                     @Override
                     public void characteristicsList(ArrayList<BTLECharacteristic> characteristics) {
                         String json = new Gson().toJson(characteristics);
@@ -88,7 +88,7 @@ public class BTLEGateway {
                 String characteristicUUID = (String) params.get("characteristicUUID");
 
 
-                bluetoothServerGateway.gattRead(context, deviceUUID, serviceUUID, characteristicUUID, new GattCharachteristicCallBack() {
+                bluetoothServerGateway.gattRead(context, deviceUUID, serviceUUID, characteristicUUID, new GattCharacteristicCallBack() {
                     @Override
                     public void characteristicsList(ArrayList<BTLECharacteristic> characteristics) {
 
@@ -111,7 +111,7 @@ public class BTLEGateway {
 
                 byte[] value = Utils.parseHexBinary(sValue);
 
-                bluetoothServerGateway.gattWrite(context, deviceUUID, serviceUUID, characteristicUUID, value, new GattCharachteristicCallBack() {
+                bluetoothServerGateway.gattWrite(context, deviceUUID, serviceUUID, characteristicUUID, value, new GattCharacteristicCallBack() {
                     @Override
                     public void characteristicsList(ArrayList<BTLECharacteristic> characteristics) {
 
@@ -130,7 +130,7 @@ public class BTLEGateway {
                 String serviceUUID = (String) params.get("serviceUUID");
                 String characteristicUUID = (String) params.get("characteristicUUID");
 
-                bluetoothServerGateway.gattNotofications(context, deviceUUID, serviceUUID, characteristicUUID, true, new GattCharachteristicCallBack() {
+                bluetoothServerGateway.gattNotifications(context, deviceUUID, serviceUUID, characteristicUUID, true, new GattCharacteristicCallBack() {
                     @Override
                     public void characteristicsList(ArrayList<BTLECharacteristic> characteristics) {
 
@@ -151,7 +151,7 @@ public class BTLEGateway {
                 String serviceUUID = (String) params.get("serviceUUID");
                 String characteristicUUID = (String) params.get("characteristicUUID");
 
-                bluetoothServerGateway.gattNotofications(context, deviceUUID, serviceUUID, characteristicUUID, false, new GattCharachteristicCallBack() {
+                bluetoothServerGateway.gattNotifications(context, deviceUUID, serviceUUID, characteristicUUID, false, new GattCharacteristicCallBack() {
                     @Override
                     public void characteristicsList(ArrayList<BTLECharacteristic> characteristics) {
 
