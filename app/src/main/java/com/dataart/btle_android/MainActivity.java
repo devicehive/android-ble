@@ -1,33 +1,34 @@
 package com.dataart.btle_android;
 
-import android.app.Activity;
-
 import android.app.ActionBar;
+import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.os.Bundle;
-import android.text.TextUtils;
+import android.support.v4.widget.DrawerLayout;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.support.v4.widget.DrawerLayout;
-import android.widget.EditText;
 
 import com.dataart.android.devicehive.Command;
 import com.dataart.android.devicehive.Notification;
+import com.dataart.btle_android.Fragments.BleDeviceHiveLog;
+import com.dataart.btle_android.Fragments.BleDeviceHiveSettings;
 import com.dataart.btle_android.Fragments.BleDevicesFragment;
 import com.dataart.btle_android.btle_gateway.BTLEGateway;
 import com.dataart.btle_android.btle_gateway.BluetoothServer;
 import com.dataart.btle_android.devicehive.BTLEDeviceHive;
-import com.dataart.btle_android.devicehive.BTLEDevicePreferences;
 
 
-public class MainActivity extends Activity
-        implements NavigationDrawerFragment.NavigationDrawerCallbacks,
-        BTLEDeviceHive.CommandListener,
+public class MainActivity extends Activity implements NavigationDrawerFragment.NavigationDrawerCallbacks, BTLEDeviceHive.CommandListener,
         BTLEDeviceHive.NotificationListener {
+
+    public static final int SECTION_DEVICES = 0;
+    public static final int SECTION_DEVICE_HIVE_LOG = 1;
+    public static final int SECTION_DEVICE_HIVE_SETTINGS = 2;
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -39,98 +40,29 @@ public class MainActivity extends Activity
      */
     private CharSequence mTitle;
 
-    BluetoothServer bluetoothServerGateway;
-    BTLEDeviceHive deviceHive;
-    BTLEGateway gateway;
-
-    EditText serverUrlEdit;
-    EditText usernameEdit;
-    EditText passwordEdit;
-    BTLEDevicePreferences prefs;
-
-
-    void init() {
-    setContentView(R.layout.activity_settings);
-
-    serverUrlEdit = (EditText) findViewById(R.id.server_url_edit);
-    usernameEdit = (EditText) findViewById(R.id.username_edit);
-    passwordEdit = (EditText) findViewById(R.id.password_edit);
-
-    prefs = new BTLEDevicePreferences();
-
-    findViewById(R.id.undo_button).setOnClickListener(
-            new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            resetValues();
-        }
-    });
-    findViewById(R.id.save_button).setOnClickListener(
-            new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            saveValues();
-        }
-    });
-
-    resetValues();
-}
-
-    private void resetValues() {
-        serverUrlEdit.setText(prefs.getServerUrl());
-        usernameEdit.setText(prefs.getUsername());
-        passwordEdit.setText(prefs.getPassword());
-        deviceHive.setApiEnpointUrl(prefs.getServerUrl());
-    }
-
-    private void saveValues() {
-        final String serverUrl = serverUrlEdit.getText().toString();
-        final String username = usernameEdit.getText().toString();
-        final String password = passwordEdit.getText().toString();
-        if (TextUtils.isEmpty(serverUrl)) {
-            serverUrlEdit.setError("Server URL is required");
-        } else if (TextUtils.isEmpty(username)) {
-            usernameEdit.setError("Username is required");
-        } else if (TextUtils.isEmpty(password)) {
-            passwordEdit.setError("Password is required");
-        } else {
-            prefs.setCredentialsSync(username, password);
-            prefs.setServerUrlSync(serverUrl);
-
-            deviceHive.setApiEnpointUrl(serverUrl);
-
-
-            //finish();
-        }
-    }
+    private BluetoothServer bluetoothServerGateway;
+    private BTLEDeviceHive deviceHive;
+    private BTLEGateway gateway;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if(false) {
-            setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main);
 
-            mNavigationDrawerFragment = (NavigationDrawerFragment)
-                    getFragmentManager().findFragmentById(R.id.navigation_drawer);
-            mTitle = getTitle();
+        mNavigationDrawerFragment = (NavigationDrawerFragment)
+                getFragmentManager().findFragmentById(R.id.navigation_drawer);
+        mTitle = getTitle();
 
-            // Set up the drawer.
-            mNavigationDrawerFragment.setUp(
-                    R.id.navigation_drawer,
-                    (DrawerLayout) findViewById(R.id.drawer_layout));
-        }
-
-
+        // Set up the drawer
+        mNavigationDrawerFragment.setUp(R.id.navigation_drawer, (DrawerLayout) findViewById(R.id.drawer_layout));
 
         bluetoothServerGateway = new BluetoothServer();
         //bluetoothServerGateway.scanStart(this);
 
         gateway = new BTLEGateway(bluetoothServerGateway);
 
-        BTLEApplication app = (BTLEApplication) getApplication();
+        final BTLEApplication app = (BTLEApplication) getApplication();
         deviceHive = app.getDevice();
-
-        //deviceHive.addDeviceListener(this);
         deviceHive.addCommandListener(this);
 
         //deviceHive.addNotificationListener(this);
@@ -141,43 +73,40 @@ public class MainActivity extends Activity
         } else {
             deviceHive.startProcessingCommands();
         }
-
-        init();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
         deviceHive.removeCommandListener(this);
         deviceHive.stopProcessingCommands();
 
     }
 
-    public static final int SECTION_DEVICES = 0;
-    public static final int SECTION_DEVICE_HIVE_LOG = 1;
-
     @Override
     public void onNavigationDrawerItemSelected(int position) {
-        // update the main content by replacing fragments
-
         Fragment fragment = null;
-
-
-
-        switch(position) {
+        switch (position) {
             case SECTION_DEVICES:
                 fragment = BleDevicesFragment.newInstance();
                 break;
             case SECTION_DEVICE_HIVE_LOG:
+                fragment = BleDeviceHiveLog.newInstance();
                 break;
-
+            case SECTION_DEVICE_HIVE_SETTINGS:
+                fragment = BleDeviceHiveSettings.newInstance(new BleDeviceHiveSettings.SettingsChangesListener() {
+                    @Override
+                    public void onApiEnpointUrlChanged(String apiEndPointUrl) {
+                        deviceHive.setApiEnpointUrl(apiEndPointUrl);
+                        Log.d("TAG", "Settings were saved");
+                    }
+                });
+                break;
             default:
                 fragment = PlaceholderFragment.newInstance(position + 1);
-            break;
+                break;
         }
-
-        FragmentManager fragmentManager = getFragmentManager();
+        final FragmentManager fragmentManager = getFragmentManager();
         fragmentManager.beginTransaction()
                 .replace(R.id.container, fragment)
                 .commit();
@@ -186,19 +115,19 @@ public class MainActivity extends Activity
     public void onSectionAttached(int number) {
         switch (number) {
             case SECTION_DEVICES:
-                mTitle = getString(R.string.title_section1);
+                mTitle = getString(R.string.menu_devices);
                 break;
             case SECTION_DEVICE_HIVE_LOG:
-                mTitle = getString(R.string.title_section2);
+                mTitle = getString(R.string.menu_logs);
                 break;
-            default:
-                mTitle = getString(R.string.title_section3);
+            case SECTION_DEVICE_HIVE_SETTINGS:
+                mTitle = getString(R.string.menu_setting);
                 break;
         }
     }
 
     public void restoreActionBar() {
-        ActionBar actionBar = getActionBar();
+        final ActionBar actionBar = getActionBar();
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
         actionBar.setDisplayShowTitleEnabled(true);
         actionBar.setTitle(mTitle);
@@ -229,32 +158,13 @@ public class MainActivity extends Activity
         if (id == R.id.action_settings) {
             return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-
-    }
-
-
-
     @Override
     public void onDeviceReceivedCommand(Command command) {
-
-        gateway.doCommand(this, deviceHive,command);
+        gateway.doCommand(this, deviceHive, command);
     }
-
-
 
     @Override
     public void onDeviceSentNotification(Notification notification) {
@@ -281,8 +191,8 @@ public class MainActivity extends Activity
          * number.
          */
         public static PlaceholderFragment newInstance(int sectionNumber) {
-            PlaceholderFragment fragment = new PlaceholderFragment();
-            Bundle args = new Bundle();
+            final PlaceholderFragment fragment = new PlaceholderFragment();
+            final Bundle args = new Bundle();
             args.putInt(ARG_SECTION_NUMBER, sectionNumber);
             fragment.setArguments(args);
             return fragment;
@@ -294,7 +204,7 @@ public class MainActivity extends Activity
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+            final View rootView = inflater.inflate(R.layout.fragment_main, container, false);
             return rootView;
         }
 

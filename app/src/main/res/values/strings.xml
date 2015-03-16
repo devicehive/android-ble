@@ -1,9 +1,15 @@
 <resources>
     <string name="app_name">btle_android</string>
 
-    <string name="title_section1">BLE devices</string>
-    <string name="title_section2">DeviceHive Settings</string>
-    <string name="title_section3">DeviceHive Log</string>
+    <string name="menu_devices">BLE devices</string>
+    <string name="menu_setting">DeviceHive Settings</string>
+    <string name="menu_logs">DeviceHive Log</string>
+
+    <string name="error_message_empty_server_url">Server URL is required</string>
+    <string name="error_message_empty_username">Username is required</string>
+    <string name="error_message_empty_password">Password is required</string>
+
+    <string name="info_message_save_settings">Settings were saved</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>

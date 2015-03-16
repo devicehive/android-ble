@@ -16,177 +16,177 @@ import java.util.List;
 
 public class BTLEDeviceHive extends Device {
 
-	private static final String TAG = "AndroidBTLE";
+    private static final String TAG = "AndroidBTLE";
 
-	private List<RegistrationListener> registrationListeners = new LinkedList<RegistrationListener>();
-	private List<CommandListener> commandListeners = new LinkedList<CommandListener>();
-	private List<NotificationListener> notificationListeners = new LinkedList<NotificationListener>();
+    private List<RegistrationListener> registrationListeners = new LinkedList<RegistrationListener>();
+    private List<CommandListener> commandListeners = new LinkedList<CommandListener>();
+    private List<NotificationListener> notificationListeners = new LinkedList<NotificationListener>();
 
-	public interface RegistrationListener {
-		void onDeviceRegistered();
+    public interface RegistrationListener {
+        void onDeviceRegistered();
 
-		void onDeviceFailedToRegister();
-	}
+        void onDeviceFailedToRegister();
+    }
 
-	public interface CommandListener {
-		void onDeviceReceivedCommand(Command command);
-	}
+    public interface CommandListener {
+        void onDeviceReceivedCommand(Command command);
+    }
 
-	public interface NotificationListener {
-		void onDeviceSentNotification(Notification notification);
+    public interface NotificationListener {
+        void onDeviceSentNotification(Notification notification);
 
-		void onDeviceFailedToSendNotification(Notification notification);
-	}
+        void onDeviceFailedToSendNotification(Notification notification);
+    }
 
-	public BTLEDeviceHive(Context context) {
-		super(context, getTestDeviceData());
-		attachEquipment(new BTLEEquipment());
+    public BTLEDeviceHive(Context context) {
+        super(context, getTestDeviceData());
+        attachEquipment(new BTLEEquipment());
 
-	}
+    }
 
-	private static DeviceData getTestDeviceData() {
-		
-		final Network network = new Network(
-				"AndroidBTLE",
-				"");
+    private static DeviceData getTestDeviceData() {
 
-		final DeviceClass deviceClass = new DeviceClass(
-				"AndroidBTLE Device", "1.0");
+        final Network network = new Network(
+                "AndroidBTLE",
+                "");
 
-		final DeviceData deviceData = new DeviceData(
-				"3108c680-a319-4f94-867d-1b8bfecf05c6",
-				"582c2008-cbb6-4b1a-8cf1-7cec1388db9f",
-				"Android Bluetooth LE framework",
-				DeviceData.DEVICE_STATUS_ONLINE, network, deviceClass);
+        final DeviceClass deviceClass = new DeviceClass(
+                "AndroidBTLE Device", "1.0");
 
-		return deviceData;
-	}
-	
-	@Override
-	public void onBeforeRunCommand(Command command) {
-		Log.d(TAG, "onBeforeRunCommand: " + command.getCommand());
-		notifyListenersCommandReceived(command);
-	}
+        final DeviceData deviceData = new DeviceData(
+                "3108c680-a319-4f94-867d-1b8bfecf05c6",
+                "582c2008-cbb6-4b1a-8cf1-7cec1388db9f",
+                "Android Bluetooth LE framework",
+                DeviceData.DEVICE_STATUS_ONLINE, network, deviceClass);
 
-	@Override
-	public CommandResult runCommand(final Command command) {
-		Log.d(TAG, "Executing command on test device: " + command.getCommand());
-		
-		// execute command
-		
-		return new CommandResult(CommandResult.STATUS_COMLETED, "Ok");
-	}
+        return deviceData;
+    }
 
-	@Override
-	public boolean shouldRunCommandAsynchronously(final Command command) {
-		return true;
-	}
+    @Override
+    public void onBeforeRunCommand(Command command) {
+        Log.d(TAG, "onBeforeRunCommand: " + command.getCommand());
+        notifyListenersCommandReceived(command);
+    }
 
-	public void addDeviceListener(RegistrationListener listener) {
-		registrationListeners.add(listener);
-	}
+    @Override
+    public CommandResult runCommand(final Command command) {
+        Log.d(TAG, "Executing command on test device: " + command.getCommand());
 
-	public void removeDeviceListener(RegistrationListener listener) {
-		registrationListeners.remove(listener);
-	}
+        // execute command
 
-	public void addCommandListener(CommandListener listener) {
-		commandListeners.add(listener);
-	}
+        return new CommandResult(CommandResult.STATUS_COMLETED, "Ok");
+    }
 
-	public void removeCommandListener(CommandListener listener) {
-		commandListeners.remove(listener);
-	}
+    @Override
+    public boolean shouldRunCommandAsynchronously(final Command command) {
+        return true;
+    }
 
-	public void addNotificationListener(NotificationListener listener) {
-		notificationListeners.add(listener);
-	}
+    public void addDeviceListener(RegistrationListener listener) {
+        registrationListeners.add(listener);
+    }
 
-	public void removeNotificationListener(NotificationListener listener) {
-		notificationListeners.remove(listener);
-	}
+    public void removeDeviceListener(RegistrationListener listener) {
+        registrationListeners.remove(listener);
+    }
 
-	public void removeListener(Object listener) {
-		registrationListeners.remove(listener);
-		commandListeners.remove(listener);
-		notificationListeners.remove(listener);
-	}
+    public void addCommandListener(CommandListener listener) {
+        commandListeners.add(listener);
+    }
 
-	@Override
-	protected void onStartRegistration() {
-		Log.d(TAG, "onStartRegistration");
-	}
+    public void removeCommandListener(CommandListener listener) {
+        commandListeners.remove(listener);
+    }
 
-	@Override
-	protected void onFinishRegistration() {
-		Log.d(TAG, "onFinishRegistration");
+    public void addNotificationListener(NotificationListener listener) {
+        notificationListeners.add(listener);
+    }
+
+    public void removeNotificationListener(NotificationListener listener) {
+        notificationListeners.remove(listener);
+    }
+
+    public void removeListener(Object listener) {
+        registrationListeners.remove(listener);
+        commandListeners.remove(listener);
+        notificationListeners.remove(listener);
+    }
+
+    @Override
+    protected void onStartRegistration() {
+        Log.d(TAG, "onStartRegistration");
+    }
+
+    @Override
+    protected void onFinishRegistration() {
+        Log.d(TAG, "onFinishRegistration");
         isRegistered = true;
-		notifyListenersDeviceRegistered();
-	}
+        notifyListenersDeviceRegistered();
+    }
 
-	@Override
-	protected void onFailRegistration() {
-		Log.d(TAG, "onFailRegistration");
-		notifyListenersDeviceFailedToRegister();
-	}
+    @Override
+    protected void onFailRegistration() {
+        Log.d(TAG, "onFailRegistration");
+        notifyListenersDeviceFailedToRegister();
+    }
 
-	@Override
-	protected void onStartProcessingCommands() {
-		Log.d(TAG, "onStartProcessingCommands");
-	}
+    @Override
+    protected void onStartProcessingCommands() {
+        Log.d(TAG, "onStartProcessingCommands");
+    }
 
-	@Override
-	protected void onStopProcessingCommands() {
-		Log.d(TAG, "onStopProcessingCommands");
-	}
+    @Override
+    protected void onStopProcessingCommands() {
+        Log.d(TAG, "onStopProcessingCommands");
+    }
 
-	@Override
-	protected void onStartSendingNotification(Notification notification) {
-		Log.d(TAG, "onStartSendingNotification : " + notification.getName());
-	}
+    @Override
+    protected void onStartSendingNotification(Notification notification) {
+        Log.d(TAG, "onStartSendingNotification : " + notification.getName());
+    }
 
-	@Override
-	protected void onFinishSendingNotification(Notification notification) {
-		Log.d(TAG, "onFinishSendingNotification : " + notification.getName());
-		notifyListenersDeviceSentNotification(notification);
-	}
+    @Override
+    protected void onFinishSendingNotification(Notification notification) {
+        Log.d(TAG, "onFinishSendingNotification : " + notification.getName());
+        notifyListenersDeviceSentNotification(notification);
+    }
 
-	@Override
-	protected void onFailSendingNotification(Notification notification) {
-		Log.d(TAG, "onFailSendingNotification : " + notification.getName());
-		notifyListenersDeviceFailedToSendNotification(notification);
-	}
+    @Override
+    protected void onFailSendingNotification(Notification notification) {
+        Log.d(TAG, "onFailSendingNotification : " + notification.getName());
+        notifyListenersDeviceFailedToSendNotification(notification);
+    }
 
-	private void notifyListenersCommandReceived(Command command) {
-		for (CommandListener listener : commandListeners) {
-			listener.onDeviceReceivedCommand(command);
-		}
-	}
+    private void notifyListenersCommandReceived(Command command) {
+        for (CommandListener listener : commandListeners) {
+            listener.onDeviceReceivedCommand(command);
+        }
+    }
 
-	private void notifyListenersDeviceRegistered() {
-		for (RegistrationListener listener : registrationListeners) {
-			listener.onDeviceRegistered();
-		}
-	}
+    private void notifyListenersDeviceRegistered() {
+        for (RegistrationListener listener : registrationListeners) {
+            listener.onDeviceRegistered();
+        }
+    }
 
-	private void notifyListenersDeviceFailedToRegister() {
-		for (RegistrationListener listener : registrationListeners) {
-			listener.onDeviceFailedToRegister();
-		}
-	}
+    private void notifyListenersDeviceFailedToRegister() {
+        for (RegistrationListener listener : registrationListeners) {
+            listener.onDeviceFailedToRegister();
+        }
+    }
 
-	private void notifyListenersDeviceSentNotification(Notification notification) {
-		for (NotificationListener listener : notificationListeners) {
-			listener.onDeviceSentNotification(notification);
-		}
-	}
+    private void notifyListenersDeviceSentNotification(Notification notification) {
+        for (NotificationListener listener : notificationListeners) {
+            listener.onDeviceSentNotification(notification);
+        }
+    }
 
-	private void notifyListenersDeviceFailedToSendNotification(
-			Notification notification) {
-		for (NotificationListener listener : notificationListeners) {
-			listener.onDeviceFailedToSendNotification(notification);
-		}
-	}
+    private void notifyListenersDeviceFailedToSendNotification(
+            Notification notification) {
+        for (NotificationListener listener : notificationListeners) {
+            listener.onDeviceFailedToSendNotification(notification);
+        }
+    }
 
 
     public static BTLEDeviceHive newInstance(Context context) {
@@ -201,7 +201,6 @@ public class BTLEDeviceHive extends Device {
             serverUrl = DeviceHiveConfig.API_ENDPOINT;
             prefs.setServerUrlSync(serverUrl);
         }
-
         device.setApiEnpointUrl(serverUrl);
 
         return device;

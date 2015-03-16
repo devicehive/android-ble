@@ -2,7 +2,6 @@ package com.dataart.btle_android.Fragments;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.bluetooth.BluetoothDevice;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,11 +24,9 @@ public class BleDevicesFragment extends Fragment {
      */
     public static final int ARG_SECTION_NUMBER = 0;
 
-
-    LeDeviceListAdapter deviceListAdapter;
+    private LeDeviceListAdapter deviceListAdapter;
 
     public BleDevicesFragment() {
-
     }
 
     @Override
@@ -51,8 +48,8 @@ public class BleDevicesFragment extends Fragment {
     }
 
     public static Fragment newInstance() {
-        Fragment fragment = new BleDevicesFragment();
-        return  fragment;
+        final Fragment fragment = new BleDevicesFragment();
+        return fragment;
     }
 
     private class LeDeviceListAdapter extends BaseAdapter {
@@ -60,7 +57,7 @@ public class BleDevicesFragment extends Fragment {
         private LayoutInflater mInflator;
 
 
-        class DeviceInfo {
+        /*package*/ class DeviceInfo {
             String name;
             String address;
 
@@ -86,7 +83,7 @@ public class BleDevicesFragment extends Fragment {
         }
 
         public void addDevice(DeviceInfo device) {
-            if(!mLeDevices.contains(device)) {
+            if (!mLeDevices.contains(device)) {
                 mLeDevices.add(device);
             }
         }

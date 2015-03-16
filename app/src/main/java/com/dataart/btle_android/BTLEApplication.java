@@ -7,26 +7,26 @@ import com.dataart.btle_android.devicehive.BTLEDeviceHive;
 /**
  * Created by alrybakov
  */
+
 public class BTLEApplication extends Application {
+
+    private static BTLEApplication application;
+    private BTLEDeviceHive device;
+
     @Override
     public void onCreate() {
         super.onCreate();
 
         application = this;
         device = BTLEDeviceHive.newInstance(getApplicationContext());
-
     }
 
-    static BTLEApplication application;
     public static BTLEApplication getApplication() {
         return application;
     }
 
-    BTLEDeviceHive device;
-
     public BTLEDeviceHive getDevice() {
         return device;
     }
-
 
 }

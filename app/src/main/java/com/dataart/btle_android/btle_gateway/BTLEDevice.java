@@ -6,8 +6,16 @@ import android.os.Parcelable;
 /**
  * Created by alrybakov
  */
+
 public class BTLEDevice implements Parcelable {
-    String name;
+
+    private String name;
+    private String address;
+
+    public BTLEDevice(String name, String address) {
+        this.name = name;
+        this.address = address;
+    }
 
     public String getAddress() {
         return address;
@@ -16,14 +24,6 @@ public class BTLEDevice implements Parcelable {
     public String getName() {
         return name;
     }
-
-    String address;
-
-    public BTLEDevice(String name, String address) {
-        this.name = name;
-        this.address = address;
-    }
-
 
     @Override
     public int describeContents() {
@@ -46,6 +46,5 @@ public class BTLEDevice implements Parcelable {
             return new BTLEDevice[size];
         }
     };
-
 
 }

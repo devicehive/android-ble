@@ -23,21 +23,15 @@ public class BTLEGateway {
     private static final String COMMAND_GATT_NOTIFICATION = "gatt/notifications";
     private static final String COMMAND_GATT_NOTIFICATION_STOP = "gatt/notifications/stop";
 
-    BluetoothServer bluetoothServerGateway;
+    private BluetoothServer bluetoothServerGateway;
 
-
-    public BTLEGateway( BluetoothServer bluetoothServer) {
-
+    public BTLEGateway(BluetoothServer bluetoothServer) {
         this.bluetoothServerGateway = bluetoothServer;
     }
 
     public void doCommand(Context context, final BTLEDeviceHive dh, Command command) {
-
         try {
-
-
             String name = command.getCommand();
-
             if (COMMAND_SCAN_START.equals(name)) {
                 bluetoothServerGateway.scanStart(context);
             } else if (COMMAND_SCAN_STOP.equals(name)) {
@@ -62,10 +56,8 @@ public class BTLEGateway {
 
                 String deviceName = (String) params.get("device");
 
-
                 String json = new Gson().toJson(
-                        bluetoothServerGateway.gattPrimary(deviceName)
-                );
+                        bluetoothServerGateway.gattPrimary(deviceName));
 
                 Notification notification = new Notification("gatt/primary", json);
                 dh.sendNotification(notification);
@@ -132,7 +124,7 @@ public class BTLEGateway {
                         dh.sendNotification(notification);
                     }
                 });
-            }else if (COMMAND_GATT_NOTIFICATION.equals(name)) {
+            } else if (COMMAND_GATT_NOTIFICATION.equals(name)) {
                 HashMap<String, Object> params = (HashMap<String, Object>) command.getParameters();
                 String deviceUUID = (String) params.get("device");
                 String serviceUUID = (String) params.get("serviceUUID");
@@ -153,8 +145,7 @@ public class BTLEGateway {
                     }
                 });
 
-            }
-            else if (COMMAND_GATT_NOTIFICATION_STOP.equals(name)) {
+            } else if (COMMAND_GATT_NOTIFICATION_STOP.equals(name)) {
                 HashMap<String, Object> params = (HashMap<String, Object>) command.getParameters();
                 String deviceUUID = (String) params.get("device");
                 String serviceUUID = (String) params.get("serviceUUID");
@@ -174,23 +165,14 @@ public class BTLEGateway {
                         dh.sendNotification(notification);
                     }
                 });
-
             }
-
-        }
-        catch(Throwable thr) {
-            thr.printStackTrace();;
-
+        } catch (Throwable thr) {
+            thr.printStackTrace();
             Notification notification = new Notification("CRASH", thr.getMessage());
             dh.sendNotification(notification);
         }
 
     }
-
-
-
-
-
 
     private void sendStopResult(BTLEDeviceHive dh) {
         ArrayList<BTLEDevice> devices = bluetoothServerGateway.getDiscoveredDevices();
@@ -202,6 +184,5 @@ public class BTLEGateway {
         Notification notification = new Notification("discoveredDevices", result);
         dh.sendNotification(notification);
     }
-
 
 }

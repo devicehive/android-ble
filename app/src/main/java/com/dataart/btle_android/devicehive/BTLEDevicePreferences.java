@@ -8,31 +8,7 @@ import com.dataart.btle_android.BTLEApplication;
 
 public class BTLEDevicePreferences {
 
-	private final static String NAMESPACE = "devicehive.";
-
-	private final Context context;
-
-
-	public BTLEDevicePreferences() {
-
-		this.context = BTLEApplication.getApplication();
-		this.preferences = context.getSharedPreferences(
-				context.getPackageName() + "_devicehiveprefs",
-				Context.MODE_PRIVATE);
-	}
-	
-	public String getServerUrl() {
-		return preferences.getString(KEY_SERVER_URL, null);
-	}
-	
-	public void setServerUrlSync(String serverUrl) {
-		SharedPreferences.Editor editor = preferences.edit();
-		editor.putString(KEY_SERVER_URL, serverUrl);
-		editor.commit();
-	}
-
-
-    private final SharedPreferences preferences;
+    private final static String NAMESPACE = "devicehive.";
 
     private final static String KEY_SERVER_URL = NAMESPACE
             .concat(".KEY_SERVER_URL");
@@ -43,9 +19,27 @@ public class BTLEDevicePreferences {
     private final static String KEY_PASSWORD = NAMESPACE
             .concat(".KEY_PASSWORD");
 
+    private final Context context;
 
+    private final SharedPreferences preferences;
 
+    public BTLEDevicePreferences() {
 
+        this.context = BTLEApplication.getApplication();
+        this.preferences = context.getSharedPreferences(
+                context.getPackageName() + "_devicehiveprefs",
+                Context.MODE_PRIVATE);
+    }
+
+    public String getServerUrl() {
+        return preferences.getString(KEY_SERVER_URL, null);
+    }
+
+    public void setServerUrlSync(String serverUrl) {
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString(KEY_SERVER_URL, serverUrl);
+        editor.commit();
+    }
 
     public String getUsername() {
         return preferences.getString(KEY_USERNAME, null);
@@ -54,8 +48,6 @@ public class BTLEDevicePreferences {
     public String getPassword() {
         return preferences.getString(KEY_PASSWORD, null);
     }
-
-
 
     public void setCredentialsSync(String username, String password) {
         SharedPreferences.Editor editor = preferences.edit();
