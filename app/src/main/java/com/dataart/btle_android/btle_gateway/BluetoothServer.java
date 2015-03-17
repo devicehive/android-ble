@@ -31,6 +31,8 @@ public class BluetoothServer extends BluetoothGattCallback {
     private BluetoothAdapter bluetoothAdapter = null;
     private ArrayList<LeScanResult> deviceList;
 
+    private DiscoveredDeviceListener discoveredDeviceListener;
+
     public BluetoothServer() {
         deviceList = new ArrayList<LeScanResult>();
     }
@@ -52,6 +54,17 @@ public class BluetoothServer extends BluetoothGattCallback {
         return devices;
     }
 
+    private final BluetoothAdapter.LeScanCallback leScanCallback = new BluetoothAdapter.LeScanCallback() {
+
+        @Override
+        public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
+            addDevice(new LeScanResult(device, rssi, scanRecord));
+            if (discoveredDeviceListener != null) {
+                discoveredDeviceListener.onDiscoveredDevice(device);
+            }
+        }
+    };
+
     public void scanStart(Context context) {
         if (bluetoothAdapter == null) {
             final BluetoothManager bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
@@ -66,23 +79,6 @@ public class BluetoothServer extends BluetoothGattCallback {
         bluetoothAdapter.stopLeScan(leScanCallback);
         //TODO: send device info
     }
-
-    private final BluetoothAdapter.LeScanCallback leScanCallback = new BluetoothAdapter.LeScanCallback() {
-
-        @Override
-        public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
-            addDevice(new LeScanResult(device, rssi, scanRecord));
-            if (discoveredDeviceListener != null) {
-                discoveredDeviceListener.onDiscoveredDevice(device);
-            }
-        }
-    };
-
-    public interface DiscoveredDeviceListener {
-        void onDiscoveredDevice(BluetoothDevice device);
-    }
-
-    private DiscoveredDeviceListener discoveredDeviceListener;
 
     public void setDiscoveredDeviceListener(DiscoveredDeviceListener discoveredDeviceListener) {
         this.discoveredDeviceListener = discoveredDeviceListener;
@@ -287,6 +283,10 @@ public class BluetoothServer extends BluetoothGattCallback {
                 }
             });
         }
+    }
+
+    public interface DiscoveredDeviceListener {
+        void onDiscoveredDevice(BluetoothDevice device);
     }
 
     private class LeScanResult {
