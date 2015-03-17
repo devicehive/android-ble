@@ -25,6 +25,7 @@ import java.util.Arrays;
 public class BluetoothServer extends BluetoothGattCallback {
 
     public static final int COMMAND_SCAN_DEALY = 10 * 1000; // 10 sec
+
     public static final String TAG = "BTLE Device Hive";
 
     private BluetoothAdapter bluetoothAdapter = null;
@@ -57,24 +58,34 @@ public class BluetoothServer extends BluetoothGattCallback {
             Log.d(TAG, "Start BLE Scan");
             bluetoothAdapter = bluetoothManager.getAdapter();
         }
-        bluetoothAdapter.startLeScan(new BluetoothAdapter.LeScanCallback() {
-
-            @Override
-            public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
-                addDevice(new LeScanResult(device, rssi, scanRecord));
-            }
-        });
+        bluetoothAdapter.startLeScan(leScanCallback);
     }
 
     public void scanStop() {
         Log.d(TAG, "Stop BLE Scan");
-        bluetoothAdapter.stopLeScan(new BluetoothAdapter.LeScanCallback() {
-            @Override
-            public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
-                addDevice(new LeScanResult(device, rssi, scanRecord));
-            }
-        });
+        bluetoothAdapter.stopLeScan(leScanCallback);
         //TODO: send device info
+    }
+
+    private final BluetoothAdapter.LeScanCallback leScanCallback = new BluetoothAdapter.LeScanCallback() {
+
+        @Override
+        public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
+            addDevice(new LeScanResult(device, rssi, scanRecord));
+            if (discoveredDeviceListener != null) {
+                discoveredDeviceListener.onDiscoveredDevice(device);
+            }
+        }
+    };
+
+    public interface DiscoveredDeviceListener {
+        void onDiscoveredDevice(BluetoothDevice device);
+    }
+
+    private DiscoveredDeviceListener discoveredDeviceListener;
+
+    public void setDiscoveredDeviceListener(DiscoveredDeviceListener discoveredDeviceListener) {
+        this.discoveredDeviceListener = discoveredDeviceListener;
     }
 
     protected void addDevice(LeScanResult device) {
