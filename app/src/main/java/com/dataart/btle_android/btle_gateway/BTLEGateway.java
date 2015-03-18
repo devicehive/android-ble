@@ -2,6 +2,7 @@ package com.dataart.btle_android.btle_gateway;
 
 import android.content.Context;
 import android.os.Handler;
+import android.util.Log;
 
 import com.dataart.android.devicehive.Command;
 import com.dataart.android.devicehive.Notification;
@@ -13,16 +14,6 @@ import java.util.HashMap;
 
 public class BTLEGateway {
 
-    public static final String COMMAND_SCAN_START = "scan/start";
-    public static final String COMMAND_SCAN_STOP = "scan/stop";
-    public static final String COMMAND_SCAN = "scan";
-    public static final String COMMAND_GATT_PRIMARY = "gatt/primary";
-    public static final String COMMAND_GATT_CHARACTERISTICS = "gatt/characteristics";
-    public static final String COMMAND_GATT_READ = "gatt/read";
-    public static final String COMMAND_GATT_WRITE = "gatt/write";
-    private static final String COMMAND_GATT_NOTIFICATION = "gatt/notifications";
-    private static final String COMMAND_GATT_NOTIFICATION_STOP = "gatt/notifications/stop";
-
     private BluetoothServer bluetoothServerGateway;
 
     public BTLEGateway(BluetoothServer bluetoothServer) {
@@ -31,158 +22,162 @@ public class BTLEGateway {
 
     public void doCommand(Context context, final BTLEDeviceHive dh, Command command) {
         try {
-            String name = command.getCommand();
-            if (COMMAND_SCAN_START.equals(name)) {
-                bluetoothServerGateway.scanStart(context);
-            } else if (COMMAND_SCAN_STOP.equals(name)) {
-                bluetoothServerGateway.scanStop();
+            final String name = command.getCommand();
+            final LeCommand leCommand = LeCommand.fromName(name);
+            final HashMap<String, Object> params = (HashMap<String, Object>) command.getParameters();
+            final String deviceUUID = (params != null) ? (String) params.get("device") : null;
+            final String serviceUUID = (params != null) ? (String) params.get("serviceUUID") : null;
+            final String characteristicUUID = (params != null) ? (String) params.get("characteristicUUID") : null;
 
-                sendStopResult(dh);
+            switch (leCommand) {
+                case SCAN_START:
+                    bluetoothServerGateway.scanStart(context);
+                    break;
+                case SCAN_STOP:
+                    bluetoothServerGateway.scanStop();
+                    sendStopResult(dh);
+                    break;
+                case SCAN:
+                    bluetoothServerGateway.scanStart(context);
+                    final Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            sendStopResult(dh);
+                        }
+                    }, BluetoothServer.COMMAND_SCAN_DEALY);
+                    break;
+                case GATT_PRIMARY:
+                    final String json = new Gson().toJson(
+                            bluetoothServerGateway.gattPrimary(deviceUUID));
+                    sendNotification(dh, leCommand, json);
+                    break;
+                case GATT_CHARACTERISTICS:
+                    bluetoothServerGateway.gattCharacteristics(deviceUUID, context, new GattCharacteristicCallBack() {
+                        @Override
+                        public void characteristicsList(ArrayList<BTLECharacteristic> characteristics) {
+                            final String json = new Gson().toJson(characteristics);
+                            sendNotification(dh, leCommand, json);
+                        }
 
-            } else if (COMMAND_SCAN.equals(name)) {
-                bluetoothServerGateway.scanStart(context);
+                        @Override
+                        public void onRead(byte[] value) {
+                        }
+                    });
+                    break;
+                case GATT_READ:
+                    bluetoothServerGateway.gattRead(context, deviceUUID, serviceUUID, characteristicUUID, new GattCharacteristicCallBack() {
+                        @Override
+                        public void characteristicsList(ArrayList<BTLECharacteristic> characteristics) {
+                        }
 
-                final Handler handler = new Handler();
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
+                        @Override
+                        public void onRead(byte[] value) {
+                            final String sValue = Utils.printHexBinary(value);
+                            final String json = new Gson().toJson(sValue);
+                            sendNotification(dh, leCommand, json);
+                        }
+                    });
+                    break;
+                case GATT_WRITE:
+                    final String sValue = (String) params.get("value");
+                    final byte[] value = Utils.parseHexBinary(sValue);
+                    bluetoothServerGateway.gattWrite(context, deviceUUID, serviceUUID, characteristicUUID, value, new GattCharacteristicCallBack() {
+                        @Override
+                        public void characteristicsList(ArrayList<BTLECharacteristic> characteristics) {
+                        }
 
-                        sendStopResult(dh);
+                        @Override
+                        public void onWrite(int state) {
+                            final String json = new Gson().toJson(state);
+                            sendNotification(dh, leCommand, json);
+                        }
+                    });
+                    break;
+                case GATT_NOTIFICATION:
+                    bluetoothServerGateway.gattNotifications(context, deviceUUID, serviceUUID, characteristicUUID, true, new GattCharacteristicCallBack() {
+                        @Override
+                        public void characteristicsList(ArrayList<BTLECharacteristic> characteristics) {
+                        }
 
-                    }
-                }, BluetoothServer.COMMAND_SCAN_DEALY);
-            } else if (COMMAND_GATT_PRIMARY.equals(name)) {
-                HashMap<String, Object> params = (HashMap<String, Object>) command.getParameters();
+                        @Override
+                        public void onRead(byte[] value) {
+                            final String sValue = Utils.printHexBinary(value);
+                            final String json = new Gson().toJson(sValue);
+                            sendNotification(dh, leCommand, json);
+                        }
+                    });
+                    break;
+                case GATT_NOTIFICATION_STOP:
+                    bluetoothServerGateway.gattNotifications(context, deviceUUID, serviceUUID, characteristicUUID, false, new GattCharacteristicCallBack() {
+                        @Override
+                        public void characteristicsList(ArrayList<BTLECharacteristic> characteristics) {
+                        }
 
-                String deviceName = (String) params.get("device");
-
-                String json = new Gson().toJson(
-                        bluetoothServerGateway.gattPrimary(deviceName));
-
-                Notification notification = new Notification("gatt/primary", json);
-                dh.sendNotification(notification);
-
-            } else if (COMMAND_GATT_CHARACTERISTICS.equals(name)) {
-                HashMap<String, Object> params = (HashMap<String, Object>) command.getParameters();
-                String deviceName = (String) params.get("device");
-
-                bluetoothServerGateway.gattCharacteristics(deviceName, context, new GattCharacteristicCallBack() {
-                    @Override
-                    public void characteristicsList(ArrayList<BTLECharacteristic> characteristics) {
-                        String json = new Gson().toJson(characteristics);
-
-                        Notification notification = new Notification(COMMAND_GATT_CHARACTERISTICS, json);
-                        dh.sendNotification(notification);
-                    }
-
-                    @Override
-                    public void onRead(byte[] value) {
-
-                    }
-                });
-
-            } else if (COMMAND_GATT_READ.equals(name)) {
-                HashMap<String, Object> params = (HashMap<String, Object>) command.getParameters();
-                String deviceUUID = (String) params.get("device");
-                String serviceUUID = (String) params.get("serviceUUID");
-                String characteristicUUID = (String) params.get("characteristicUUID");
-
-
-                bluetoothServerGateway.gattRead(context, deviceUUID, serviceUUID, characteristicUUID, new GattCharacteristicCallBack() {
-                    @Override
-                    public void characteristicsList(ArrayList<BTLECharacteristic> characteristics) {
-
-                    }
-
-                    @Override
-                    public void onRead(byte[] value) {
-                        String sValue = Utils.printHexBinary(value);
-                        String json = new Gson().toJson(sValue);
-                        Notification notification = new Notification(COMMAND_GATT_CHARACTERISTICS, json);
-                        dh.sendNotification(notification);
-                    }
-                });
-            } else if (COMMAND_GATT_WRITE.equals(name)) {
-                HashMap<String, Object> params = (HashMap<String, Object>) command.getParameters();
-                String deviceUUID = (String) params.get("device");
-                String serviceUUID = (String) params.get("serviceUUID");
-                String characteristicUUID = (String) params.get("characteristicUUID");
-                String sValue = (String) params.get("value");
-
-                byte[] value = Utils.parseHexBinary(sValue);
-
-                bluetoothServerGateway.gattWrite(context, deviceUUID, serviceUUID, characteristicUUID, value, new GattCharacteristicCallBack() {
-                    @Override
-                    public void characteristicsList(ArrayList<BTLECharacteristic> characteristics) {
-
-                    }
-
-                    @Override
-                    public void onWrite(int state) {
-                        String json = new Gson().toJson(state);
-                        Notification notification = new Notification(COMMAND_GATT_WRITE, json);
-                        dh.sendNotification(notification);
-                    }
-                });
-            } else if (COMMAND_GATT_NOTIFICATION.equals(name)) {
-                HashMap<String, Object> params = (HashMap<String, Object>) command.getParameters();
-                String deviceUUID = (String) params.get("device");
-                String serviceUUID = (String) params.get("serviceUUID");
-                String characteristicUUID = (String) params.get("characteristicUUID");
-
-                bluetoothServerGateway.gattNotifications(context, deviceUUID, serviceUUID, characteristicUUID, true, new GattCharacteristicCallBack() {
-                    @Override
-                    public void characteristicsList(ArrayList<BTLECharacteristic> characteristics) {
-
-                    }
-
-                    @Override
-                    public void onRead(byte[] value) {
-                        String sValue = Utils.printHexBinary(value);
-                        String json = new Gson().toJson(sValue);
-                        Notification notification = new Notification(COMMAND_GATT_NOTIFICATION, json);
-                        dh.sendNotification(notification);
-                    }
-                });
-
-            } else if (COMMAND_GATT_NOTIFICATION_STOP.equals(name)) {
-                HashMap<String, Object> params = (HashMap<String, Object>) command.getParameters();
-                String deviceUUID = (String) params.get("device");
-                String serviceUUID = (String) params.get("serviceUUID");
-                String characteristicUUID = (String) params.get("characteristicUUID");
-
-                bluetoothServerGateway.gattNotifications(context, deviceUUID, serviceUUID, characteristicUUID, false, new GattCharacteristicCallBack() {
-                    @Override
-                    public void characteristicsList(ArrayList<BTLECharacteristic> characteristics) {
-
-                    }
-
-                    @Override
-                    public void onRead(byte[] value) {
-                        String sValue = Utils.printHexBinary(value);
-                        String json = new Gson().toJson(sValue);
-                        Notification notification = new Notification(COMMAND_GATT_NOTIFICATION_STOP, json);
-                        dh.sendNotification(notification);
-                    }
-                });
+                        @Override
+                        public void onRead(byte[] value) {
+                            final String sValue = Utils.printHexBinary(value);
+                            final String json = new Gson().toJson(sValue);
+                            sendNotification(dh, leCommand, json);
+                        }
+                    });
+                    break;
+                case UNKNOWN:
+                    return;
             }
         } catch (Throwable thr) {
-            thr.printStackTrace();
-            Notification notification = new Notification("CRASH", thr.getMessage());
+            Log.e("TAG", "Error during handling");
+            Notification notification = new Notification("Error", thr.getMessage());
             dh.sendNotification(notification);
         }
+    }
 
+    private void sendNotification(final BTLEDeviceHive dh, final LeCommand leCommand, final String json) {
+        final Notification notification = new Notification(leCommand.getCommand(), json);
+        dh.sendNotification(notification);
     }
 
     private void sendStopResult(BTLEDeviceHive dh) {
-        ArrayList<BTLEDevice> devices = bluetoothServerGateway.getDiscoveredDevices();
-        String json = new Gson().toJson(devices);
+        final ArrayList<BTLEDevice> devices = bluetoothServerGateway.getDiscoveredDevices();
+        final String json = new Gson().toJson(devices);
 
-        HashMap<String, String> result = new HashMap<String, String>();
+        final HashMap<String, String> result = new HashMap<String, String>();
         result.put("result", json);
 
-        Notification notification = new Notification("discoveredDevices", result);
+        final Notification notification = new Notification("discoveredDevices", result);
         dh.sendNotification(notification);
+    }
+
+    public enum LeCommand {
+        SCAN_START("scan/start"),
+        SCAN_STOP("scan/stop"),
+        SCAN("scan"),
+        GATT_PRIMARY("gatt/primary"),
+        GATT_CHARACTERISTICS("gatt/characteristics"),
+        GATT_READ("gatt/read"),
+        GATT_WRITE("gatt/write"),
+        GATT_NOTIFICATION("gatt/notifications"),
+        GATT_NOTIFICATION_STOP("gatt/notifications/stop"),
+        UNKNOWN("unknown");
+
+        private final String command;
+
+        LeCommand(final String command) {
+            this.command = command;
+        }
+
+        public static LeCommand fromName(final String name) {
+            for (LeCommand leCommand : values()) {
+                if (leCommand.command.equalsIgnoreCase(name)) {
+                    return leCommand;
+                }
+            }
+            return UNKNOWN;
+        }
+
+        public String getCommand() {
+            return command;
+        }
     }
 
 }

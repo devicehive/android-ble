@@ -2,7 +2,7 @@
     <string name="app_name">btle_android</string>
 
     <string name="menu_devices">BLE Devices</string>
-    <string name="menu_setting">DeviceHive Settings</string>
+    <string name="menu_gateway">Gateway</string>
     <string name="menu_logs">DeviceHive Log</string>
 
     <string name="error_message_ble_not_supported">BLE is not supported</string>

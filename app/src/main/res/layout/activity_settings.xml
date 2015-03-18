@@ -3,17 +3,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="10dp"
-    >
+    android:padding="10dp">
 
     <View
         android:id="@+id/focus_grabber"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:focusableInTouchMode="true"
-        />
-    
-    <LinearLayout style="@style/ListItem" >
+        android:focusableInTouchMode="true" />
+
+    <LinearLayout style="@style/ListItem">
 
         <TextView
             android:layout_width="wrap_content"
@@ -27,8 +25,8 @@
     </LinearLayout>
 
     <View style="@style/ListItemDivider" />
-    
-    <LinearLayout style="@style/ListItem" >
+
+    <LinearLayout style="@style/ListItem">
 
         <TextView
             android:layout_width="wrap_content"
@@ -43,7 +41,7 @@
 
     <View style="@style/ListItemDivider" />
 
-    <LinearLayout style="@style/ListItem" >
+    <LinearLayout style="@style/ListItem">
 
         <TextView
             android:layout_width="wrap_content"
@@ -57,27 +55,26 @@
     </LinearLayout>
 
     <View style="@style/ListItemDivider" />
-    
+
     <RelativeLayout
         android:id="@+id/ip_conf_buttons_frame"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        >
+        android:layout_marginTop="10dp">
+
         <Button
-            android:id="@+id/undo_button"
+            android:id="@+id/service_button"
             android:layout_width="100dp"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
-            android:text="Undo"
-            />
-	    <Button
+            android:text="Start service" />
+
+        <Button
             android:id="@+id/save_button"
-	        android:layout_width="100dp"
-	        android:layout_height="wrap_content"
-	        android:layout_alignParentRight="true"
-	        android:text="Save"
-	        />
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:text="Save" />
     </RelativeLayout>
 
 </LinearLayout>

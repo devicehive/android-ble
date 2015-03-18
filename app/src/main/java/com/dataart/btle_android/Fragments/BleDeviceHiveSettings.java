@@ -2,16 +2,19 @@ package com.dataart.btle_android.Fragments;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import com.dataart.btle_android.MainActivity;
 import com.dataart.btle_android.R;
+import com.dataart.btle_android.btle_gateway.BluetoothLeService;
 import com.dataart.btle_android.devicehive.BTLEDevicePreferences;
 
 /**
@@ -23,6 +26,8 @@ public class BleDeviceHiveSettings extends Fragment {
     private EditText serverUrlEdit;
     private EditText usernameEdit;
     private EditText passwordEdit;
+
+    private Button serviceButton;
 
     private BTLEDevicePreferences prefs;
 
@@ -42,22 +47,36 @@ public class BleDeviceHiveSettings extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, final ViewGroup container, Bundle savedInstanceState) {
         final View rootView = inflater.inflate(R.layout.activity_settings, container, false);
 
         serverUrlEdit = (EditText) rootView.findViewById(R.id.server_url_edit);
         usernameEdit = (EditText) rootView.findViewById(R.id.username_edit);
         passwordEdit = (EditText) rootView.findViewById(R.id.password_edit);
+        serviceButton = (Button) rootView.findViewById(R.id.service_button);
 
         prefs = new BTLEDevicePreferences();
 
-        rootView.findViewById(R.id.undo_button).setOnClickListener(
+        final Context context = getActivity();
+
+        serviceButton.setOnClickListener(
                 new View.OnClickListener() {
+                    boolean isStarted = false;
+
                     @Override
                     public void onClick(View v) {
-                        resetValues();
+                        if (!isStarted) {
+                            isStarted = true;
+                            serviceButton.setText("Stop Service");
+                            BluetoothLeService.start(context);
+                        } else {
+                            isStarted = false;
+                            serviceButton.setText("Start Service");
+                            BluetoothLeService.stop(context);
+                        }
                     }
                 });
+
         rootView.findViewById(R.id.save_button).setOnClickListener(
                 new View.OnClickListener() {
                     @Override
@@ -65,8 +84,8 @@ public class BleDeviceHiveSettings extends Fragment {
                         saveValues();
                     }
                 });
-        resetValues();
 
+        resetValues();
         return rootView;
     }
 

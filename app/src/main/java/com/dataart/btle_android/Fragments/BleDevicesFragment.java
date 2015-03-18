@@ -37,6 +37,7 @@ public class BleDevicesFragment extends Fragment {
     private BluetoothAdapter mBluetoothAdapter;
     private BluetoothServer bluetoothServerGateway;
 
+    private Handler mHandler;
     private boolean mScanning;
     private ListView listView;
 
@@ -52,6 +53,7 @@ public class BleDevicesFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+        mHandler = new Handler();
     }
 
     @Override
@@ -130,6 +132,7 @@ public class BleDevicesFragment extends Fragment {
     public void onPause() {
         super.onPause();
         scanLeDevice(false);
+        mHandler.removeCallbacks(mRunnable);
         mLeDeviceListAdapter.clear();
     }
 
@@ -163,18 +166,20 @@ public class BleDevicesFragment extends Fragment {
         return true;
     }
 
+    private final Runnable mRunnable = new Runnable() {
+        @Override
+        public void run() {
+            mScanning = false;
+            bluetoothServerGateway.scanStop();
+            getActivity().invalidateOptionsMenu();
+        }
+    };
+
     private void scanLeDevice(final boolean enable) {
         if (enable) {
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    mScanning = false;
-                    bluetoothServerGateway.scanStop();
-                    getActivity().invalidateOptionsMenu();
-                }
-            }, BluetoothServer.COMMAND_SCAN_DEALY);
             mScanning = true;
             bluetoothServerGateway.scanStart(getActivity());
+            mHandler.postDelayed(mRunnable, BluetoothServer.COMMAND_SCAN_DEALY);
         } else {
             mScanning = false;
             bluetoothServerGateway.scanStop();

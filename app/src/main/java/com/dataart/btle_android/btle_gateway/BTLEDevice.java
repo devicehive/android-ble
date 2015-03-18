@@ -6,7 +6,6 @@ import android.os.Parcelable;
 /**
  * Created by alrybakov
  */
-
 public class BTLEDevice implements Parcelable {
 
     private String name;

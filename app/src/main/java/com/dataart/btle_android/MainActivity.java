@@ -17,17 +17,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import com.dataart.android.devicehive.Command;
 import com.dataart.android.devicehive.Notification;
 import com.dataart.btle_android.Fragments.BleDeviceHiveLog;
 import com.dataart.btle_android.Fragments.BleDeviceHiveSettings;
 import com.dataart.btle_android.Fragments.BleDevicesFragment;
-import com.dataart.btle_android.btle_gateway.BTLEGateway;
-import com.dataart.btle_android.btle_gateway.BluetoothServer;
 import com.dataart.btle_android.devicehive.BTLEDeviceHive;
 
 
-public class MainActivity extends Activity implements NavigationDrawerFragment.NavigationDrawerCallbacks, BTLEDeviceHive.CommandListener,
+public class MainActivity extends Activity implements NavigationDrawerFragment.NavigationDrawerCallbacks,
         BTLEDeviceHive.NotificationListener {
 
     public static final int SECTION_DEVICES = 0;
@@ -44,9 +41,8 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
      */
     private CharSequence mTitle;
 
-    //private BluetoothServer bluetoothServerGateway;
     private BTLEDeviceHive deviceHive;
-    private BTLEGateway gateway;
+    //private BTLEGateway gateway;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,7 +53,7 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
          * check BLE is supported on the device
          * */
 
-         if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
             Toast.makeText(this, R.string.error_message_ble_not_supported, Toast.LENGTH_SHORT).show();
             finish();
         }
@@ -71,7 +67,7 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
          * Checks if Bluetooth is supported on the device
          * */
 
-         if (mBluetoothAdapter == null) {
+        if (mBluetoothAdapter == null) {
             Toast.makeText(this, R.string.error_message_ble_not_supported, Toast.LENGTH_SHORT).show();
             finish();
             return;
@@ -81,20 +77,6 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
                 getFragmentManager().findFragmentById(R.id.navigation_drawer);
         mTitle = getTitle();
         mNavigationDrawerFragment.setUp(R.id.navigation_drawer, (DrawerLayout) findViewById(R.id.drawer_layout));
-
-        //bluetoothServerGateway = new BluetoothServer();
-        gateway = new BTLEGateway(new BluetoothServer());
-
-        final BTLEApplication app = (BTLEApplication) getApplication();
-        deviceHive = app.getDevice();
-        deviceHive.addCommandListener(this);
-
-        //deviceHive.addNotificationListener(this);
-        //deviceInfoFragment.setDeviceData(deviceHive.getDeviceData());
-        if (!deviceHive.isRegistered()) {
-            deviceHive.registerDevice();
-        }
-        deviceHive.startProcessingCommands();
     }
 
     @Override
@@ -105,14 +87,6 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
             return;
         }
         super.onActivityResult(requestCode, resultCode, data);
-    }
-
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        deviceHive.removeCommandListener(this);
-        deviceHive.stopProcessingCommands();
     }
 
     @Override
@@ -129,7 +103,7 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
                 fragment = BleDeviceHiveSettings.newInstance(new BleDeviceHiveSettings.SettingsChangesListener() {
                     @Override
                     public void onApiEnpointUrlChanged(String apiEndPointUrl) {
-                        deviceHive.setApiEnpointUrl(apiEndPointUrl);
+                        //FIXME deviceHive.setApiEnpointUrl(apiEndPointUrl);
                     }
                 });
                 break;
@@ -152,7 +126,7 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
                 mTitle = getString(R.string.menu_logs);
                 break;
             case SECTION_DEVICE_HIVE_SETTINGS:
-                mTitle = getString(R.string.menu_setting);
+                mTitle = getString(R.string.menu_gateway);
                 break;
         }
     }
@@ -178,10 +152,10 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
+    /*@Override
     public void onDeviceReceivedCommand(Command command) {
         gateway.doCommand(this, deviceHive, command);
-    }
+    }*/
 
     @Override
     public void onDeviceSentNotification(Notification notification) {

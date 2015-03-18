@@ -3,7 +3,6 @@ package com.dataart.btle_android.btle_gateway;
 /**
  * Created by alrybakov
  */
-
 public class BTLECharacteristic {
 
     public String device;
