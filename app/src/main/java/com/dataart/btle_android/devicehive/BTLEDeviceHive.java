@@ -191,7 +191,7 @@ public class BTLEDeviceHive extends Device {
 
     public static BTLEDeviceHive newInstance(Context context) {
 
-        BTLEDeviceHive device = new BTLEDeviceHive(context);
+        final BTLEDeviceHive device = new BTLEDeviceHive(context);
         device.setDebugLoggingEnabled(true);
 
         final BTLEDevicePreferences prefs = new BTLEDevicePreferences();

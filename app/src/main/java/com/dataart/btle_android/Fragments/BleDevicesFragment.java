@@ -83,10 +83,6 @@ public class BleDevicesFragment extends Fragment {
                 bluetoothServerGateway.scanStop();
                 mScanning = false;
             }
-        /*final Intent intent = new Intent(this, DeviceControlActivity.class);
-        intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_NAME, device.getName());
-        intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_ADDRESS, device.getAddress());
-        startActivity(intent);*/
         }
     };
 

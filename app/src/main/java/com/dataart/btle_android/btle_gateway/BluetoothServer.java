@@ -81,7 +81,6 @@ public class BluetoothServer extends BluetoothGattCallback {
     public void scanStop() {
         Log.d(TAG, "Stop BLE Scan");
         bluetoothAdapter.stopLeScan(leScanCallback);
-        //TODO: send device info
     }
 
     protected void addDevice(final LeScanResult device) {
@@ -100,12 +99,9 @@ public class BluetoothServer extends BluetoothGattCallback {
         List<ParcelUuid> services = null;
         final LeScanResult result = getResultByUDID(mac);
         if (result != null) {
-            //services = result.getScanRecord().getServiceUuids();
-            // TODO will it work?
             final ParcelUuid[] uuid = result.getDevice().getUuids();
             services = Arrays.asList(uuid);
         }
-        //services = result.getScanRecord().getServiceData()
         return services;
     }
 

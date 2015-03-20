@@ -125,9 +125,9 @@ public class BTLEGateway {
                 case UNKNOWN:
                     return;
             }
-        } catch (Throwable thr) {
-            Log.e("TAG", "Error during handling");
-            Notification notification = new Notification("Error", thr.getMessage());
+        } catch (Exception e) {
+            Log.e("TAG", "Error during handling" + e.toString());
+            Notification notification = new Notification("Error", e.toString());
             dh.sendNotification(notification);
         }
     }
