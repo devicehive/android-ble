@@ -1,6 +1,10 @@
 package com.dataart.btle_android.btle_gateway;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
+import android.app.TaskStackBuilder;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
@@ -10,6 +14,8 @@ import android.util.Log;
 
 import com.dataart.android.devicehive.Command;
 import com.dataart.btle_android.BTLEApplication;
+import com.dataart.btle_android.MainActivity;
+import com.dataart.btle_android.R;
 import com.dataart.btle_android.devicehive.BTLEDeviceHive;
 import com.dataart.btle_android.devicehive.BTLEDevicePreferences;
 
@@ -22,15 +28,15 @@ import java.util.concurrent.Executors;
  */
 public class BluetoothLeService extends Service {
 
-    private final static String TAG = BluetoothLeService.class.getSimpleName();
+    private final static int LE_NOTIFICATION_ID = 1;
 
-    public final static String ARG_CANCEL_SERVICE = BluetoothLeService.class.getSimpleName();
+    private final static String TAG = BluetoothLeService.class.getSimpleName();
 
     private final ConcurrentLinkedQueue<Integer> startIdQueue = new ConcurrentLinkedQueue<Integer>();
     private ExecutorService executor;
 
+    private NotificationManager mNotificationManager;
     private BluetoothManager mBluetoothManager;
-    private BluetoothAdapter mBluetoothAdapter;
     private BluetoothServer mBluetoothServer;
 
     private BTLEDeviceHive deviceHive;
@@ -51,7 +57,7 @@ public class BluetoothLeService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.d(TAG, "onCreate");
+        mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         executor = Executors.newCachedThreadPool();
 
         final BTLEApplication app = (BTLEApplication) getApplication();
@@ -63,11 +69,10 @@ public class BluetoothLeService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d(TAG, "onStartCommand");
         startIdQueue.add(startId);
         final LeRunnable leRunnable = new LeRunnable();
         executor.execute(leRunnable);
-        //setNotification();
+        setNotification();
         return START_NOT_STICKY;
     }
 
@@ -76,18 +81,12 @@ public class BluetoothLeService extends Service {
         deviceHive.removeCommandListener(commandListener);
         deviceHive.stopProcessingCommands();
         executor.shutdown();
+        mNotificationManager.cancel(LE_NOTIFICATION_ID);
         super.onDestroy();
-        Log.d(TAG, "onDestroy");
+        Log.d(TAG, "BluetoothLeService was destroyed.");
     }
 
-    /**
-     * Initializes a reference to the local Bluetooth adapter.
-     *
-     * @return Return true if the initialization is successful.
-     */
     public boolean initialize() {
-        // For API level 18 and above, get a reference to BluetoothAdapter through
-        // BluetoothManager.
         if (mBluetoothManager == null) {
             mBluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
             if (mBluetoothManager == null) {
@@ -95,9 +94,7 @@ public class BluetoothLeService extends Service {
                 return false;
             }
         }
-
-        // Checks if Bluetooth is supported on the device
-        mBluetoothAdapter = mBluetoothManager.getAdapter();
+        final BluetoothAdapter mBluetoothAdapter = mBluetoothManager.getAdapter();
         if (mBluetoothAdapter == null) {
             Log.e(TAG, "Unable to obtain a BluetoothAdapter.");
             return false;
@@ -123,30 +120,23 @@ public class BluetoothLeService extends Service {
         return super.onUnbind(intent);
     }
 
-    /*void setNotification() {
-        final NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        final RemoteViews notificationView = new RemoteViews(getPackageName(), R.layout.notification);
-
-        //notificationView.setOnClickPendingIntent();
-
-        final Intent intent = new Intent(this, BluetoothLeService.class);
-        intent.putExtra(BluetoothLeService.ARG_CANCEL_SERVICE, true);
-        //final PendingIntent pendingIntent = PendingIntent.getService()
+    private void setNotification() {
+        final Intent resultIntent = new Intent(this, MainActivity.class);
+        final TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+        stackBuilder.addParentStack(MainActivity.class);
+        stackBuilder.addNextIntent(resultIntent);
+        final PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
 
         final Notification notification = new Notification.Builder(this)
                 .setContentTitle("DeviceHive")
                 .setContentText("Bluetooth LE is working...")
-                .setContent(notificationView)
-                .setSmallIcon(R.drawable.ic_stat_ic_launcher)
+                .setSmallIcon(R.drawable.ic_le_service)
                 .setOngoing(true)
-                        //.setContentIntent(intent)
-                        //.setWhen(System.currentTimeMillis())
-                        //.setAutoCancel(false)
+                .setAutoCancel(true)
+                .setContentIntent(resultPendingIntent)
                 .build();
-        final PendingIntent pIntent = PendingIntent.getActivity(this, 0, intent, 0);
-        mNotificationManager.notify(1, notification);
-    }*/
-
+        mNotificationManager.notify(LE_NOTIFICATION_ID, notification);
+    }
 
     private class LeRunnable implements Runnable {
 
