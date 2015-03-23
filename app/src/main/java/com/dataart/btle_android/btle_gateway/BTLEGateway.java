@@ -2,6 +2,7 @@ package com.dataart.btle_android.btle_gateway;
 
 import android.content.Context;
 import android.os.Handler;
+import android.os.ParcelUuid;
 import android.util.Log;
 
 import com.dataart.android.devicehive.Command;
@@ -11,6 +12,7 @@ import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class BTLEGateway {
 
@@ -48,29 +50,25 @@ public class BTLEGateway {
                     }, BluetoothServer.COMMAND_SCAN_DEALY);
                     break;
                 case GATT_PRIMARY:
-                    final String json = new Gson().toJson(
-                            bluetoothServerGateway.gattPrimary(deviceUUID));
-                    sendNotification(dh, leCommand, json);
+                    bluetoothServerGateway.gattPrimary(deviceUUID, context, new GattCharacteristicCallBack() {
+                        @Override
+                        public void onServices(List<ParcelUuid> uuidList) {
+                            final String json = new Gson().toJson(uuidList);
+                            sendNotification(dh, leCommand, json);
+                        }
+                    });
                     break;
                 case GATT_CHARACTERISTICS:
                     bluetoothServerGateway.gattCharacteristics(deviceUUID, context, new GattCharacteristicCallBack() {
                         @Override
-                        public void characteristicsList(ArrayList<BTLECharacteristic> characteristics) {
+                        public void onCharacteristics(ArrayList<BTLECharacteristic> characteristics) {
                             final String json = new Gson().toJson(characteristics);
                             sendNotification(dh, leCommand, json);
-                        }
-
-                        @Override
-                        public void onRead(byte[] value) {
                         }
                     });
                     break;
                 case GATT_READ:
                     bluetoothServerGateway.gattRead(context, deviceUUID, serviceUUID, characteristicUUID, new GattCharacteristicCallBack() {
-                        @Override
-                        public void characteristicsList(ArrayList<BTLECharacteristic> characteristics) {
-                        }
-
                         @Override
                         public void onRead(byte[] value) {
                             final String sValue = Utils.printHexBinary(value);
@@ -84,10 +82,6 @@ public class BTLEGateway {
                     final byte[] value = Utils.parseHexBinary(sValue);
                     bluetoothServerGateway.gattWrite(context, deviceUUID, serviceUUID, characteristicUUID, value, new GattCharacteristicCallBack() {
                         @Override
-                        public void characteristicsList(ArrayList<BTLECharacteristic> characteristics) {
-                        }
-
-                        @Override
                         public void onWrite(int state) {
                             final String json = new Gson().toJson(state);
                             sendNotification(dh, leCommand, json);
@@ -96,9 +90,6 @@ public class BTLEGateway {
                     break;
                 case GATT_NOTIFICATION:
                     bluetoothServerGateway.gattNotifications(context, deviceUUID, serviceUUID, characteristicUUID, true, new GattCharacteristicCallBack() {
-                        @Override
-                        public void characteristicsList(ArrayList<BTLECharacteristic> characteristics) {
-                        }
 
                         @Override
                         public void onRead(byte[] value) {
@@ -110,9 +101,6 @@ public class BTLEGateway {
                     break;
                 case GATT_NOTIFICATION_STOP:
                     bluetoothServerGateway.gattNotifications(context, deviceUUID, serviceUUID, characteristicUUID, false, new GattCharacteristicCallBack() {
-                        @Override
-                        public void characteristicsList(ArrayList<BTLECharacteristic> characteristics) {
-                        }
 
                         @Override
                         public void onRead(byte[] value) {

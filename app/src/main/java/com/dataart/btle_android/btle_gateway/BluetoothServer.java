@@ -17,7 +17,6 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.Arrays;
 
 /**
  * Created by alrybakov
@@ -95,16 +94,6 @@ public class BluetoothServer extends BluetoothGattCallback {
         Log.d(TAG, "scanRecord " + device.getScanRecord().toString());
     }
 
-    public List<ParcelUuid> gattPrimary(final String mac) {
-        List<ParcelUuid> services = null;
-        final LeScanResult result = getResultByUDID(mac);
-        if (result != null) {
-            final ParcelUuid[] uuid = result.getDevice().getUuids();
-            services = Arrays.asList(uuid);
-        }
-        return services;
-    }
-
     private LeScanResult getResultByUDID(final String mac) {
         LeScanResult result = null;
         for (LeScanResult device : deviceList) {
@@ -141,8 +130,52 @@ public class BluetoothServer extends BluetoothGattCallback {
                             allCharacteristics.add(btleCharacteristic);
                         }
                     }
-                    gattCharacteristicCallBack.characteristicsList(allCharacteristics);
+                    gattCharacteristicCallBack.onCharacteristics(allCharacteristics);
                     gatt.disconnect();
+                }
+            });
+        }
+    }
+
+    public void gattPrimary(final String mac, final Context context, final GattCharacteristicCallBack gattCharacteristicCallBack) {
+        final LeScanResult result = getResultByUDID(mac);
+        final List<ParcelUuid> parcelUuidList = new ArrayList<ParcelUuid>();
+        if (result != null) {
+            final BluetoothGatt gatt = result.getDevice().connectGatt(context, false, new BluetoothGattCallback() {
+
+                @Override
+                public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+                    if (newState == BluetoothProfile.STATE_CONNECTED) {
+                        Log.i(TAG, "Connected to GATT server.");
+                        gatt.discoverServices();
+
+                    } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                        Log.i(TAG, "Disconnected from GATT server.");
+                    }
+                }
+
+                @Override
+                public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+                    if (status == BluetoothGatt.GATT_SUCCESS) {
+                        super.onServicesDiscovered(gatt, status);
+                        final List<BluetoothGattService> services = gatt.getServices();
+                        for (BluetoothGattService service : services) {
+                            parcelUuidList.add(new ParcelUuid(service.getUuid()));
+                        }
+                        gattCharacteristicCallBack.onServices(parcelUuidList);
+                        gatt.disconnect();
+                    }
+                }
+
+                @Override
+                public void onCharacteristicRead(BluetoothGatt gatt,
+                                                 BluetoothGattCharacteristic characteristic,
+                                                 int status) {
+                }
+
+                @Override
+                public void onCharacteristicChanged(BluetoothGatt gatt,
+                                                    BluetoothGattCharacteristic characteristic) {
                 }
             });
         }
