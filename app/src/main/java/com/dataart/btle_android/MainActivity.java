@@ -1,122 +1,252 @@
 package com.dataart.btle_android;
 
-import android.app.ActionBar;
 import android.app.Activity;
-import android.app.Fragment;
-import android.app.FragmentManager;
+import android.app.ActivityManager;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.support.v4.widget.DrawerLayout;
-import android.view.LayoutInflater;
-import android.view.MenuItem;
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
+import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
-import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.dataart.android.devicehive.Notification;
-import com.dataart.btle_android.Fragments.BleDeviceHiveSettings;
-import com.dataart.btle_android.Fragments.BleDevicesFragment;
+import com.dataart.btle_android.btle_gateway.BluetoothLeService;
 import com.dataart.btle_android.devicehive.BTLEDeviceHive;
+import com.dataart.btle_android.devicehive.BTLEDevicePreferences;
 
 
-public class MainActivity extends Activity implements NavigationDrawerFragment.NavigationDrawerCallbacks,
-        BTLEDeviceHive.NotificationListener {
+public class MainActivity extends Activity implements BTLEDeviceHive.NotificationListener {
 
-    public static final int SECTION_GATEWAY = 0;
-    public static final int SECTION_DEVICES = 1;
+    private static final String TAG = MainActivity.class.getName();
 
-    /**
-     * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
-     */
-    private NavigationDrawerFragment mNavigationDrawerFragment;
+    private static final int REQUEST_ENABLE_BT = 1;
 
-    /**
-     * Used to store the last screen title. For use in {@link #restoreActionBar()}.
-     */
-    private CharSequence mTitle;
+    private BluetoothManager mBluetoothManager;
+    private BluetoothAdapter mBluetoothAdapter;
+
+    private EditText serverUrlEditText;
+    private EditText usernameEditText;
+    private EditText passwordEditText;
+    private TextView hintText;
+    private Button serviceButton;
+    private Button restartServiceButton;
+
+    private BTLEDevicePreferences prefs;
+
+    private boolean isServiceStarted;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_settings);
+        getActionBar().setTitle(R.string.app_name);
 
-        /**
-         * check BLE is supported on the device
-         */
-        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-            Toast.makeText(this, R.string.error_message_ble_not_supported, Toast.LENGTH_SHORT).show();
+        if (!isBluetoothLeSupported()) {
+            Toast.makeText(this, R.string.error_message_btle_not_supported, Toast.LENGTH_SHORT).show();
+            finish();
+        }
+        if (!isBluetoothSupported()) {
+            Toast.makeText(this, R.string.error_message_bt_not_supported, Toast.LENGTH_SHORT).show();
             finish();
         }
 
-        mNavigationDrawerFragment = (NavigationDrawerFragment)
-                getFragmentManager().findFragmentById(R.id.navigation_drawer);
-        mTitle = getTitle();
-        mNavigationDrawerFragment.setUp(R.id.navigation_drawer,
-                (DrawerLayout) findViewById(R.id.drawer_layout));
+        prefs = new BTLEDevicePreferences();
+
+        serverUrlEditText = (EditText) findViewById(R.id.server_url_edit);
+        usernameEditText = (EditText) findViewById(R.id.username_edit);
+        passwordEditText = (EditText) findViewById(R.id.password_edit);
+        hintText = (TextView) findViewById(R.id.hintText);
+
+        resetValues();
+
+        serviceButton = (Button) findViewById(R.id.service_button);
+        serviceButton.setOnClickListener(serviceClickListener);
+
+        restartServiceButton = (Button) findViewById(R.id.save_button);
+        restartServiceButton.setOnClickListener(restartClickListener);
+
+        serverUrlEditText.setOnEditorActionListener(changeListener);
+        serverUrlEditText.addTextChangedListener(changeWatcher);
+
+        usernameEditText.setOnEditorActionListener(changeListener);
+        usernameEditText.addTextChangedListener(changeWatcher);
+
+        passwordEditText.setOnEditorActionListener(changeListener);
+        passwordEditText.addTextChangedListener(changeWatcher);
+
+        if (isLeServiceRunning()) {
+            onServiceRunning();
+        }
+    }
+
+    private boolean isBluetoothLeSupported() {
+        return getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE);
+    }
+
+    public boolean isBluetoothSupported() {
+        if (mBluetoothManager == null) {
+            mBluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+            if (mBluetoothManager == null) {
+                Log.e(TAG, "Unable to initialize BluetoothManager");
+                return false;
+            }
+        }
+        mBluetoothAdapter = mBluetoothManager.getAdapter();
+        if (mBluetoothAdapter == null) {
+            Log.e(TAG, "Unable to obtain a BluetoothAdapter");
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // Ensures Bluetooth is enabled on the device.  If Bluetooth is not currently enabled,
+        // fire an intent to display a dialog asking the user to grant permission to enable it.
+        if (!mBluetoothAdapter.isEnabled()) {
+            if (!mBluetoothAdapter.isEnabled()) {
+                final Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+            }
+        }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         // User chose not to enable Bluetooth.
-        if (requestCode == BleDevicesFragment.REQUEST_ENABLE_BT && resultCode == Activity.RESULT_CANCELED) {
+        if (requestCode == REQUEST_ENABLE_BT && resultCode == Activity.RESULT_CANCELED) {
             finish();
             return;
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    @Override
-    public void onNavigationDrawerItemSelected(int position) {
-        Fragment fragment = null;
-        switch (position) {
-            case SECTION_DEVICES:
-                fragment = BleDevicesFragment.newInstance();
-                break;
-            case SECTION_GATEWAY:
-                fragment = BleDeviceHiveSettings.newInstance();
-                break;
-            default:
-                fragment = PlaceholderFragment.newInstance(position + 1);
-                break;
+    private boolean isLeServiceRunning() {
+        final ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (BluetoothLeService.class.getName().equals(service.service.getClassName())) {
+                return true;
+            }
         }
-        final FragmentManager fragmentManager = getFragmentManager();
-        fragmentManager.beginTransaction()
-                .replace(R.id.container, fragment)
-                .commit();
+        return false;
     }
 
-    public void onSectionAttached(int number) {
-        switch (number) {
-            case SECTION_GATEWAY:
-                mTitle = getString(R.string.menu_gateway);
-                break;
-            case SECTION_DEVICES:
-                mTitle = getString(R.string.menu_devices);
-                break;
+    private final View.OnClickListener serviceClickListener = new View.OnClickListener() {
+
+        @Override
+        public void onClick(View v) {
+            if (!isServiceStarted) {
+                saveValues();
+                onServiceRunning();
+                BluetoothLeService.start(MainActivity.this);
+            } else {
+                onServiceStopped();
+                BluetoothLeService.stop(MainActivity.this);
+            }
+        }
+    };
+
+    private void onServiceRunning() {
+        isServiceStarted = true;
+        serviceButton.setText("Stop Service");
+    }
+
+    private void onServiceStopped() {
+        isServiceStarted = false;
+        serviceButton.setText("Start Service");
+    }
+
+    private final View.OnClickListener restartClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            saveValues();
+            BluetoothLeService.stop(MainActivity.this);
+            BluetoothLeService.start(MainActivity.this);
+            restartServiceButton.setVisibility(View.GONE);
+            hintText.setVisibility(View.GONE);
+        }
+    };
+
+    private boolean isRestartRequired() {
+        final String newUrl = serverUrlEditText.getText().toString();
+        final String newUserName = usernameEditText.getText().toString();
+        final String newPassword = passwordEditText.getText().toString();
+        return !(prefs.getServerUrl().equals(newUrl) &&
+                prefs.getUsername().equals(newUserName) &&
+                prefs.getPassword().equals(newPassword));
+    }
+
+    private void onDataChanged() {
+        if (isServiceStarted && isRestartRequired()) {
+            hintText.setVisibility(View.VISIBLE);
+            restartServiceButton.setVisibility(View.VISIBLE);
+            serviceButton.setVisibility(View.GONE);
+        } else {
+            hintText.setVisibility(View.GONE);
+            restartServiceButton.setVisibility(View.GONE);
+            serviceButton.setVisibility(View.VISIBLE);
         }
     }
 
-    public void restoreActionBar() {
-        final ActionBar actionBar = getActionBar();
-        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
-        actionBar.setDisplayShowTitleEnabled(true);
-        actionBar.setTitle(mTitle);
+    private void resetValues() {
+        serverUrlEditText.setText(prefs.getServerUrl());
+        usernameEditText.setText(prefs.getUsername());
+        passwordEditText.setText(prefs.getPassword());
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+    private void saveValues() {
+        final String serverUrl = serverUrlEditText.getText().toString();
+        final String username = usernameEditText.getText().toString();
+        final String password = passwordEditText.getText().toString();
+        if (TextUtils.isEmpty(serverUrl)) {
+            serverUrlEditText.setError(getString(R.string.error_message_empty_server_url));
+        } else if (TextUtils.isEmpty(username)) {
+            usernameEditText.setError(getString(R.string.error_message_empty_username));
+        } else if (TextUtils.isEmpty(password)) {
+            passwordEditText.setError(getString(R.string.error_message_empty_password));
+        } else {
+            prefs.setCredentialsSync(username, password);
+            prefs.setServerUrlSync(serverUrl);
         }
-        return super.onOptionsItemSelected(item);
     }
+
+    private final TextView.OnEditorActionListener changeListener = new TextView.OnEditorActionListener() {
+        @Override
+        public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
+            if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT) {
+                onDataChanged();
+            }
+            return false;
+        }
+    };
+
+    private final TextWatcher changeWatcher = new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+        }
+
+        @Override
+        public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+        }
+
+        @Override
+        public void afterTextChanged(Editable editable) {
+            onDataChanged();
+        }
+    };
 
     @Override
     public void onDeviceSentNotification(Notification notification) {
@@ -126,46 +256,6 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
     @Override
     public void onDeviceFailedToSendNotification(Notification notification) {
 
-    }
-
-    /**
-     * A placeholder fragment containing a simple view.
-     */
-    public static class PlaceholderFragment extends Fragment {
-        /**
-         * The fragment argument representing the section number for this
-         * fragment.
-         */
-        private static final String ARG_SECTION_NUMBER = "section_number";
-
-        /**
-         * Returns a new instance of this fragment for the given section
-         * number.
-         */
-        public static PlaceholderFragment newInstance(int sectionNumber) {
-            final PlaceholderFragment fragment = new PlaceholderFragment();
-            final Bundle args = new Bundle();
-            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
-            fragment.setArguments(args);
-            return fragment;
-        }
-
-        public PlaceholderFragment() {
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            final View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            return rootView;
-        }
-
-        @Override
-        public void onAttach(Activity activity) {
-            super.onAttach(activity);
-            ((MainActivity) activity).onSectionAttached(
-                    getArguments().getInt(ARG_SECTION_NUMBER));
-        }
     }
 
 }

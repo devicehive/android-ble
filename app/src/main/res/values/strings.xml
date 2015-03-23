@@ -1,12 +1,12 @@
 <resources>
-    <string name="app_name">btle_android</string>
+    <string name="app_name">Bluetooth LE Android</string>
 
     <string name="menu_devices">BLE Devices</string>
     <string name="menu_gateway">Gateway</string>
     <string name="menu_logs">DeviceHive Log</string>
 
-    <string name="error_message_ble_not_supported">BLE is not supported</string>
-    <string name="error_message_bluetooth_not_supported">Bluetooth not supported</string>
+    <string name="error_message_btle_not_supported">Bluetooth LE is not supported</string>
+    <string name="error_message_bt_not_supported">Bluetooth not supported</string>
     <string name="error_message_empty_server_url">Server URL is required</string>
     <string name="error_message_empty_username">Username is required</string>
     <string name="error_message_empty_password">Password is required</string>
