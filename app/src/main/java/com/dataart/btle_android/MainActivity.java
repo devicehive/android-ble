@@ -50,7 +50,9 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
-        getActionBar().setTitle(R.string.app_name);
+        if (getActionBar()!=null) {
+            getActionBar().setTitle(R.string.app_name);
+        }
 
         if (!isBluetoothLeSupported()) {
             Toast.makeText(this, R.string.error_message_btle_not_supported, Toast.LENGTH_SHORT).show();
