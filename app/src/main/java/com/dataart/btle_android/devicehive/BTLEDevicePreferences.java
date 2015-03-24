@@ -13,6 +13,9 @@ public class BTLEDevicePreferences {
     private final static String KEY_SERVER_URL = NAMESPACE
             .concat(".KEY_SERVER_URL");
 
+    private final static String KEY_GATEWAY_ID = NAMESPACE
+            .concat(".KEY_GATEWAY_ID");
+
     private final static String KEY_USERNAME = NAMESPACE
             .concat(".KEY_USERNAME");
 
@@ -35,9 +38,19 @@ public class BTLEDevicePreferences {
         return preferences.getString(KEY_SERVER_URL, null);
     }
 
+    public String getGatewayId() {
+        return preferences.getString(KEY_GATEWAY_ID, null);
+    }
+
     public void setServerUrlSync(String serverUrl) {
-        SharedPreferences.Editor editor = preferences.edit();
+        final SharedPreferences.Editor editor = preferences.edit();
         editor.putString(KEY_SERVER_URL, serverUrl);
+        editor.commit();
+    }
+
+    public void setGatewayIdSync(String gatewayId) {
+        final SharedPreferences.Editor editor = preferences.edit();
+        editor.putString(KEY_GATEWAY_ID, gatewayId);
         editor.commit();
     }
 
@@ -50,7 +63,7 @@ public class BTLEDevicePreferences {
     }
 
     public void setCredentialsSync(String username, String password) {
-        SharedPreferences.Editor editor = preferences.edit();
+        final SharedPreferences.Editor editor = preferences.edit();
         editor.putString(KEY_USERNAME, username);
         editor.putString(KEY_PASSWORD, password);
         editor.commit();

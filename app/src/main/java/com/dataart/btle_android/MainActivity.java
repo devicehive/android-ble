@@ -36,6 +36,7 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
     private BluetoothAdapter mBluetoothAdapter;
 
     private EditText serverUrlEditText;
+    private EditText gatewayIdEditText;
     private EditText usernameEditText;
     private EditText passwordEditText;
     private TextView hintText;
@@ -50,7 +51,7 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
-        if (getActionBar()!=null) {
+        if (getActionBar() != null) {
             getActionBar().setTitle(R.string.app_name);
         }
 
@@ -66,6 +67,7 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
         prefs = new BTLEDevicePreferences();
 
         serverUrlEditText = (EditText) findViewById(R.id.server_url_edit);
+        gatewayIdEditText = (EditText) findViewById(R.id.settings_gateway_id);
         usernameEditText = (EditText) findViewById(R.id.username_edit);
         passwordEditText = (EditText) findViewById(R.id.password_edit);
         hintText = (TextView) findViewById(R.id.hintText);
@@ -80,6 +82,9 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
 
         serverUrlEditText.setOnEditorActionListener(changeListener);
         serverUrlEditText.addTextChangedListener(changeWatcher);
+
+        gatewayIdEditText.setOnEditorActionListener(changeListener);
+        gatewayIdEditText.addTextChangedListener(changeWatcher);
 
         usernameEditText.setOnEditorActionListener(changeListener);
         usernameEditText.addTextChangedListener(changeWatcher);
@@ -163,12 +168,12 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
 
     private void onServiceRunning() {
         isServiceStarted = true;
-        serviceButton.setText("Stop Service");
+        serviceButton.setText(R.string.button_stop);
     }
 
     private void onServiceStopped() {
         isServiceStarted = false;
-        serviceButton.setText("Start Service");
+        serviceButton.setText(R.string.button_start);
     }
 
     private final View.OnClickListener restartClickListener = new View.OnClickListener() {
@@ -184,9 +189,11 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
 
     private boolean isRestartRequired() {
         final String newUrl = serverUrlEditText.getText().toString();
+        final String newGatewayId = gatewayIdEditText.getText().toString();
         final String newUserName = usernameEditText.getText().toString();
         final String newPassword = passwordEditText.getText().toString();
         return !(prefs.getServerUrl().equals(newUrl) &&
+                prefs.getGatewayId().equals(newGatewayId) &&
                 prefs.getUsername().equals(newUserName) &&
                 prefs.getPassword().equals(newPassword));
     }
@@ -205,16 +212,21 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
 
     private void resetValues() {
         serverUrlEditText.setText(prefs.getServerUrl());
+        gatewayIdEditText.setText(TextUtils.isEmpty(prefs.getGatewayId()) ?
+                getString(R.string.default_gateway_id) : prefs.getGatewayId());
         usernameEditText.setText(prefs.getUsername());
         passwordEditText.setText(prefs.getPassword());
     }
 
     private void saveValues() {
         final String serverUrl = serverUrlEditText.getText().toString();
+        final String gatewayId = gatewayIdEditText.getText().toString();
         final String username = usernameEditText.getText().toString();
         final String password = passwordEditText.getText().toString();
         if (TextUtils.isEmpty(serverUrl)) {
             serverUrlEditText.setError(getString(R.string.error_message_empty_server_url));
+        } else if (TextUtils.isEmpty(gatewayId)) {
+            gatewayIdEditText.setError(getString(R.string.error_message_empty_gateway_id));
         } else if (TextUtils.isEmpty(username)) {
             usernameEditText.setError(getString(R.string.error_message_empty_username));
         } else if (TextUtils.isEmpty(password)) {
@@ -222,6 +234,7 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
         } else {
             prefs.setCredentialsSync(username, password);
             prefs.setServerUrlSync(serverUrl);
+            prefs.setGatewayIdSync(serverUrl);
         }
     }
 

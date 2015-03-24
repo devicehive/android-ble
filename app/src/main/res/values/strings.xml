@@ -1,13 +1,25 @@
 <resources>
-    <string name="app_name">Bluetooth LE Android</string>
+    <string name="app_name">DeviceHive BLE Gateway</string>
 
     <string name="menu_devices">BLE Devices</string>
     <string name="menu_gateway">Gateway</string>
-    <string name="menu_logs">DeviceHive Log</string>
+
+    <string name="settings_server_url">Server URL</string>
+    <string name="settings_gateway_id">Gateway ID</string>
+    <string name="settings_username">Username</string>
+    <string name="settings_password">Password</string>
+    <string name="settings_restart_hint">You have to restart the service in order to apply new parameters</string>
+
+    <string name="button_restart">Restart</string>
+    <string name="button_start">Start service</string>
+    <string name="button_stop">Stop service</string>
+
+    <string name="default_gateway_id">devicehive_ble_andoid</string>
 
     <string name="error_message_btle_not_supported">Bluetooth LE is not supported</string>
     <string name="error_message_bt_not_supported">Bluetooth not supported</string>
     <string name="error_message_empty_server_url">Server URL is required</string>
+    <string name="error_message_empty_gateway_id">Gateway ID is required</string>
     <string name="error_message_empty_username">Username is required</string>
     <string name="error_message_empty_password">Password is required</string>
 
