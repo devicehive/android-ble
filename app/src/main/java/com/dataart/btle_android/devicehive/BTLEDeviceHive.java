@@ -1,6 +1,7 @@
 package com.dataart.btle_android.devicehive;
 
 import android.content.Context;
+import android.os.Build;
 import android.util.Log;
 
 import com.dataart.android.devicehive.Command;
@@ -45,21 +46,22 @@ public class BTLEDeviceHive extends Device {
     }
 
     private static DeviceData getTestDeviceData() {
-
-        final Network network = new Network(
-                "AndroidBTLE",
-                "");
-
-        final DeviceClass deviceClass = new DeviceClass(
-                "AndroidBTLE Device", "1.0");
+        final Network network = new Network("AndroidBTLE", "");
+        final DeviceClass deviceClass = new DeviceClass("AndroidBTLE Device", "1.0");
 
         final DeviceData deviceData = new DeviceData(
-                "3108c680-a319-4f94-867d-1b8bfecf05c6",
+                new BTLEDevicePreferences().getGatewayId(),
                 "582c2008-cbb6-4b1a-8cf1-7cec1388db9f",
-                "Android Bluetooth LE framework",
+                getDeviceName(),
                 DeviceData.DEVICE_STATUS_ONLINE, network, deviceClass);
 
         return deviceData;
+    }
+
+    public static String getDeviceName() {
+        final String manufacturer = Build.MANUFACTURER;
+        final String model = Build.MODEL;
+        return model.startsWith(manufacturer) ? model : manufacturer + " " + model;
     }
 
     @Override
@@ -202,7 +204,6 @@ public class BTLEDeviceHive extends Device {
             prefs.setServerUrlSync(serverUrl);
         }
         device.setApiEnpointUrl(serverUrl);
-
         return device;
     }
 

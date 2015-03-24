@@ -183,6 +183,8 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
             BluetoothLeService.stop(MainActivity.this);
             BluetoothLeService.start(MainActivity.this);
             restartServiceButton.setVisibility(View.GONE);
+            serviceButton.setVisibility(View.VISIBLE);
+            onServiceRunning();
             hintText.setVisibility(View.GONE);
         }
     };
@@ -234,7 +236,7 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
         } else {
             prefs.setCredentialsSync(username, password);
             prefs.setServerUrlSync(serverUrl);
-            prefs.setGatewayIdSync(serverUrl);
+            prefs.setGatewayIdSync(gatewayId);
         }
     }
 

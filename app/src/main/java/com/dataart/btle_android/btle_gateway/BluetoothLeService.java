@@ -11,7 +11,6 @@ import android.os.IBinder;
 import android.util.Log;
 
 import com.dataart.android.devicehive.Command;
-import com.dataart.btle_android.BTLEApplication;
 import com.dataart.btle_android.MainActivity;
 import com.dataart.btle_android.R;
 import com.dataart.btle_android.devicehive.BTLEDeviceHive;
@@ -49,8 +48,8 @@ public class BluetoothLeService extends Service {
         super.onCreate();
         mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        final BTLEApplication app = (BTLEApplication) getApplication();
-        deviceHive = app.getDevice();
+        //final BTLEApplication app = (BTLEApplication) getApplication();
+        deviceHive = BTLEDeviceHive.newInstance(this);//app.getDevice();
 
         mBluetoothServer = new BluetoothServer();
         gateway = new BTLEGateway(mBluetoothServer);
