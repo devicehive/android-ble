@@ -1,14 +1,18 @@
 package com.dataart.btle_android.btle_gateway;
 
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.app.TaskStackBuilder;
+import android.bluetooth.BluetoothAdapter;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.IBinder;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.dataart.android.devicehive.Command;
 import com.dataart.btle_android.MainActivity;
@@ -26,10 +30,11 @@ public class BluetoothLeService extends Service {
     private final static String TAG = BluetoothLeService.class.getSimpleName();
 
     private NotificationManager mNotificationManager;
+    private NotificationCompat.Builder mBuilder;
+    private BroadcastReceiver mReceiver;
     private BluetoothServer mBluetoothServer;
-
-    private BTLEDeviceHive deviceHive;
-    private BTLEGateway gateway;
+    private BTLEDeviceHive mDeviceHive;
+    private BTLEGateway mGateway;
 
     public BluetoothLeService() {
         super();
@@ -47,12 +52,10 @@ public class BluetoothLeService extends Service {
     public void onCreate() {
         super.onCreate();
         mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-        //final BTLEApplication app = (BTLEApplication) getApplication();
-        deviceHive = BTLEDeviceHive.newInstance(this);//app.getDevice();
-
+        mDeviceHive = BTLEDeviceHive.newInstance(this);
         mBluetoothServer = new BluetoothServer();
-        gateway = new BTLEGateway(mBluetoothServer);
+        mGateway = new BTLEGateway(mBluetoothServer);
+        registerReceiver(getBtStateReceiver(), new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
     }
 
     @Override
@@ -60,22 +63,25 @@ public class BluetoothLeService extends Service {
         mBluetoothServer.scanStart(BluetoothLeService.this);
 
         final BTLEDevicePreferences prefs = new BTLEDevicePreferences();
-        deviceHive.setApiEnpointUrl(prefs.getServerUrl());
+        mDeviceHive.setApiEnpointUrl(prefs.getServerUrl());
 
-        deviceHive.addCommandListener(commandListener);
-        if (!deviceHive.isRegistered()) {
-            deviceHive.registerDevice();
+        mDeviceHive.addCommandListener(commandListener);
+        if (!mDeviceHive.isRegistered()) {
+            mDeviceHive.registerDevice();
         }
-        deviceHive.startProcessingCommands();
+        mDeviceHive.startProcessingCommands();
         setNotification();
         return START_NOT_STICKY;
     }
 
     @Override
     public void onDestroy() {
-        deviceHive.removeCommandListener(commandListener);
-        deviceHive.stopProcessingCommands();
+        mDeviceHive.removeCommandListener(commandListener);
+        mDeviceHive.stopProcessingCommands();
         mNotificationManager.cancel(LE_NOTIFICATION_ID);
+        if (mReceiver != null) {
+            unregisterReceiver(mReceiver);
+        }
         super.onDestroy();
         Log.d(TAG, "BluetoothLeService was destroyed");
     }
@@ -84,7 +90,7 @@ public class BluetoothLeService extends Service {
         @Override
         public void onDeviceReceivedCommand(Command command) {
             Log.d(TAG, "Device received Command in BluetoothLeService");
-            gateway.doCommand(getApplicationContext(), deviceHive, command);
+            mGateway.doCommand(getApplicationContext(), mDeviceHive, command);
         }
     };
 
@@ -98,6 +104,30 @@ public class BluetoothLeService extends Service {
         return super.onUnbind(intent);
     }
 
+    private void notifyNewState(final String text) {
+        mBuilder.setContentText(text);
+        mNotificationManager.notify(LE_NOTIFICATION_ID, mBuilder.build());
+    }
+
+    private BroadcastReceiver getBtStateReceiver() {
+        if (mReceiver == null) {
+            mReceiver = new BluetoothStateReceiver() {
+                @Override
+                protected void onBluetoothOff() {
+                    notifyNewState(getString(R.string.notification_bt_off));
+                    Toast.makeText(BluetoothLeService.this, getString(R.string.notification_bt_off),
+                            Toast.LENGTH_LONG).show();
+                }
+
+                @Override
+                protected void onBluetoothOn() {
+                    notifyNewState(getString(R.string.notification_bt_on));
+                }
+            };
+        }
+        return mReceiver;
+    }
+
     private void setNotification() {
         final Intent resultIntent = new Intent(this, MainActivity.class);
         final TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
@@ -105,15 +135,15 @@ public class BluetoothLeService extends Service {
         stackBuilder.addNextIntent(resultIntent);
         final PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        final Notification notification = new Notification.Builder(this)
-                .setContentTitle("DeviceHive")
-                .setContentText("Bluetooth LE is working...")
+        mBuilder = new NotificationCompat.Builder(this)
+                .setContentText(getString(R.string.notification_bt_on))
+                .setContentTitle(getString(R.string.device_hive))
                 .setSmallIcon(R.drawable.ic_le_service)
-                .setOngoing(true)
                 .setAutoCancel(false)
-                .setContentIntent(resultPendingIntent)
-                .build();
-        mNotificationManager.notify(LE_NOTIFICATION_ID, notification);
+                .setOngoing(true)
+                .setContentIntent(resultPendingIntent);
+
+        mNotificationManager.notify(LE_NOTIFICATION_ID, mBuilder.build());
     }
 
 }
