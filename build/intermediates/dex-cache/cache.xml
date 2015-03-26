@@ -2,32 +2,11 @@
 <items version="2" >
 
     <item
-        jar="/Users/alrybakov/.gradle/caches/modules-2/files-2.1/com.google.code.gson/gson/2.3/5fc52c41ef0239d1093a1eb7c3697036183677ce/gson-2.3.jar"
+        jar="/Users/mars/.gradle/caches/modules-2/files-2.1/com.jakewharton.timber/timber/2.7.1/8fa5f11686c7a44386b41a6890e655cf2b7d5e70/timber-2.7.1.jar"
         jumboMode="false"
         revision="21.1.2"
-        sha1="5fc52c41ef0239d1093a1eb7c3697036183677ce">
-        <dex dex="/Users/alrybakov/Work/android-btle4.3/app/build/intermediates/pre-dexed/debug/gson-2.3-3dc29b888350f5ab138d87bb6ad297b128419e5c.jar" />
-    </item>
-    <item
-        jar="/Users/alrybakov/android-sdk-macosx/extras/android/m2repository/com/android/support/support-annotations/21.0.3/support-annotations-21.0.3.jar"
-        jumboMode="false"
-        revision="21.1.2"
-        sha1="4b74cefe1f0c1b819e7260c8627a14674e37fd35">
-        <dex dex="/Users/alrybakov/Work/android-btle4.3/app/build/intermediates/pre-dexed/debug/support-annotations-21.0.3-2e0881a9d9b8c8223bc460d4d7d8b57b2fc40eff.jar" />
-    </item>
-    <item
-        jar="/Users/alrybakov/Work/android-btle4.3/app/build/intermediates/exploded-aar/com.android.support/support-v4/21.0.3/classes.jar"
-        jumboMode="false"
-        revision="21.1.2"
-        sha1="2c91c949a45a21cdecf26e03951e46c7beec9ad8">
-        <dex dex="/Users/alrybakov/Work/android-btle4.3/app/build/intermediates/pre-dexed/debug/classes-738dae20b0ba26f4ed403d51b7f681c2c3cb8cad.jar" />
-    </item>
-    <item
-        jar="/Users/alrybakov/Work/android-btle4.3/app/build/intermediates/exploded-aar/com.android.support/support-v4/21.0.3/libs/internal_impl-21.0.3.jar"
-        jumboMode="false"
-        revision="21.1.2"
-        sha1="01ec05bfbafcc07646ba813000bf2ef11742dd03">
-        <dex dex="/Users/alrybakov/Work/android-btle4.3/app/build/intermediates/pre-dexed/debug/internal_impl-21.0.3-0f39e4be163bb082217327d17d6f0711e4ea1222.jar" />
+        sha1="8fa5f11686c7a44386b41a6890e655cf2b7d5e70">
+        <dex dex="/Users/mars/projects/android/devicehive-android/app/build/intermediates/pre-dexed/debug/timber-2.7.1-e77f428b81df719eb13d07b39a574a66a6b06a5e.jar" />
     </item>
 
 </items>

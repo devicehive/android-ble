@@ -75,6 +75,7 @@
 
         <EditText
             android:id="@+id/password_edit"
+            android:password="true"
             style="@style/SingleLineEditText" />
     </LinearLayout>
 

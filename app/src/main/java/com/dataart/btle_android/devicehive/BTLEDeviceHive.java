@@ -47,15 +47,13 @@ public class BTLEDeviceHive extends Device {
 
     private static DeviceData getTestDeviceData() {
         final Network network = new Network("AndroidBTLE", "");
-        final DeviceClass deviceClass = new DeviceClass("AndroidBTLE Device", "1.0");
+        final DeviceClass deviceClass = new DeviceClass("C.Mars Nexus5", "1.0");//AndroidBTLE Device", "1.0");
 
-        final DeviceData deviceData = new DeviceData(
+        return new DeviceData(
                 new BTLEDevicePreferences().getGatewayId(),
                 "582c2008-cbb6-4b1a-8cf1-7cec1388db9f",
                 getDeviceName(),
                 DeviceData.DEVICE_STATUS_ONLINE, network, deviceClass);
-
-        return deviceData;
     }
 
     public static String getDeviceName() {
@@ -100,19 +98,20 @@ public class BTLEDeviceHive extends Device {
         commandListeners.remove(listener);
     }
 
-    public void addNotificationListener(NotificationListener listener) {
-        notificationListeners.add(listener);
-    }
-
-    public void removeNotificationListener(NotificationListener listener) {
-        notificationListeners.remove(listener);
-    }
-
-    public void removeListener(Object listener) {
-        registrationListeners.remove(listener);
-        commandListeners.remove(listener);
-        notificationListeners.remove(listener);
-    }
+//    FIXME: unused
+//    public void addNotificationListener(NotificationListener listener) {
+//        notificationListeners.add(listener);
+//    }
+//
+//    public void removeNotificationListener(NotificationListener listener) {
+//        notificationListeners.remove(listener);
+//    }
+//
+//    public void removeListener(Object listener) {
+//        registrationListeners.remove(listener);
+//        commandListeners.remove(listener);
+//        notificationListeners.remove(listener);
+//    }
 
     @Override
     protected void onStartRegistration() {

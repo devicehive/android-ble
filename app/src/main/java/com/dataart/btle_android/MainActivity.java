@@ -27,6 +27,8 @@ import com.dataart.btle_android.btle_gateway.BluetoothLeService;
 import com.dataart.btle_android.devicehive.BTLEDeviceHive;
 import com.dataart.btle_android.devicehive.BTLEDevicePreferences;
 
+import timber.log.Timber;
+
 
 public class MainActivity extends Activity implements BTLEDeviceHive.NotificationListener {
 
@@ -53,6 +55,8 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
+        Timber.plant(new Timber.DebugTree());
+
         if (getActionBar() != null) {
             getActionBar().setTitle(R.string.app_name);
         }

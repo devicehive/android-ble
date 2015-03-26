@@ -26,7 +26,10 @@ public class BTLEGateway {
         try {
             final String name = command.getCommand();
             final LeCommand leCommand = LeCommand.fromName(name);
+
+            @SuppressWarnings("unchecked")
             final HashMap<String, Object> params = (HashMap<String, Object>) command.getParameters();
+
             final String deviceUUID = (params != null) ? (String) params.get("device") : null;
             final String serviceUUID = (params != null) ? (String) params.get("serviceUUID") : null;
             final String characteristicUUID = (params != null) ? (String) params.get("characteristicUUID") : null;
@@ -78,7 +81,7 @@ public class BTLEGateway {
                     });
                     break;
                 case GATT_WRITE:
-                    final String sValue = (String) params.get("value");
+                    final String sValue = (String) (params!=null ? params.get("value") : null);
                     final byte[] value = Utils.parseHexBinary(sValue);
                     bluetoothServerGateway.gattWrite(context, deviceUUID, serviceUUID, characteristicUUID, value, new GattCharacteristicCallBack() {
                         @Override
@@ -110,8 +113,9 @@ public class BTLEGateway {
                         }
                     });
                     break;
-                case UNKNOWN:
-                    return;
+//                FIXME: unused
+//                case UNKNOWN:
+//                    return;
             }
         } catch (Exception e) {
             Log.e("TAG", "Error during handling" + e.toString());
@@ -146,6 +150,8 @@ public class BTLEGateway {
         GATT_WRITE("gatt/write"),
         GATT_NOTIFICATION("gatt/notifications"),
         GATT_NOTIFICATION_STOP("gatt/notifications/stop"),
+        GATT_CONNECT("gatt/connect"),
+        GATT_DISCONNECT("gatt/disconnect"),
         UNKNOWN("unknown");
 
         private final String command;
