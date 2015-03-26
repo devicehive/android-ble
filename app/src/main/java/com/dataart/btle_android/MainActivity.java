@@ -4,8 +4,10 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.Editable;
@@ -95,7 +97,20 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
         if (isLeServiceRunning()) {
             onServiceRunning();
         }
+
+        registerReceiver(mReceiver, new IntentFilter(BluetoothLeService.ACTION_BT_PERMISSION_REQUEST));
     }
+
+    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+            if (BluetoothLeService.ACTION_BT_PERMISSION_REQUEST.equals(action)) {
+                requestEnableBluetooth();
+            }
+        }
+    };
 
     private boolean isBluetoothLeSupported() {
         return getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE);
@@ -117,6 +132,11 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
         return true;
     }
 
+    private void requestEnableBluetooth() {
+        final Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+        startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -124,10 +144,7 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
         // Ensures Bluetooth is enabled on the device.  If Bluetooth is not currently enabled,
         // fire an intent to display a dialog asking the user to grant permission to enable it.
         if (!mBluetoothAdapter.isEnabled()) {
-            if (!mBluetoothAdapter.isEnabled()) {
-                final Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-            }
+            requestEnableBluetooth();
         }
     }
 
@@ -135,10 +152,21 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         // User chose not to enable Bluetooth.
         if (requestCode == REQUEST_ENABLE_BT && resultCode == Activity.RESULT_CANCELED) {
+            if (isServiceStarted) {
+                BluetoothLeService.stop(this);
+            }
             finish();
             return;
         }
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (mReceiver != null) {
+            unregisterReceiver(mReceiver);
+        }
+        super.onDestroy();
     }
 
     private boolean isLeServiceRunning() {

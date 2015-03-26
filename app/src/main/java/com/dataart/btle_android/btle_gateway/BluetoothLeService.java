@@ -5,6 +5,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.app.TaskStackBuilder;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -15,6 +16,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.dataart.android.devicehive.Command;
+import com.dataart.android.devicehive.network.DeviceHiveApiService;
 import com.dataart.btle_android.MainActivity;
 import com.dataart.btle_android.R;
 import com.dataart.btle_android.devicehive.BTLEDeviceHive;
@@ -25,13 +27,17 @@ import com.dataart.btle_android.devicehive.BTLEDevicePreferences;
  */
 public class BluetoothLeService extends Service {
 
-    private final static int LE_NOTIFICATION_ID = 1;
-
     private final static String TAG = BluetoothLeService.class.getSimpleName();
+
+    public final static String ACTION_BT_PERMISSION_REQUEST = TAG
+            .concat("ACTION_BT_PERMISSION_REQUEST");
+
+    private final static int LE_NOTIFICATION_ID = 1;
 
     private NotificationManager mNotificationManager;
     private NotificationCompat.Builder mBuilder;
     private BroadcastReceiver mReceiver;
+    private BluetoothAdapter mBluetoothAdapter;
     private BluetoothServer mBluetoothServer;
     private BTLEDeviceHive mDeviceHive;
     private BTLEGateway mGateway;
@@ -51,6 +57,11 @@ public class BluetoothLeService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        final BluetoothManager mBluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+        mBluetoothAdapter = mBluetoothManager.getAdapter();
+        if (!mBluetoothAdapter.isEnabled()) {
+            send(ACTION_BT_PERMISSION_REQUEST);
+        }
         mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         mDeviceHive = BTLEDeviceHive.newInstance(this);
         mBluetoothServer = new BluetoothServer();
@@ -60,7 +71,9 @@ public class BluetoothLeService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        mBluetoothServer.scanStart(BluetoothLeService.this);
+        if (mBluetoothAdapter.isEnabled()) {
+            mBluetoothServer.scanStart(BluetoothLeService.this);
+        }
 
         final BTLEDevicePreferences prefs = new BTLEDevicePreferences();
         mDeviceHive.setApiEnpointUrl(prefs.getServerUrl());
@@ -78,10 +91,11 @@ public class BluetoothLeService extends Service {
     public void onDestroy() {
         mDeviceHive.removeCommandListener(commandListener);
         mDeviceHive.stopProcessingCommands();
-        mNotificationManager.cancel(LE_NOTIFICATION_ID);
+        stopService(new Intent(this, DeviceHiveApiService.class));
         if (mReceiver != null) {
             unregisterReceiver(mReceiver);
         }
+        mNotificationManager.cancel(LE_NOTIFICATION_ID);
         super.onDestroy();
         Log.d(TAG, "BluetoothLeService was destroyed");
     }
@@ -121,11 +135,17 @@ public class BluetoothLeService extends Service {
 
                 @Override
                 protected void onBluetoothOn() {
+                    mBluetoothServer.scanStart(BluetoothLeService.this);
                     notifyNewState(getString(R.string.notification_bt_on));
                 }
             };
         }
         return mReceiver;
+    }
+
+    private void send(final String action) {
+        final Intent intent = new Intent(action);
+        sendBroadcast(intent);
     }
 
     private void setNotification() {
