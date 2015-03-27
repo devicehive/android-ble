@@ -14,13 +14,13 @@ import java.util.UUID;
  * Created by Constantine Mars on 3/26/15.
  * base callback implementation. use CharacteristicOperation for custom operation with characteristic
  */
-public class GattBaseCallback extends BluetoothGattCallback {
+public class BaseGattCallback extends BluetoothGattCallback {
     protected GattCharacteristicCallBack gattCharacteristicCallBack;
     protected String serviceUUID;
     protected String characteristicUUID;
     private CharacteristicOperation action;
 
-    public GattBaseCallback(GattCharacteristicCallBack gattCharacteristicCallBack, String serviceUUID, String characteristicUUID, CharacteristicOperation action) {
+    public BaseGattCallback(GattCharacteristicCallBack gattCharacteristicCallBack, String serviceUUID, String characteristicUUID, CharacteristicOperation action) {
         this.gattCharacteristicCallBack = gattCharacteristicCallBack;
         this.serviceUUID = serviceUUID;
         this.characteristicUUID = characteristicUUID;

@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import timber.log.Timber;
+
 public class BTLEGateway {
 
     private BluetoothServer bluetoothServerGateway;
@@ -30,7 +32,7 @@ public class BTLEGateway {
             @SuppressWarnings("unchecked")
             final HashMap<String, Object> params = (HashMap<String, Object>) command.getParameters();
 
-            final String deviceUUID = (params != null) ? (String) params.get("device") : null;
+            final String address = (params != null) ? (String) params.get("device") : null;
             final String serviceUUID = (params != null) ? (String) params.get("serviceUUID") : null;
             final String characteristicUUID = (params != null) ? (String) params.get("characteristicUUID") : null;
 
@@ -52,8 +54,12 @@ public class BTLEGateway {
                         }
                     }, BluetoothServer.COMMAND_SCAN_DEALY);
                     break;
+                case GATT_CONNECT:
+                    Timber.d("connecting to "+address);
+                    bluetoothServerGateway.gattConnect(address);
+                    break;
                 case GATT_PRIMARY:
-                    bluetoothServerGateway.gattPrimary(deviceUUID, context, new GattCharacteristicCallBack() {
+                    bluetoothServerGateway.gattPrimary(address, context, new GattCharacteristicCallBack() {
                         @Override
                         public void onServices(List<ParcelUuid> uuidList) {
                             final String json = new Gson().toJson(uuidList);
@@ -62,7 +68,7 @@ public class BTLEGateway {
                     });
                     break;
                 case GATT_CHARACTERISTICS:
-                    bluetoothServerGateway.gattCharacteristics(deviceUUID, context, new GattCharacteristicCallBack() {
+                    bluetoothServerGateway.gattCharacteristics(address, context, new GattCharacteristicCallBack() {
                         @Override
                         public void onCharacteristics(ArrayList<BTLECharacteristic> characteristics) {
                             final String json = new Gson().toJson(characteristics);
@@ -71,7 +77,7 @@ public class BTLEGateway {
                     });
                     break;
                 case GATT_READ:
-                    bluetoothServerGateway.gattRead(context, deviceUUID, serviceUUID, characteristicUUID, new GattCharacteristicCallBack() {
+                    bluetoothServerGateway.gattRead(context, address, serviceUUID, characteristicUUID, new GattCharacteristicCallBack() {
                         @Override
                         public void onRead(byte[] value) {
                             final String sValue = Utils.printHexBinary(value);
@@ -83,7 +89,7 @@ public class BTLEGateway {
                 case GATT_WRITE:
                     final String sValue = (String) (params!=null ? params.get("value") : null);
                     final byte[] value = Utils.parseHexBinary(sValue);
-                    bluetoothServerGateway.gattWrite(context, deviceUUID, serviceUUID, characteristicUUID, value, new GattCharacteristicCallBack() {
+                    bluetoothServerGateway.gattWrite(context, address, serviceUUID, characteristicUUID, value, new GattCharacteristicCallBack() {
                         @Override
                         public void onWrite(int state) {
                             final String json = new Gson().toJson(state);
@@ -92,7 +98,7 @@ public class BTLEGateway {
                     });
                     break;
                 case GATT_NOTIFICATION:
-                    bluetoothServerGateway.gattNotifications(context, deviceUUID, serviceUUID, characteristicUUID, true, new GattCharacteristicCallBack() {
+                    bluetoothServerGateway.gattNotifications(context, address, serviceUUID, characteristicUUID, true, new GattCharacteristicCallBack() {
 
                         @Override
                         public void onRead(byte[] value) {
@@ -103,7 +109,7 @@ public class BTLEGateway {
                     });
                     break;
                 case GATT_NOTIFICATION_STOP:
-                    bluetoothServerGateway.gattNotifications(context, deviceUUID, serviceUUID, characteristicUUID, false, new GattCharacteristicCallBack() {
+                    bluetoothServerGateway.gattNotifications(context, address, serviceUUID, characteristicUUID, false, new GattCharacteristicCallBack() {
 
                         @Override
                         public void onRead(byte[] value) {

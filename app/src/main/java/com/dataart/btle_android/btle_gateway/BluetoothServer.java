@@ -14,13 +14,19 @@ import android.os.ParcelUuid;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.dataart.btle_android.btle_gateway.gatt.callbacks.GattReadCallback;
-import com.dataart.btle_android.btle_gateway.gatt.callbacks.GattWriteCallback;
+import com.dataart.btle_android.btle_gateway.gatt.callbacks.DeviceConnection;
+import com.dataart.btle_android.btle_gateway.gatt.callbacks.InteractiveGattCallback;
+import com.dataart.btle_android.btle_gateway.gatt.callbacks.ReadGattCallback;
+import com.dataart.btle_android.btle_gateway.gatt.callbacks.WriteGattCallback;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+
+import timber.log.Timber;
 
 /**
  * Created by alrybakov
@@ -33,27 +39,22 @@ public class BluetoothServer extends BluetoothGattCallback {
 
     private Context context;
     private BluetoothAdapter bluetoothAdapter = null;
-    private BluetoothAdapter bluetoothAdapter(Context context) {
-        if (bluetoothAdapter == null || !context.equals(this.context)) {
-            this.context = context;
-            BluetoothManager bluetoothManager = (BluetoothManager)this.context.getSystemService(Context.BLUETOOTH_SERVICE);
+//    stores list of currently connected devices storing binding between adress, gatt and callback
+    private Map<String, DeviceConnection> activeConnections = new HashMap<String, DeviceConnection>();
+
+    private ArrayList<LeScanResult> deviceList = new ArrayList<LeScanResult>();
+    private DiscoveredDeviceListener discoveredDeviceListener;
+
+    public BluetoothServer(Context context) {
+        this.context = context;
+    }
+
+    private BluetoothAdapter bluetoothAdapter() {
+        if (bluetoothAdapter == null) {
+            BluetoothManager bluetoothManager = (BluetoothManager)context.getSystemService(Context.BLUETOOTH_SERVICE);
             bluetoothAdapter = bluetoothManager.getAdapter();
         }
         return bluetoothAdapter;
-    }
-    private BluetoothDevice lastDevice;
-    private BluetoothGatt gatt;
-
-    private BluetoothAdapter bluetoothAdapter() {
-        return bluetoothAdapter(this.context);
-    }
-
-    private ArrayList<LeScanResult> deviceList;
-
-    private DiscoveredDeviceListener discoveredDeviceListener;
-
-    public BluetoothServer() {
-        deviceList = new ArrayList<LeScanResult>();
     }
 
     public ArrayList<BTLEDevice> getDiscoveredDevices() {
@@ -73,9 +74,10 @@ public class BluetoothServer extends BluetoothGattCallback {
         return devices;
     }
 
-    public void setDiscoveredDeviceListener(final DiscoveredDeviceListener discoveredDeviceListener) {
-        this.discoveredDeviceListener = discoveredDeviceListener;
-    }
+//    FIXME:  unused
+//    public void setDiscoveredDeviceListener(final DiscoveredDeviceListener discoveredDeviceListener) {
+//        this.discoveredDeviceListener = discoveredDeviceListener;
+//    }
 
     private final BluetoothAdapter.LeScanCallback leScanCallback = new BluetoothAdapter.LeScanCallback() {
 
@@ -90,7 +92,7 @@ public class BluetoothServer extends BluetoothGattCallback {
 
     public void scanStart(final Context context) {
         Log.d(TAG, "Start BLE Scan");
-        bluetoothAdapter(context).startLeScan(leScanCallback);
+        bluetoothAdapter().startLeScan(leScanCallback);
     }
 
     public void scanStop() {
@@ -119,6 +121,59 @@ public class BluetoothServer extends BluetoothGattCallback {
             }
         }
         return result;
+    }
+
+    private interface DeviceOperation {
+        void call(BluetoothDevice device);
+    }
+
+//    will seek among discovered but not connected devices
+    private void applyForDevice(String address, DeviceOperation operation) {
+        LeScanResult result = getResultByUDID(address);
+        if (result != null) {
+            operation.call(result.getDevice());
+        } else {
+            Timber.d("device "+address+" not found in discovered devices");
+        }
+    }
+
+    private interface ConnectionOperation {
+        void call(DeviceConnection connection);
+    }
+//    will seek among connected devices
+    private void applyForConnection(String address, ConnectionOperation operation) {
+        DeviceConnection connection = activeConnections.get(address);
+        if (connection != null) {
+            operation.call(connection);
+        } else {
+            Timber.d("connection to "+address+" not found");
+        }
+    }
+
+    public void gattConnect(final String address) {
+        applyForDevice(address, new DeviceOperation() {
+            @Override
+            public void call(BluetoothDevice device) {
+                Timber.d("connecting to "+address);
+//                we need separate callbacks for different connections - and we can keep a lot of connections
+                InteractiveGattCallback callback = new InteractiveGattCallback();
+                BluetoothGatt gatt = device.connectGatt(context, false, callback);
+                activeConnections.put(address, new DeviceConnection(address, gatt, callback));
+                Timber.d("connected. connections now: "+activeConnections.size());
+            }
+        });
+    }
+
+    public void gattDisconnect(final String address) {
+        applyForConnection(address, new ConnectionOperation() {
+            @Override
+            public void call(DeviceConnection connection) {
+                Timber.d("disconnecting from "+address);
+                connection.getGatt().disconnect();
+                activeConnections.remove(address);
+                Timber.d("disconnected. connections left: "+activeConnections.size());
+            }
+        });
     }
 
     public void gattCharacteristics(final String mac, final Context context, final GattCharacteristicCallBack gattCharacteristicCallBack) {
@@ -197,27 +252,25 @@ public class BluetoothServer extends BluetoothGattCallback {
         }
     }
 
-    private BluetoothGatt gatt(String deviceUUID, BluetoothGattCallback callback) {
-
-        final LeScanResult result = getResultByUDID(deviceUUID);
-        if (result != null) {
-            lastDevice = result.getDevice();
-            gatt = this.lastDevice.connectGatt(context, false, callback);
-            return gatt;
-        }
-
-        return null;
-    }
-
-    public void gattRead(Context context, final String deviceUUID, final String serviceUUID, final String characteristicUUID,
+    public void gattRead(Context context, final String address, final String serviceUUID, final String characteristicUUID,
                          final GattCharacteristicCallBack gattCharacteristicCallBack) {
 
-        gatt(deviceUUID, new GattReadCallback(gattCharacteristicCallBack, serviceUUID, characteristicUUID));
+        applyForConnection(address, new ConnectionOperation() {
+            @Override
+            public void call(DeviceConnection connection) {
+                connection.getCallback().readCharacteristic(serviceUUID, characteristicUUID, gattCharacteristicCallBack);
+            }
+        });
     }
 
-    public void gattWrite(Context context, final String deviceUUID, final String serviceUUID, final String characteristicUUID,
+    public void gattWrite(Context context, final String address, final String serviceUUID, final String characteristicUUID,
                           final byte[] value, final GattCharacteristicCallBack gattCharacteristicCallBack) {
-        gatt(deviceUUID, new GattWriteCallback(gattCharacteristicCallBack, serviceUUID, characteristicUUID, value));
+        applyForConnection(address, new ConnectionOperation() {
+            @Override
+            public void call(DeviceConnection connection) {
+                connection.getCallback().writeCharacteristic(serviceUUID, characteristicUUID, gattCharacteristicCallBack, value);
+            }
+        });
     }
 
     public void gattNotifications(Context context, final String deviceUUID, final String serviceUUID, final String characteristicUUID,

@@ -64,7 +64,7 @@ public class BluetoothLeService extends Service {
         }
         mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         mDeviceHive = BTLEDeviceHive.newInstance(this);
-        mBluetoothServer = new BluetoothServer();
+        mBluetoothServer = new BluetoothServer(getApplicationContext());
         mGateway = new BTLEGateway(mBluetoothServer);
         registerReceiver(getBtStateReceiver(), new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
     }
