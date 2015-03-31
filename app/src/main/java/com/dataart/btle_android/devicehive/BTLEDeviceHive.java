@@ -11,6 +11,7 @@ import com.dataart.android.devicehive.Network;
 import com.dataart.android.devicehive.Notification;
 import com.dataart.android.devicehive.device.CommandResult;
 import com.dataart.android.devicehive.device.Device;
+import com.dataart.btle_android.R;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -30,7 +31,7 @@ public class BTLEDeviceHive extends Device {
     }
 
     public interface CommandListener {
-        void onDeviceReceivedCommand(Command command);
+        CommandResult onDeviceReceivedCommand(Command command);
     }
 
     public interface NotificationListener {
@@ -65,16 +66,16 @@ public class BTLEDeviceHive extends Device {
     @Override
     public void onBeforeRunCommand(Command command) {
         Log.d(TAG, "onBeforeRunCommand: " + command.getCommand());
-        notifyListenersCommandReceived(command);
+//        notifyListenersCommandReceived wasn't returning command result before
+//        notifyListenersCommandReceived(command);
     }
 
     @Override
     public CommandResult runCommand(final Command command) {
         Log.d(TAG, "Executing command on test device: " + command.getCommand());
 
-        // execute command
-
-        return new CommandResult(CommandResult.STATUS_COMLETED, "Ok");
+        return notifyListenersCommandReceived(command);
+//        new CommandResult(CommandResult.STATUS_COMLETED, "Ok");
     }
 
     @Override
@@ -158,10 +159,16 @@ public class BTLEDeviceHive extends Device {
         notifyListenersDeviceFailedToSendNotification(notification);
     }
 
-    private void notifyListenersCommandReceived(Command command) {
+    private CommandResult notifyListenersCommandReceived(Command command) {
         for (CommandListener listener : commandListeners) {
-            listener.onDeviceReceivedCommand(command);
+            CommandResult result = listener.onDeviceReceivedCommand(command);
+
+//            Should return immediately if error happened
+            if (result.getStatus().equals(CommandResult.STATUS_FAILED)) {
+                return result;
+            }
         }
+        return new CommandResult(CommandResult.STATUS_COMLETED, getContext().getString(R.string.serializable_ok));
     }
 
     private void notifyListenersDeviceRegistered() {

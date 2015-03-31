@@ -7,6 +7,8 @@ import android.util.Log;
 
 import com.dataart.android.devicehive.Command;
 import com.dataart.android.devicehive.Notification;
+import com.dataart.android.devicehive.device.CommandResult;
+import com.dataart.btle_android.R;
 import com.dataart.btle_android.devicehive.BTLEDeviceHive;
 import com.google.gson.Gson;
 
@@ -24,7 +26,7 @@ public class BTLEGateway {
         this.bluetoothServerGateway = bluetoothServer;
     }
 
-    public void doCommand(Context context, final BTLEDeviceHive dh, Command command) {
+    public CommandResult doCommand(Context context, final BTLEDeviceHive dh, Command command) {
         try {
             final String name = command.getCommand();
             final LeCommand leCommand = LeCommand.fromName(name);
@@ -55,8 +57,12 @@ public class BTLEGateway {
                     }, BluetoothServer.COMMAND_SCAN_DEALY);
                     break;
                 case GATT_CONNECT:
-                    Timber.d("connecting to "+address);
-                    bluetoothServerGateway.gattConnect(address);
+                    Timber.d("connecting to " + address);
+                    FutureCommandResult futureCommandResult = new FutureCommandResult();
+                    return bluetoothServerGateway.gattConnect(address, futureCommandResult);
+                case GATT_DISCONNECT:
+                    Timber.d("disconnecting from" + address);
+                    bluetoothServerGateway.gattDisconnect(address);
                     break;
                 case GATT_PRIMARY:
                     bluetoothServerGateway.gattPrimary(address, context, new GattCharacteristicCallBack() {
@@ -128,6 +134,8 @@ public class BTLEGateway {
             final Notification notification = new Notification("Error", e.toString());
             dh.sendNotification(notification);
         }
+
+        return new CommandResult(CommandResult.STATUS_FAILED, context.getString(R.string.serializable_fail));
     }
 
     private void sendNotification(final BTLEDeviceHive dh, final LeCommand leCommand, final String json) {

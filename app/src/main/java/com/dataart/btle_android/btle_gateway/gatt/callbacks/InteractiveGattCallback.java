@@ -6,6 +6,9 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
 
+import com.dataart.android.devicehive.Command;
+import com.dataart.android.devicehive.device.CommandResult;
+import com.dataart.btle_android.btle_gateway.FutureCommandResult;
 import com.dataart.btle_android.btle_gateway.GattCharacteristicCallBack;
 
 import java.util.UUID;
@@ -21,16 +24,26 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
     private BluetoothGatt gatt;
     private ReadCharacteristicOperation readOperation;
     private WriteCharacteristicOperation writeOperation;
+    private FutureCommandResult futureCommandResult;
+
+    public InteractiveGattCallback(FutureCommandResult futureCommandResult) {
+        this.futureCommandResult = futureCommandResult;
+    }
 
     @Override
     public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
         super.onConnectionStateChange(gatt, status, newState);
         if (newState == BluetoothProfile.STATE_CONNECTED) {
+            futureCommandResult.setResult(new CommandResult(CommandResult.STATUS_COMLETED, "Ok"));
             Timber.d("connected. discovering services");
             this.gatt = gatt;
             this.gatt.discoverServices();
         } else {
+            futureCommandResult.setResult(new CommandResult(CommandResult.STATUS_FAILED, "Failed with status="+status+", state="+newState));
             Timber.d("connection state:"+newState);
+        }
+        synchronized (futureCommandResult) {
+            futureCommandResult.notifyAll();
         }
     }
 
@@ -155,10 +168,11 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
                     return;
                 }
             }
-            Timber.d("failed to read characteristic "+characteristicUUID+" from service "+serviceUUID);
+            Timber.d("failed to read characteristic " + characteristicUUID + " from service " + serviceUUID);
         }
 
         abstract protected void request(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic);
+
         abstract public void onResult(BluetoothGattCharacteristic characteristic, int status);
     }
 }

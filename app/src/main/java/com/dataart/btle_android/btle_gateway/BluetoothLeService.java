@@ -16,6 +16,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.dataart.android.devicehive.Command;
+import com.dataart.android.devicehive.device.CommandResult;
 import com.dataart.android.devicehive.network.DeviceHiveApiService;
 import com.dataart.btle_android.MainActivity;
 import com.dataart.btle_android.R;
@@ -102,9 +103,9 @@ public class BluetoothLeService extends Service {
 
     private final BTLEDeviceHive.CommandListener commandListener = new BTLEDeviceHive.CommandListener() {
         @Override
-        public void onDeviceReceivedCommand(Command command) {
+        public CommandResult onDeviceReceivedCommand(Command command) {
             Log.d(TAG, "Device received Command in BluetoothLeService");
-            mGateway.doCommand(getApplicationContext(), mDeviceHive, command);
+            return mGateway.doCommand(getApplicationContext(), mDeviceHive, command);
         }
     };
 

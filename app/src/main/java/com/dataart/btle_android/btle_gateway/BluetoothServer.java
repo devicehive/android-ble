@@ -14,10 +14,9 @@ import android.os.ParcelUuid;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.dataart.android.devicehive.device.CommandResult;
 import com.dataart.btle_android.btle_gateway.gatt.callbacks.DeviceConnection;
 import com.dataart.btle_android.btle_gateway.gatt.callbacks.InteractiveGattCallback;
-import com.dataart.btle_android.btle_gateway.gatt.callbacks.ReadGattCallback;
-import com.dataart.btle_android.btle_gateway.gatt.callbacks.WriteGattCallback;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,6 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import timber.log.Timber;
 
@@ -44,6 +45,7 @@ public class BluetoothServer extends BluetoothGattCallback {
 
     private ArrayList<LeScanResult> deviceList = new ArrayList<LeScanResult>();
     private DiscoveredDeviceListener discoveredDeviceListener;
+    private ExecutorService executor = Executors.newSingleThreadExecutor();
 
     public BluetoothServer(Context context) {
         this.context = context;
@@ -146,32 +148,41 @@ public class BluetoothServer extends BluetoothGattCallback {
         if (connection != null) {
             operation.call(connection);
         } else {
-            Timber.d("connection to "+address+" not found");
+            Timber.d("connection to "+address+" not established");
         }
     }
 
-    public void gattConnect(final String address) {
+    public CommandResult gattConnect(final String address, final FutureCommandResult futureCommandResult) {
         applyForDevice(address, new DeviceOperation() {
             @Override
             public void call(BluetoothDevice device) {
-                Timber.d("connecting to "+address);
+                Timber.d("connecting to " + address);
 //                we need separate callbacks for different connections - and we can keep a lot of connections
-                InteractiveGattCallback callback = new InteractiveGattCallback();
+                InteractiveGattCallback callback = new InteractiveGattCallback(futureCommandResult);
                 BluetoothGatt gatt = device.connectGatt(context, false, callback);
                 activeConnections.put(address, new DeviceConnection(address, gatt, callback));
-                Timber.d("connected. connections now: "+activeConnections.size());
+                Timber.d("connected. connections now: " + activeConnections.size());
             }
         });
+        synchronized (futureCommandResult) {
+            try {
+                futureCommandResult.wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        return futureCommandResult.getResult();
     }
 
     public void gattDisconnect(final String address) {
         applyForConnection(address, new ConnectionOperation() {
             @Override
             public void call(DeviceConnection connection) {
-                Timber.d("disconnecting from "+address);
+                Timber.d("disconnecting from " + address);
                 connection.getGatt().disconnect();
                 activeConnections.remove(address);
                 Timber.d("disconnected. connections left: "+activeConnections.size());
+//                return new CommandResult(CommandResult.STATUS_COMLETED, "Ok");
             }
         });
     }
