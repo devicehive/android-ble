@@ -30,6 +30,7 @@ public class BTLEGateway {
         try {
             final String name = command.getCommand();
             final LeCommand leCommand = LeCommand.fromName(name);
+            final Command.UpdateCommandStatusCallback commandStatusCallback = command.getCommandStatusCallback();
 
             @SuppressWarnings("unchecked")
             final HashMap<String, Object> params = (HashMap<String, Object>) command.getParameters();
@@ -54,12 +55,11 @@ public class BTLEGateway {
                         public void run() {
                             sendStopResult(dh);
                         }
-                    }, BluetoothServer.COMMAND_SCAN_DEALY);
+                    }, BluetoothServer.COMMAND_SCAN_DELAY);
                     break;
                 case GATT_CONNECT:
                     Timber.d("connecting to " + address);
-                    FutureCommandResult futureCommandResult = new FutureCommandResult();
-                    return bluetoothServerGateway.gattConnect(address, futureCommandResult);
+                    return bluetoothServerGateway.gattConnect(address, commandStatusCallback);
                 case GATT_DISCONNECT:
                     Timber.d("disconnecting from" + address);
                     bluetoothServerGateway.gattDisconnect(address);
@@ -133,9 +133,10 @@ public class BTLEGateway {
             Log.e("TAG", "Error during handling" + e.toString());
             final Notification notification = new Notification("Error", e.toString());
             dh.sendNotification(notification);
+            return new CommandResult(CommandResult.STATUS_FAILED, "Error: "+e.toString());
         }
 
-        return new CommandResult(CommandResult.STATUS_FAILED, context.getString(R.string.serializable_fail));
+        return new CommandResult(CommandResult.STATUS_WAITING, context.getString(R.string.status_waiting));
     }
 
     private void sendNotification(final BTLEDeviceHive dh, final LeCommand leCommand, final String json) {

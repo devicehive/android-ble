@@ -5,6 +5,8 @@ import java.io.Serializable;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.dataart.android.devicehive.device.CommandResult;
+
 /**
  * Represents a device command, a unit of information sent to devices.
  */
@@ -17,6 +19,16 @@ public class Command implements Parcelable {
 	private int flags;
 	private String status;
 	private String result;
+	private UpdateCommandStatusCallback commandStatusCallback;
+
+	public void setCommandStatusCallback(UpdateCommandStatusCallback commandStatusCallback) {
+		this.commandStatusCallback = commandStatusCallback;
+	}
+
+//	called from place where command status updated
+	public UpdateCommandStatusCallback getCommandStatusCallback() {
+		return commandStatusCallback;
+	}
 
 	/* package */Command(int id, String timestamp, String command,
 			Serializable parameters, int lifetime, int flags, String status,
@@ -164,4 +176,17 @@ public class Command implements Parcelable {
 				+ ", result=" + result + "]";
 	}
 
+	abstract public static class UpdateCommandStatusCallback {
+		private Object tag;
+
+		public Object getTag() {
+			return tag;
+		}
+
+		public void setTag(Object tag) {
+			this.tag = tag;
+		}
+
+		abstract public void call(CommandResult result);
+	}
 }

@@ -22,6 +22,11 @@ public class CommandResult implements Parcelable {
 	 */
 	public static final String STATUS_FAILED = "Failed";
 
+	/**
+	 * Command status "Failed" value.
+	 */
+	public static final String STATUS_WAITING = "Waiting";
+
 	private final String status;
 	private final ObjectWrapper<Serializable> result;
 

@@ -8,7 +8,6 @@ import android.bluetooth.BluetoothProfile;
 
 import com.dataart.android.devicehive.Command;
 import com.dataart.android.devicehive.device.CommandResult;
-import com.dataart.btle_android.btle_gateway.FutureCommandResult;
 import com.dataart.btle_android.btle_gateway.GattCharacteristicCallBack;
 
 import java.util.UUID;
@@ -24,26 +23,24 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
     private BluetoothGatt gatt;
     private ReadCharacteristicOperation readOperation;
     private WriteCharacteristicOperation writeOperation;
-    private FutureCommandResult futureCommandResult;
+//    private SimpleCallableFuture<CommandResult>
+    private Command.UpdateCommandStatusCallback commandStatusCallback;
 
-    public InteractiveGattCallback(FutureCommandResult futureCommandResult) {
-        this.futureCommandResult = futureCommandResult;
+    public InteractiveGattCallback(Command.UpdateCommandStatusCallback commandStatusCallback) {
+        this.commandStatusCallback = commandStatusCallback;
     }
 
     @Override
     public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
         super.onConnectionStateChange(gatt, status, newState);
         if (newState == BluetoothProfile.STATE_CONNECTED) {
-            futureCommandResult.setResult(new CommandResult(CommandResult.STATUS_COMLETED, "Ok"));
             Timber.d("connected. discovering services");
             this.gatt = gatt;
             this.gatt.discoverServices();
+            commandStatusCallback.call(new CommandResult(CommandResult.STATUS_COMLETED, "Ok"));
         } else {
-            futureCommandResult.setResult(new CommandResult(CommandResult.STATUS_FAILED, "Failed with status="+status+", state="+newState));
-            Timber.d("connection state:"+newState);
-        }
-        synchronized (futureCommandResult) {
-            futureCommandResult.notifyAll();
+            Timber.d("connection state:" + newState);
+            commandStatusCallback.call(new CommandResult(CommandResult.STATUS_FAILED, "Failed with status=" + status + ", state=" + newState));
         }
     }
 

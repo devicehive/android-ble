@@ -10,11 +10,14 @@ import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
+import android.os.Handler;
 import android.os.ParcelUuid;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.dataart.android.devicehive.Command;
 import com.dataart.android.devicehive.device.CommandResult;
+import com.dataart.btle_android.R;
 import com.dataart.btle_android.btle_gateway.gatt.callbacks.DeviceConnection;
 import com.dataart.btle_android.btle_gateway.gatt.callbacks.InteractiveGattCallback;
 
@@ -34,7 +37,7 @@ import timber.log.Timber;
  */
 public class BluetoothServer extends BluetoothGattCallback {
 
-    public static final int COMMAND_SCAN_DEALY = 10 * 1000; // 10 sec
+    public static final int COMMAND_SCAN_DELAY = 10 * 1000; // 10 sec
 
     public static final String TAG = "BTLE Device Hive";
 
@@ -85,6 +88,13 @@ public class BluetoothServer extends BluetoothGattCallback {
 
         @Override
         public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
+//            skip if already found
+            for (LeScanResult result : deviceList) {
+                if (result.getDevice().getAddress().equals(device.getAddress())) {
+                    return;
+                }
+            }
+
             addDevice(new LeScanResult(device, rssi, scanRecord));
             if (discoveredDeviceListener != null) {
                 discoveredDeviceListener.onDiscoveredDevice(device);
@@ -93,8 +103,17 @@ public class BluetoothServer extends BluetoothGattCallback {
     };
 
     public void scanStart(final Context context) {
-        Log.d(TAG, "Start BLE Scan");
+        Timber.d("BLE scan started...");
         bluetoothAdapter().startLeScan(leScanCallback);
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+//              "Never scan on a loop, and set a time limit on your scan. " - https://developer.android.com/guide/topics/connectivity/bluetooth-le.html#find
+                bluetoothAdapter().stopLeScan(leScanCallback);
+                Timber.d("BLE scan stopped on timeout "+BluetoothServer.COMMAND_SCAN_DELAY /1000+" sec");
+            }
+        }, BluetoothServer.COMMAND_SCAN_DELAY);
     }
 
     public void scanStop() {
@@ -103,11 +122,6 @@ public class BluetoothServer extends BluetoothGattCallback {
     }
 
     protected void addDevice(final LeScanResult device) {
-        for (LeScanResult result : deviceList) {
-            if (result.getDevice().getAddress().equals(device.getDevice().getAddress())) {
-                return;
-            }
-        }
         deviceList.add(device);
         Log.d(TAG, "BTdeviceName " + device.getDevice().getName());
         Log.d(TAG, "BTdeviceAdress " + device.getDevice().getAddress());
@@ -152,26 +166,21 @@ public class BluetoothServer extends BluetoothGattCallback {
         }
     }
 
-    public CommandResult gattConnect(final String address, final FutureCommandResult futureCommandResult) {
+    public CommandResult gattConnect(final String address, final Command.UpdateCommandStatusCallback commandStatusCallback) {
         applyForDevice(address, new DeviceOperation() {
             @Override
             public void call(BluetoothDevice device) {
                 Timber.d("connecting to " + address);
+                commandStatusCallback.setTag(address);
 //                we need separate callbacks for different connections - and we can keep a lot of connections
-                InteractiveGattCallback callback = new InteractiveGattCallback(futureCommandResult);
+                InteractiveGattCallback callback = new InteractiveGattCallback(commandStatusCallback);
                 BluetoothGatt gatt = device.connectGatt(context, false, callback);
                 activeConnections.put(address, new DeviceConnection(address, gatt, callback));
-                Timber.d("connected. connections now: " + activeConnections.size());
+                Timber.d("connection added. connections now: " + activeConnections.size());
             }
         });
-        synchronized (futureCommandResult) {
-            try {
-                futureCommandResult.wait();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-        return futureCommandResult.getResult();
+
+        return new CommandResult(CommandResult.STATUS_FAILED, "Waiting for connection");
     }
 
     public void gattDisconnect(final String address) {

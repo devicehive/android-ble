@@ -25,6 +25,8 @@ import com.dataart.android.devicehive.network.DeviceHiveResultReceiver;
 import com.dataart.android.devicehive.network.NetworkCommand;
 import com.dataart.android.devicehive.network.ServiceConnection;
 
+import timber.log.Timber;
+
 /* package */class DeviceServiceConnection extends ServiceConnection {
 
 	private final static String EQUIPMENT_PARAMETER = "equipment";
@@ -107,6 +109,15 @@ import com.dataart.android.devicehive.network.ServiceConnection;
 	private void runCommandOnRunner(final CommandRunner commandRunner,
 			final Command command) {
 		if (commandRunner.shouldRunCommandAsynchronously(command)) {
+//			set updateCommandStatus to be called when actual result be obtained
+			command.setCommandStatusCallback(new Command.UpdateCommandStatusCallback() {
+				@Override
+				public void call(CommandResult result) {
+					Timber.d("command status update callback ("+result.getStatus()+")");
+					updateCommandStatus(command, result);
+				}
+			});
+
 			asyncHandler.post(new Runnable() {
 				@Override
 				public void run() {

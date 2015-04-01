@@ -73,9 +73,7 @@ public class BTLEDeviceHive extends Device {
     @Override
     public CommandResult runCommand(final Command command) {
         Log.d(TAG, "Executing command on test device: " + command.getCommand());
-
         return notifyListenersCommandReceived(command);
-//        new CommandResult(CommandResult.STATUS_COMLETED, "Ok");
     }
 
     @Override
@@ -168,7 +166,7 @@ public class BTLEDeviceHive extends Device {
                 return result;
             }
         }
-        return new CommandResult(CommandResult.STATUS_COMLETED, getContext().getString(R.string.serializable_ok));
+        return new CommandResult(CommandResult.STATUS_COMLETED, getContext().getString(R.string.status_ok));
     }
 
     private void notifyListenersDeviceRegistered() {
