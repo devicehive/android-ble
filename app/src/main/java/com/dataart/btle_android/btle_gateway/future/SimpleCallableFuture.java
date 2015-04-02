@@ -1,7 +1,5 @@
 package com.dataart.btle_android.btle_gateway.future;
 
-import com.dataart.android.devicehive.device.CommandResult;
-
 /**
  * Created by Constantine Mars on 4/1/15.
  *
@@ -9,7 +7,11 @@ import com.dataart.android.devicehive.device.CommandResult;
  */
 public class SimpleCallableFuture<T> extends CallableFuture<T, T> {
     public SimpleCallableFuture() {
-        super(new SimpleCallableFuture.SimpleCallableWithArg<T>());
+        super(new SimpleCallableWithArg<T>());
+    }
+
+    public SimpleCallableFuture(T arg) {
+        super(new SimpleCallableWithArg<T>(), arg);
     }
 
     public static class SimpleCallableWithArg<T> implements CallableWithArg<T, T> {

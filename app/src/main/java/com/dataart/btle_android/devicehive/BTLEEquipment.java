@@ -6,6 +6,7 @@ import com.dataart.android.devicehive.Command;
 import com.dataart.android.devicehive.EquipmentData;
 import com.dataart.android.devicehive.device.CommandResult;
 import com.dataart.android.devicehive.device.Equipment;
+import com.dataart.btle_android.btle_gateway.future.SimpleCallableFuture;
 
 public class BTLEEquipment extends Equipment {
 
@@ -31,13 +32,13 @@ public class BTLEEquipment extends Equipment {
 	}
 
 	@Override
-	public CommandResult runCommand(final Command command) {
+	public SimpleCallableFuture<CommandResult> runCommand(final Command command) {
 		Log.d(TAG, "runCommand: " + command.getCommand());
 		
 		// run command
 		
-		return new CommandResult(CommandResult.STATUS_COMLETED,
-				"Executed on Android test equipment!");
+		return new SimpleCallableFuture<CommandResult>(new CommandResult(CommandResult.STATUS_COMLETED,
+				"Executed on Android test equipment!"));
 	}
 
 	@Override

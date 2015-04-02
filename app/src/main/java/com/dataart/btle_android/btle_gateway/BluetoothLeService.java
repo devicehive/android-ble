@@ -20,6 +20,7 @@ import com.dataart.android.devicehive.device.CommandResult;
 import com.dataart.android.devicehive.network.DeviceHiveApiService;
 import com.dataart.btle_android.MainActivity;
 import com.dataart.btle_android.R;
+import com.dataart.btle_android.btle_gateway.future.SimpleCallableFuture;
 import com.dataart.btle_android.devicehive.BTLEDeviceHive;
 import com.dataart.btle_android.devicehive.BTLEDevicePreferences;
 
@@ -79,7 +80,9 @@ public class BluetoothLeService extends Service {
         final BTLEDevicePreferences prefs = new BTLEDevicePreferences();
         mDeviceHive.setApiEnpointUrl(prefs.getServerUrl());
 
-        mDeviceHive.addCommandListener(commandListener);
+//        FIXME: originally there can be multiple command listeners - I can't understand why we need multiple, so replace it with single
+//        mDeviceHive.addCommandListener(commandListener);
+        mDeviceHive.setCommandListener(commandListener);
         if (!mDeviceHive.isRegistered()) {
             mDeviceHive.registerDevice();
         }
@@ -90,7 +93,7 @@ public class BluetoothLeService extends Service {
 
     @Override
     public void onDestroy() {
-        mDeviceHive.removeCommandListener(commandListener);
+        mDeviceHive.removeCommandListener();
         mDeviceHive.stopProcessingCommands();
         stopService(new Intent(this, DeviceHiveApiService.class));
         if (mReceiver != null) {
@@ -103,7 +106,7 @@ public class BluetoothLeService extends Service {
 
     private final BTLEDeviceHive.CommandListener commandListener = new BTLEDeviceHive.CommandListener() {
         @Override
-        public CommandResult onDeviceReceivedCommand(Command command) {
+        public SimpleCallableFuture<CommandResult> onDeviceReceivedCommand(Command command) {
             Log.d(TAG, "Device received Command in BluetoothLeService");
             return mGateway.doCommand(getApplicationContext(), mDeviceHive, command);
         }

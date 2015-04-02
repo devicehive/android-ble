@@ -1,6 +1,7 @@
 package com.dataart.android.devicehive.device;
 
 import com.dataart.android.devicehive.Command;
+import com.dataart.btle_android.btle_gateway.future.SimpleCallableFuture;
 
 /**
  * Common interface for objects able to execute commands. Usually these are
@@ -39,5 +40,5 @@ public interface CommandRunner {
 	 * @return {@link com.dataart.android.devicehive.device.CommandResult} object describing command execution result
 	 *         and status.
 	 */
-	CommandResult runCommand(final Command command);
+	SimpleCallableFuture<CommandResult> runCommand(final Command command);
 }

@@ -12,6 +12,7 @@ import com.dataart.android.devicehive.Notification;
 import com.dataart.android.devicehive.device.CommandResult;
 import com.dataart.android.devicehive.device.Device;
 import com.dataart.btle_android.R;
+import com.dataart.btle_android.btle_gateway.future.SimpleCallableFuture;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -21,7 +22,8 @@ public class BTLEDeviceHive extends Device {
     private static final String TAG = "AndroidBTLE";
 
     private List<RegistrationListener> registrationListeners = new LinkedList<RegistrationListener>();
-    private List<CommandListener> commandListeners = new LinkedList<CommandListener>();
+//    private List<CommandListener> commandListeners = new LinkedList<CommandListener>();
+    private CommandListener commandListener;
     private List<NotificationListener> notificationListeners = new LinkedList<NotificationListener>();
 
     public interface RegistrationListener {
@@ -31,7 +33,7 @@ public class BTLEDeviceHive extends Device {
     }
 
     public interface CommandListener {
-        CommandResult onDeviceReceivedCommand(Command command);
+        SimpleCallableFuture<CommandResult> onDeviceReceivedCommand(Command command);
     }
 
     public interface NotificationListener {
@@ -71,7 +73,7 @@ public class BTLEDeviceHive extends Device {
     }
 
     @Override
-    public CommandResult runCommand(final Command command) {
+    public SimpleCallableFuture<CommandResult> runCommand(final Command command) {
         Log.d(TAG, "Executing command on test device: " + command.getCommand());
         return notifyListenersCommandReceived(command);
     }
@@ -89,12 +91,22 @@ public class BTLEDeviceHive extends Device {
         registrationListeners.remove(listener);
     }
 
-    public void addCommandListener(CommandListener listener) {
-        commandListeners.add(listener);
+//    FIXME: should it be removed?
+//    public void addCommandListener(CommandListener listener) {
+//        commandListeners.add(listener);
+//    }
+
+    public void setCommandListener(CommandListener listener) {
+        this.commandListener = listener;
     }
 
-    public void removeCommandListener(CommandListener listener) {
-        commandListeners.remove(listener);
+//    FIXME: should be removed?
+//    public void removeCommandListener(CommandListener listener) {
+//        commandListeners.remove(listener);
+//    }
+
+    public void removeCommandListener() {
+        commandListener = null;
     }
 
 //    FIXME: unused
@@ -157,16 +169,15 @@ public class BTLEDeviceHive extends Device {
         notifyListenersDeviceFailedToSendNotification(notification);
     }
 
-    private CommandResult notifyListenersCommandReceived(Command command) {
-        for (CommandListener listener : commandListeners) {
-            CommandResult result = listener.onDeviceReceivedCommand(command);
-
+    private SimpleCallableFuture<CommandResult> notifyListenersCommandReceived(Command command) {
+//        for (CommandListener listener : commandListeners) {
+            return commandListener.onDeviceReceivedCommand(command);
 //            Should return immediately if error happened
-            if (result.getStatus().equals(CommandResult.STATUS_FAILED)) {
-                return result;
-            }
-        }
-        return new CommandResult(CommandResult.STATUS_COMLETED, getContext().getString(R.string.status_ok));
+//            if (!result.getStatus().equals(CommandResult.STATUS_COMLETED)) {
+//                return result;
+//            }
+//        }
+//        return new CommandResult(CommandResult.STATUS_COMLETED, getContext().getString(R.string.status_ok));
     }
 
     private void notifyListenersDeviceRegistered() {

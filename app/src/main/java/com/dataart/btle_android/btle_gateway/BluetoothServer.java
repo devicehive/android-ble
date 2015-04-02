@@ -18,6 +18,7 @@ import android.util.Log;
 import com.dataart.android.devicehive.Command;
 import com.dataart.android.devicehive.device.CommandResult;
 import com.dataart.btle_android.R;
+import com.dataart.btle_android.btle_gateway.future.SimpleCallableFuture;
 import com.dataart.btle_android.btle_gateway.gatt.callbacks.DeviceConnection;
 import com.dataart.btle_android.btle_gateway.gatt.callbacks.InteractiveGattCallback;
 
@@ -166,21 +167,25 @@ public class BluetoothServer extends BluetoothGattCallback {
         }
     }
 
-    public CommandResult gattConnect(final String address, final Command.UpdateCommandStatusCallback commandStatusCallback) {
+    public SimpleCallableFuture<CommandResult> gattConnect(final String address) {
+//            , final Command.UpdateCommandStatusCallback commandStatusCallback) {
+
+        final SimpleCallableFuture<CommandResult> future = new SimpleCallableFuture<CommandResult>();
         applyForDevice(address, new DeviceOperation() {
             @Override
             public void call(BluetoothDevice device) {
                 Timber.d("connecting to " + address);
-                commandStatusCallback.setTag(address);
+//                commandStatusCallback.setTag(address);
 //                we need separate callbacks for different connections - and we can keep a lot of connections
-                InteractiveGattCallback callback = new InteractiveGattCallback(commandStatusCallback);
+                InteractiveGattCallback callback = new InteractiveGattCallback(future);
                 BluetoothGatt gatt = device.connectGatt(context, false, callback);
                 activeConnections.put(address, new DeviceConnection(address, gatt, callback));
                 Timber.d("connection added. connections now: " + activeConnections.size());
             }
         });
 
-        return new CommandResult(CommandResult.STATUS_FAILED, "Waiting for connection");
+        return future;
+//        return new CommandResult(CommandResult.STATUS_WAITING, "Waiting for connection");
     }
 
     public void gattDisconnect(final String address) {

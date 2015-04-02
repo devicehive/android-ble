@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.concurrent.ExecutionException;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -24,6 +25,7 @@ import com.dataart.android.devicehive.device.commands.UpdateCommandStatusCommand
 import com.dataart.android.devicehive.network.DeviceHiveResultReceiver;
 import com.dataart.android.devicehive.network.NetworkCommand;
 import com.dataart.android.devicehive.network.ServiceConnection;
+import com.dataart.btle_android.btle_gateway.future.SimpleCallableFuture;
 
 import timber.log.Timber;
 
@@ -110,30 +112,61 @@ import timber.log.Timber;
 			final Command command) {
 		if (commandRunner.shouldRunCommandAsynchronously(command)) {
 //			set updateCommandStatus to be called when actual result be obtained
-			command.setCommandStatusCallback(new Command.UpdateCommandStatusCallback() {
-				@Override
-				public void call(CommandResult result) {
-					Timber.d("command status update callback ("+result.getStatus()+")");
-					updateCommandStatus(command, result);
-				}
-			});
+//			command.setCommandStatusCallback(new Command.UpdateCommandStatusCallback() {
+//				@Override
+//				public void call(CommandResult result) {
+//					Timber.d("command status update callback ("+result.getStatus()+")");
+//					updateCommandStatus(command, result);
+//				}
+//			});
 
 			asyncHandler.post(new Runnable() {
 				@Override
 				public void run() {
-					final CommandResult result = commandRunner
-							.runCommand(command);
-					mainThreadHandler.post(new Runnable() {
+					final SimpleCallableFuture<CommandResult> future = commandRunner.runCommand(command);
+
+					new Thread(new Runnable() {
 						@Override
 						public void run() {
-							updateCommandStatus(command, result);
+							try {
+								final CommandResult result = future.get();
+								mainThreadHandler.post(new Runnable() {
+									@Override
+									public void run() {
+										updateCommandStatus(command, result);
+									}
+								});
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+							} catch (ExecutionException e) {
+								e.printStackTrace();
+							}
 						}
-					});
+					}).start();
+//					CommandResult result = null;
+
+
+//					if (result != null) {
+//						final CommandResult finalResult = result;
+//						mainThreadHandler.post(new Runnable() {
+//							@Override
+//							public void run() {
+//								updateCommandStatus(command, finalResult);
+//							}
+//						});
+//					}
 				}
 			});
 		} else {
-			final CommandResult result = commandRunner.runCommand(command);
-			updateCommandStatus(command, result);
+			SimpleCallableFuture<CommandResult> future = commandRunner.runCommand(command);
+			try {
+				CommandResult result = future.get();
+				updateCommandStatus(command, result);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} catch (ExecutionException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 

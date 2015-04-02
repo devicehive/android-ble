@@ -6,9 +6,9 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
 
-import com.dataart.android.devicehive.Command;
 import com.dataart.android.devicehive.device.CommandResult;
 import com.dataart.btle_android.btle_gateway.GattCharacteristicCallBack;
+import com.dataart.btle_android.btle_gateway.future.SimpleCallableFuture;
 
 import java.util.UUID;
 
@@ -23,11 +23,10 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
     private BluetoothGatt gatt;
     private ReadCharacteristicOperation readOperation;
     private WriteCharacteristicOperation writeOperation;
-//    private SimpleCallableFuture<CommandResult>
-    private Command.UpdateCommandStatusCallback commandStatusCallback;
+    private SimpleCallableFuture<CommandResult> callableFuture;
 
-    public InteractiveGattCallback(Command.UpdateCommandStatusCallback commandStatusCallback) {
-        this.commandStatusCallback = commandStatusCallback;
+    public InteractiveGattCallback(SimpleCallableFuture<CommandResult> future) {
+        this.callableFuture = future;
     }
 
     @Override
@@ -37,10 +36,10 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
             Timber.d("connected. discovering services");
             this.gatt = gatt;
             this.gatt.discoverServices();
-            commandStatusCallback.call(new CommandResult(CommandResult.STATUS_COMLETED, "Ok"));
+            callableFuture.call(new CommandResult(CommandResult.STATUS_COMLETED, "Ok"));
         } else {
             Timber.d("connection state:" + newState);
-            commandStatusCallback.call(new CommandResult(CommandResult.STATUS_FAILED, "Failed with status=" + status + ", state=" + newState));
+            callableFuture.call(new CommandResult(CommandResult.STATUS_FAILED, "Failed with status=" + status + ", state=" + newState));
         }
     }
 

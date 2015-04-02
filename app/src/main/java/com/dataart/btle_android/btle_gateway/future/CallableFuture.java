@@ -8,7 +8,8 @@ import java.util.concurrent.TimeoutException;
 /**
  * Created by Constantine Mars on 4/1/15.
  *
- * can be called from any thread and will return future result
+ * can be called and can return future result
+ * another words, it's the mutex that returns value as response for some asynchronous call from anywhere
  */
 public class CallableFuture<T, U> implements RunnableFuture<T> {
 
@@ -22,6 +23,18 @@ public class CallableFuture<T, U> implements RunnableFuture<T> {
     public void call(U arg) {
         this.arg = arg;
         new Thread(this).start();
+    }
+
+//    unlocks get immediately
+    public void setArg(U arg) {
+        this.arg = arg;
+        result = this.callable.call(this.arg);
+    }
+
+    public CallableFuture(CallableWithArg<T, U> callable, U arg) {
+        this.callable = callable;
+        this.arg = arg;
+        result = this.callable.call(this.arg);
     }
 
     @Override
@@ -41,14 +54,22 @@ public class CallableFuture<T, U> implements RunnableFuture<T> {
 
     @Override
     public T get() throws InterruptedException, ExecutionException {
-        synchronized (this) { wait(); }
+        if (result == null) {
+            synchronized (this) {
+                wait();
+            }
+        }
         return result;
     }
 
     @Override
     public T get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException
     {
-        synchronized (this) { wait(); }
+        if (result == null) {
+            synchronized (this) {
+                wait();
+            }
+        }
         return result;
     }
 

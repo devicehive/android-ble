@@ -9,6 +9,7 @@ import com.dataart.android.devicehive.Command;
 import com.dataart.android.devicehive.Notification;
 import com.dataart.android.devicehive.device.CommandResult;
 import com.dataart.btle_android.R;
+import com.dataart.btle_android.btle_gateway.future.SimpleCallableFuture;
 import com.dataart.btle_android.devicehive.BTLEDeviceHive;
 import com.google.gson.Gson;
 
@@ -26,11 +27,11 @@ public class BTLEGateway {
         this.bluetoothServerGateway = bluetoothServer;
     }
 
-    public CommandResult doCommand(Context context, final BTLEDeviceHive dh, Command command) {
+    public SimpleCallableFuture<CommandResult> doCommand(Context context, final BTLEDeviceHive dh, final Command command) {
         try {
             final String name = command.getCommand();
             final LeCommand leCommand = LeCommand.fromName(name);
-            final Command.UpdateCommandStatusCallback commandStatusCallback = command.getCommandStatusCallback();
+//            final Command.UpdateCommandStatusCallback commandStatusCallback = command.getCommandStatusCallback();
 
             @SuppressWarnings("unchecked")
             final HashMap<String, Object> params = (HashMap<String, Object>) command.getParameters();
@@ -59,7 +60,14 @@ public class BTLEGateway {
                     break;
                 case GATT_CONNECT:
                     Timber.d("connecting to " + address);
-                    return bluetoothServerGateway.gattConnect(address, commandStatusCallback);
+                    return bluetoothServerGateway.gattConnect(address);
+//                    new Handler().postDelayed(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            commandStatusCallback.call(new CommandResult(CommandResult.STATUS_FAILED, "Connection timeout reached ("+BluetoothServer.COMMAND_SCAN_DELAY/1000+" sec)"));
+//                        }
+//                    }, BluetoothServer.COMMAND_SCAN_DELAY);
+//                    break;
                 case GATT_DISCONNECT:
                     Timber.d("disconnecting from" + address);
                     bluetoothServerGateway.gattDisconnect(address);
@@ -133,10 +141,11 @@ public class BTLEGateway {
             Log.e("TAG", "Error during handling" + e.toString());
             final Notification notification = new Notification("Error", e.toString());
             dh.sendNotification(notification);
-            return new CommandResult(CommandResult.STATUS_FAILED, "Error: "+e.toString());
+            SimpleCallableFuture<CommandResult> future = new SimpleCallableFuture<CommandResult>(new CommandResult(CommandResult.STATUS_FAILED, "Error: \""+e.toString()+"\""));
+            return future;
         }
 
-        return new CommandResult(CommandResult.STATUS_WAITING, context.getString(R.string.status_waiting));
+        return new SimpleCallableFuture<CommandResult>(new CommandResult(CommandResult.STATUS_COMLETED, context.getString(R.string.status_ok)));
     }
 
     private void sendNotification(final BTLEDeviceHive dh, final LeCommand leCommand, final String json) {
