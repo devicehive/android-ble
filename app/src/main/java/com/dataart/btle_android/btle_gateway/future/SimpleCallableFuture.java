@@ -3,7 +3,7 @@ package com.dataart.btle_android.btle_gateway.future;
 /**
  * Created by Constantine Mars on 4/1/15.
  *
- * simplified version of CallableFuture used with only one type of in and out values
+ * Simplified version of CallableFuture used with only one type of in and out parameters
  */
 public class SimpleCallableFuture<T> extends CallableFuture<T, T> {
     public SimpleCallableFuture() {

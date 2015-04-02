@@ -16,7 +16,7 @@ import timber.log.Timber;
 
 /**
  * Created by Constantine Mars on 3/27/15.
- * provides single callback for gatt with configurable actions
+ * Provides single callback for gatt with configurable actions
  */
 public class InteractiveGattCallback extends BluetoothGattCallback {
     private boolean servicesDiscovered = false;
@@ -59,10 +59,9 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
     public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
         if (readOperation !=null) {
             readOperation.onResult(characteristic, status);
-//            reset readOperation for future calls
+//            Reset readOperation for future calls
             readOperation = null;
         }
-//        super.onCharacteristicRead(gatt, characteristic, status);
     }
 
     @Override
@@ -71,7 +70,6 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
             writeOperation.onResult(characteristic, status);
             writeOperation = null;
         }
-//        super.onCharacteristicWrite(gatt, characteristic, status);
     }
 
     public void readCharacteristic(String serviceUUID, String characteristicUUID, GattCharacteristicCallBack callBack) {

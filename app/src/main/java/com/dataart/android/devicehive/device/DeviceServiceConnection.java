@@ -111,20 +111,13 @@ import timber.log.Timber;
 	private void runCommandOnRunner(final CommandRunner commandRunner,
 			final Command command) {
 		if (commandRunner.shouldRunCommandAsynchronously(command)) {
-//			set updateCommandStatus to be called when actual result be obtained
-//			command.setCommandStatusCallback(new Command.UpdateCommandStatusCallback() {
-//				@Override
-//				public void call(CommandResult result) {
-//					Timber.d("command status update callback ("+result.getStatus()+")");
-//					updateCommandStatus(command, result);
-//				}
-//			});
 
 			asyncHandler.post(new Runnable() {
 				@Override
 				public void run() {
 					final SimpleCallableFuture<CommandResult> future = commandRunner.runCommand(command);
 
+//					Future.get() will block - so we call it in another thread, to keep normal command processing flow
 					new Thread(new Runnable() {
 						@Override
 						public void run() {
@@ -143,18 +136,6 @@ import timber.log.Timber;
 							}
 						}
 					}).start();
-//					CommandResult result = null;
-
-
-//					if (result != null) {
-//						final CommandResult finalResult = result;
-//						mainThreadHandler.post(new Runnable() {
-//							@Override
-//							public void run() {
-//								updateCommandStatus(command, finalResult);
-//							}
-//						});
-//					}
 				}
 			});
 		} else {

@@ -80,8 +80,6 @@ public class BluetoothLeService extends Service {
         final BTLEDevicePreferences prefs = new BTLEDevicePreferences();
         mDeviceHive.setApiEnpointUrl(prefs.getServerUrl());
 
-//        FIXME: originally there can be multiple command listeners - I can't understand why we need multiple, so replace it with single
-//        mDeviceHive.addCommandListener(commandListener);
         mDeviceHive.setCommandListener(commandListener);
         if (!mDeviceHive.isRegistered()) {
             mDeviceHive.registerDevice();

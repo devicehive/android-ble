@@ -15,9 +15,7 @@ import android.os.ParcelUuid;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.dataart.android.devicehive.Command;
 import com.dataart.android.devicehive.device.CommandResult;
-import com.dataart.btle_android.R;
 import com.dataart.btle_android.btle_gateway.future.SimpleCallableFuture;
 import com.dataart.btle_android.btle_gateway.gatt.callbacks.DeviceConnection;
 import com.dataart.btle_android.btle_gateway.gatt.callbacks.InteractiveGattCallback;
@@ -44,7 +42,7 @@ public class BluetoothServer extends BluetoothGattCallback {
 
     private Context context;
     private BluetoothAdapter bluetoothAdapter = null;
-//    stores list of currently connected devices storing binding between adress, gatt and callback
+//    Stores list of currently connected devices with adress, gatt and callback
     private Map<String, DeviceConnection> activeConnections = new HashMap<String, DeviceConnection>();
 
     private ArrayList<LeScanResult> deviceList = new ArrayList<LeScanResult>();
@@ -80,16 +78,11 @@ public class BluetoothServer extends BluetoothGattCallback {
         return devices;
     }
 
-//    FIXME:  unused
-//    public void setDiscoveredDeviceListener(final DiscoveredDeviceListener discoveredDeviceListener) {
-//        this.discoveredDeviceListener = discoveredDeviceListener;
-//    }
-
     private final BluetoothAdapter.LeScanCallback leScanCallback = new BluetoothAdapter.LeScanCallback() {
 
         @Override
         public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
-//            skip if already found
+//            Skip if already found
             for (LeScanResult result : deviceList) {
                 if (result.getDevice().getAddress().equals(device.getAddress())) {
                     return;
@@ -144,7 +137,7 @@ public class BluetoothServer extends BluetoothGattCallback {
         void call(BluetoothDevice device);
     }
 
-//    will seek among discovered but not connected devices
+//    Will seek among discovered but not connected devices
     private void applyForDevice(String address, DeviceOperation operation) {
         LeScanResult result = getResultByUDID(address);
         if (result != null) {
@@ -157,7 +150,8 @@ public class BluetoothServer extends BluetoothGattCallback {
     private interface ConnectionOperation {
         void call(DeviceConnection connection);
     }
-//    will seek among connected devices
+
+//    Will seek among connected devices
     private void applyForConnection(String address, ConnectionOperation operation) {
         DeviceConnection connection = activeConnections.get(address);
         if (connection != null) {
@@ -168,24 +162,23 @@ public class BluetoothServer extends BluetoothGattCallback {
     }
 
     public SimpleCallableFuture<CommandResult> gattConnect(final String address) {
-//            , final Command.UpdateCommandStatusCallback commandStatusCallback) {
-
         final SimpleCallableFuture<CommandResult> future = new SimpleCallableFuture<CommandResult>();
+
         applyForDevice(address, new DeviceOperation() {
             @Override
             public void call(BluetoothDevice device) {
                 Timber.d("connecting to " + address);
-//                commandStatusCallback.setTag(address);
-//                we need separate callbacks for different connections - and we can keep a lot of connections
+
+//              We can store mutliple connections - and each should have it's own callback
                 InteractiveGattCallback callback = new InteractiveGattCallback(future);
                 BluetoothGatt gatt = device.connectGatt(context, false, callback);
                 activeConnections.put(address, new DeviceConnection(address, gatt, callback));
+
                 Timber.d("connection added. connections now: " + activeConnections.size());
             }
         });
 
         return future;
-//        return new CommandResult(CommandResult.STATUS_WAITING, "Waiting for connection");
     }
 
     public void gattDisconnect(final String address) {
@@ -196,7 +189,6 @@ public class BluetoothServer extends BluetoothGattCallback {
                 connection.getGatt().disconnect();
                 activeConnections.remove(address);
                 Timber.d("disconnected. connections left: "+activeConnections.size());
-//                return new CommandResult(CommandResult.STATUS_COMLETED, "Ok");
             }
         });
     }

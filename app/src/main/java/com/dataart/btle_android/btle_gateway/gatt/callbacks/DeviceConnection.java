@@ -5,7 +5,7 @@ import android.bluetooth.BluetoothGattCallback;
 
 /**
  * Created by Constantine Mars on 3/27/15.
- * structure to store single gatt connection callback in one place
+ * Structure to store single gatt connection callback in one place
  */
 public class DeviceConnection {
     private String address;

@@ -22,7 +22,6 @@ public class BTLEDeviceHive extends Device {
     private static final String TAG = "AndroidBTLE";
 
     private List<RegistrationListener> registrationListeners = new LinkedList<RegistrationListener>();
-//    private List<CommandListener> commandListeners = new LinkedList<CommandListener>();
     private CommandListener commandListener;
     private List<NotificationListener> notificationListeners = new LinkedList<NotificationListener>();
 
@@ -68,8 +67,6 @@ public class BTLEDeviceHive extends Device {
     @Override
     public void onBeforeRunCommand(Command command) {
         Log.d(TAG, "onBeforeRunCommand: " + command.getCommand());
-//        notifyListenersCommandReceived wasn't returning command result before
-//        notifyListenersCommandReceived(command);
     }
 
     @Override
@@ -91,38 +88,13 @@ public class BTLEDeviceHive extends Device {
         registrationListeners.remove(listener);
     }
 
-//    FIXME: should it be removed?
-//    public void addCommandListener(CommandListener listener) {
-//        commandListeners.add(listener);
-//    }
-
     public void setCommandListener(CommandListener listener) {
         this.commandListener = listener;
     }
 
-//    FIXME: should be removed?
-//    public void removeCommandListener(CommandListener listener) {
-//        commandListeners.remove(listener);
-//    }
-
     public void removeCommandListener() {
         commandListener = null;
     }
-
-//    FIXME: unused
-//    public void addNotificationListener(NotificationListener listener) {
-//        notificationListeners.add(listener);
-//    }
-//
-//    public void removeNotificationListener(NotificationListener listener) {
-//        notificationListeners.remove(listener);
-//    }
-//
-//    public void removeListener(Object listener) {
-//        registrationListeners.remove(listener);
-//        commandListeners.remove(listener);
-//        notificationListeners.remove(listener);
-//    }
 
     @Override
     protected void onStartRegistration() {
@@ -170,14 +142,7 @@ public class BTLEDeviceHive extends Device {
     }
 
     private SimpleCallableFuture<CommandResult> notifyListenersCommandReceived(Command command) {
-//        for (CommandListener listener : commandListeners) {
-            return commandListener.onDeviceReceivedCommand(command);
-//            Should return immediately if error happened
-//            if (!result.getStatus().equals(CommandResult.STATUS_COMLETED)) {
-//                return result;
-//            }
-//        }
-//        return new CommandResult(CommandResult.STATUS_COMLETED, getContext().getString(R.string.status_ok));
+        return commandListener.onDeviceReceivedCommand(command);
     }
 
     private void notifyListenersDeviceRegistered() {

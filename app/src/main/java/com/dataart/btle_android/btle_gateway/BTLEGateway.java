@@ -31,7 +31,6 @@ public class BTLEGateway {
         try {
             final String name = command.getCommand();
             final LeCommand leCommand = LeCommand.fromName(name);
-//            final Command.UpdateCommandStatusCallback commandStatusCallback = command.getCommandStatusCallback();
 
             @SuppressWarnings("unchecked")
             final HashMap<String, Object> params = (HashMap<String, Object>) command.getParameters();
@@ -61,13 +60,6 @@ public class BTLEGateway {
                 case GATT_CONNECT:
                     Timber.d("connecting to " + address);
                     return bluetoothServerGateway.gattConnect(address);
-//                    new Handler().postDelayed(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            commandStatusCallback.call(new CommandResult(CommandResult.STATUS_FAILED, "Connection timeout reached ("+BluetoothServer.COMMAND_SCAN_DELAY/1000+" sec)"));
-//                        }
-//                    }, BluetoothServer.COMMAND_SCAN_DELAY);
-//                    break;
                 case GATT_DISCONNECT:
                     Timber.d("disconnecting from" + address);
                     bluetoothServerGateway.gattDisconnect(address);
