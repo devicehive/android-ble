@@ -49,21 +49,17 @@ public class BTLEGateway {
                     break;
                 case SCAN:
                     bluetoothServerGateway.scanStart(context);
-                    final Handler handler = new Handler();
-                    handler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            sendStopResult(dh);
-                        }
-                    }, BluetoothServer.COMMAND_SCAN_DELAY);
+                    Handler handler = new Handler();
+                    handler.postDelayed(() -> sendStopResult(dh), BluetoothServer.COMMAND_SCAN_DELAY);
                     break;
                 case GATT_CONNECT:
                     Timber.d("connecting to " + address);
                     return bluetoothServerGateway.gattConnect(address);
+
                 case GATT_DISCONNECT:
                     Timber.d("disconnecting from" + address);
-                    bluetoothServerGateway.gattDisconnect(address);
-                    break;
+                    return bluetoothServerGateway.gattDisconnect(address);
+
                 case GATT_PRIMARY:
                     bluetoothServerGateway.gattPrimary(address, context, new GattCharacteristicCallBack() {
                         @Override

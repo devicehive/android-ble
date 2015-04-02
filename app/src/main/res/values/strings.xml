@@ -40,4 +40,11 @@
     <string name="status_waiting">Waiting for completion</string>
 
     <string name="connection_failed">Connection failed</string>
+    <string name="connection_timeout">Connection timeout reached</string>
+    <string name="device_not_found">device %s not found in discovered devices</string>
+    <string name="connection_not_established">connection to %s is not established</string>
+    <string name="read_ch_failed">failed to read characteristic %s from service %s</string>
+    <string name="gatt_null">gatt is null - probably not connected</string>
+    <string name="gatt_failure">gatt failure with status: </string>
+
 </resources>
