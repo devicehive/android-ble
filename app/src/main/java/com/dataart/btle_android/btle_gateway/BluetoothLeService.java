@@ -20,7 +20,7 @@ import com.dataart.android.devicehive.device.CommandResult;
 import com.dataart.android.devicehive.network.DeviceHiveApiService;
 import com.dataart.btle_android.MainActivity;
 import com.dataart.btle_android.R;
-import com.dataart.btle_android.btle_gateway.future.SimpleCallableFuture;
+import com.dataart.android.devicehive.device.future.SimpleCallableFuture;
 import com.dataart.btle_android.devicehive.BTLEDeviceHive;
 import com.dataart.btle_android.devicehive.BTLEDevicePreferences;
 

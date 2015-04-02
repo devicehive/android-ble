@@ -25,9 +25,7 @@ import com.dataart.android.devicehive.device.commands.UpdateCommandStatusCommand
 import com.dataart.android.devicehive.network.DeviceHiveResultReceiver;
 import com.dataart.android.devicehive.network.NetworkCommand;
 import com.dataart.android.devicehive.network.ServiceConnection;
-import com.dataart.btle_android.btle_gateway.future.SimpleCallableFuture;
-
-import timber.log.Timber;
+import com.dataart.android.devicehive.device.future.SimpleCallableFuture;
 
 /* package */class DeviceServiceConnection extends ServiceConnection {
 

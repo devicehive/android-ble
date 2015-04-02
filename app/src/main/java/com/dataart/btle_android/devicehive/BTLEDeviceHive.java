@@ -11,8 +11,7 @@ import com.dataart.android.devicehive.Network;
 import com.dataart.android.devicehive.Notification;
 import com.dataart.android.devicehive.device.CommandResult;
 import com.dataart.android.devicehive.device.Device;
-import com.dataart.btle_android.R;
-import com.dataart.btle_android.btle_gateway.future.SimpleCallableFuture;
+import com.dataart.android.devicehive.device.future.SimpleCallableFuture;
 
 import java.util.LinkedList;
 import java.util.List;

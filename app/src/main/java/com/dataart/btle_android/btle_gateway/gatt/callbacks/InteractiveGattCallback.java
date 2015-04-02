@@ -8,7 +8,7 @@ import android.bluetooth.BluetoothProfile;
 
 import com.dataart.android.devicehive.device.CommandResult;
 import com.dataart.btle_android.btle_gateway.GattCharacteristicCallBack;
-import com.dataart.btle_android.btle_gateway.future.SimpleCallableFuture;
+import com.dataart.android.devicehive.device.future.SimpleCallableFuture;
 
 import java.util.UUID;
 

@@ -1,7 +1,7 @@
 package com.dataart.android.devicehive.device;
 
 import com.dataart.android.devicehive.Command;
-import com.dataart.btle_android.btle_gateway.future.SimpleCallableFuture;
+import com.dataart.android.devicehive.device.future.SimpleCallableFuture;
 
 /**
  * Common interface for objects able to execute commands. Usually these are

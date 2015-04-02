@@ -1,4 +1,4 @@
-package com.dataart.btle_android.btle_gateway.future;
+package com.dataart.android.devicehive.device.future;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.RunnableFuture;

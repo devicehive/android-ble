@@ -9,7 +9,7 @@ import com.dataart.android.devicehive.Command;
 import com.dataart.android.devicehive.Notification;
 import com.dataart.android.devicehive.device.CommandResult;
 import com.dataart.btle_android.R;
-import com.dataart.btle_android.btle_gateway.future.SimpleCallableFuture;
+import com.dataart.android.devicehive.device.future.SimpleCallableFuture;
 import com.dataart.btle_android.devicehive.BTLEDeviceHive;
 import com.google.gson.Gson;
 

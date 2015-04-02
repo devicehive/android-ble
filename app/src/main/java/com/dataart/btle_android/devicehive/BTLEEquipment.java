@@ -6,7 +6,7 @@ import com.dataart.android.devicehive.Command;
 import com.dataart.android.devicehive.EquipmentData;
 import com.dataart.android.devicehive.device.CommandResult;
 import com.dataart.android.devicehive.device.Equipment;
-import com.dataart.btle_android.btle_gateway.future.SimpleCallableFuture;
+import com.dataart.android.devicehive.device.future.SimpleCallableFuture;
 
 public class BTLEEquipment extends Equipment {
 
