@@ -50,7 +50,12 @@ public class BTLEGateway {
                 case SCAN:
                     bluetoothServerGateway.scanStart(context);
                     Handler handler = new Handler();
-                    handler.postDelayed(() -> sendStopResult(dh), BluetoothServer.COMMAND_SCAN_DELAY);
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            sendStopResult(dh);
+                        }
+                    }, BluetoothServer.COMMAND_SCAN_DELAY);
                     break;
                 case GATT_CONNECT:
                     Timber.d("connecting to " + address);

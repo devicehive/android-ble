@@ -106,7 +106,7 @@ public class BluetoothServer extends BluetoothGattCallback {
             public void run() {
 //              "Never scan on a loop, and set a time limit on your scan. " - https://developer.android.com/guide/topics/connectivity/bluetooth-le.html#find
                 bluetoothAdapter().stopLeScan(leScanCallback);
-                Timber.d("BLE scan stopped on timeout "+BluetoothServer.COMMAND_SCAN_DELAY /1000+" sec");
+                Timber.d("BLE scan stopped on timeout " + BluetoothServer.COMMAND_SCAN_DELAY / 1000 + " sec");
             }
         }, BluetoothServer.COMMAND_SCAN_DELAY);
     }
@@ -177,7 +177,7 @@ public class BluetoothServer extends BluetoothGattCallback {
                 Timber.d("connecting to " + address);
 
 //              We can store mutliple connections - and each should have it's own callback
-                InteractiveGattCallback callback = new InteractiveGattCallback(future, context);
+                final InteractiveGattCallback callback = new InteractiveGattCallback(future, context);
                 BluetoothGatt gatt = device.connectGatt(context, false, callback);
                 activeConnections.put(address, new DeviceConnection(address, gatt, callback));
 
@@ -186,7 +186,9 @@ public class BluetoothServer extends BluetoothGattCallback {
                 handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        future.call(new CommandResult(CommandResult.STATUS_FAILED, context.getString(R.string.connection_timeout)));
+                        if (!callback.isConnectionStateChanged()) {
+                            future.call(new CommandResult(CommandResult.STATUS_FAILED, context.getString(R.string.connection_timeout)));
+                        }
                     }
                 }, BluetoothServer.COMMAND_SCAN_DELAY);
 
@@ -203,7 +205,7 @@ public class BluetoothServer extends BluetoothGattCallback {
     }
 
     public SimpleCallableFuture<CommandResult> gattDisconnect(final String address) {
-        SimpleCallableFuture<CommandResult> future = new SimpleCallableFuture<>();
+        final SimpleCallableFuture<CommandResult> future = new SimpleCallableFuture<>();
 
         applyForConnection(address, new ConnectionOperation() {
             @Override
@@ -302,12 +304,12 @@ public class BluetoothServer extends BluetoothGattCallback {
 
     public SimpleCallableFuture<CommandResult> gattRead(Context context, final String address, final String serviceUUID, final String characteristicUUID,
                          final GattCharacteristicCallBack gattCharacteristicCallBack) {
-        SimpleCallableFuture<CommandResult> future = new SimpleCallableFuture<>();
+        final SimpleCallableFuture<CommandResult> future = new SimpleCallableFuture<>();
 
         applyForConnection(address, new ConnectionOperation() {
             @Override
             public void call(DeviceConnection connection) {
-                connection.getCallback().readCharacteristic(serviceUUID, characteristicUUID, gattCharacteristicCallBack);
+                connection.getCallback().readCharacteristic(serviceUUID, characteristicUUID, gattCharacteristicCallBack, future);
             }
 
             @Override
@@ -321,12 +323,12 @@ public class BluetoothServer extends BluetoothGattCallback {
 
     public SimpleCallableFuture<CommandResult> gattWrite(Context context, final String address, final String serviceUUID, final String characteristicUUID,
                           final byte[] value, final GattCharacteristicCallBack gattCharacteristicCallBack) {
-        SimpleCallableFuture<CommandResult> future = new SimpleCallableFuture<>();
+        final SimpleCallableFuture<CommandResult> future = new SimpleCallableFuture<>();
 
         applyForConnection(address, new ConnectionOperation() {
             @Override
             public void call(DeviceConnection connection) {
-                connection.getCallback().writeCharacteristic(serviceUUID, characteristicUUID, gattCharacteristicCallBack, value);
+                connection.getCallback().writeCharacteristic(serviceUUID, characteristicUUID, gattCharacteristicCallBack, value, future);
             }
 
             @Override

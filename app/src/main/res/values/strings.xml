@@ -41,10 +41,11 @@
 
     <string name="connection_failed">Connection failed</string>
     <string name="connection_timeout">Connection timeout reached</string>
-    <string name="device_not_found">device %s not found in discovered devices</string>
-    <string name="connection_not_established">connection to %s is not established</string>
-    <string name="read_ch_failed">failed to read characteristic %s from service %s</string>
+    <string name="device_not_found">device %1$s not found in discovered devices</string>
+    <string name="connection_not_established">connection to %1$s is not established</string>
+    <string name="read_ch_failed">failed to read characteristic %1$s from service %2$s</string>-->
     <string name="gatt_null">gatt is null - probably not connected</string>
-    <string name="gatt_failure">gatt failure with status: </string>
+    <string name="gatt_failure">gatt failure with status </string>
+    <string name="connection_failed_result">Failed with status=%1$d, state=%2$d</string>
 
 </resources>
