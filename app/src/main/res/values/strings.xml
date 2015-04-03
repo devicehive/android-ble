@@ -52,5 +52,6 @@
     <string name="is_disconnected">%1$s is disconnected</string>
     <string name="value">Value: %1$s</string>
     <string name="status">Status: %1$d</string>
+    <string name="unknown_command">Unknown command</string>
 
 </resources>

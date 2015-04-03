@@ -145,6 +145,7 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
             callBack.onRead(value);
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 final String sValue = Utils.printHexBinary(value);
+
                 callableFuture.call(new CommandResult(CommandResult.STATUS_COMLETED, String.format(context.getString(R.string.value), sValue)));
             } else {
 //                TODO: handle BluetoothGatt.GATT_WRITE_NOT_PERMITTED and others

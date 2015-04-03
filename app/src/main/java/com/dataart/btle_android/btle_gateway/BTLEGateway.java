@@ -134,9 +134,9 @@ public class BTLEGateway {
                         }
                     });
                     break;
-//                FIXME: unused
-//                case UNKNOWN:
-//                    return;
+                case UNKNOWN:
+                default:
+                    new SimpleCallableFuture<CommandResult>(new CommandResult(CommandResult.STATUS_FAILED, context.getString(R.string.unknown_command)));
             }
         } catch (Exception e) {
             Log.e("TAG", "Error during handling" + e.toString());
