@@ -174,7 +174,7 @@ public class BluetoothServer extends BluetoothGattCallback {
                 Timber.d("connecting to " + address);
 
 //              We can store mutliple connections - and each should have it's own callback
-                final InteractiveGattCallback callback = new InteractiveGattCallback(future, context, disconnecListener);
+                final InteractiveGattCallback callback = new InteractiveGattCallback(address, future, context, disconnecListener);
                 BluetoothGatt gatt = device.connectGatt(context, false, callback);
                 activeConnections.put(address, new DeviceConnection(address, gatt, callback));
 

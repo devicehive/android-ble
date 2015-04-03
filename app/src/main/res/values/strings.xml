@@ -35,6 +35,10 @@
     <string name="notification_bt_off">Bluetooth is off. Please turn on Bluetooth to continue working with DeviceHive BLE Gateway</string>
     <string name="notification_bt_on">BLE Service is working...</string>
 
+    <string name="status_json_success">success</string>
+    <string name="status_json_fail">fail</string>
+    <string name="status_json_not_found">not found</string>
+
     <string name="status_ok">Ok</string>
     <string name="status_fail">Fail</string>
     <string name="status_waiting">Waiting for completion</string>

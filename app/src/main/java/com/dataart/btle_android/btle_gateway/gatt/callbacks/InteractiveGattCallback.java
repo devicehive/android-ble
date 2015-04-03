@@ -11,7 +11,6 @@ import com.dataart.android.devicehive.device.CommandResult;
 import com.dataart.btle_android.R;
 import com.dataart.btle_android.btle_gateway.GattCharacteristicCallBack;
 import com.dataart.android.devicehive.device.future.SimpleCallableFuture;
-import com.dataart.btle_android.btle_gateway.Utils;
 import com.google.gson.Gson;
 
 import java.util.UUID;
@@ -24,6 +23,7 @@ import timber.log.Timber;
  */
 public class InteractiveGattCallback extends BluetoothGattCallback {
     private boolean servicesDiscovered = false;
+    private String address;
     private BluetoothGatt gatt;
     private ReadCharacteristicOperation readOperation;
     private WriteCharacteristicOperation writeOperation;
@@ -35,7 +35,8 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
         return connectionStateChanged;
     }
 
-    public InteractiveGattCallback(SimpleCallableFuture<CommandResult> future, Context context, DisconnecListener disconnecListener) {
+    public InteractiveGattCallback(String address, SimpleCallableFuture<CommandResult> future, Context context, DisconnecListener disconnecListener) {
+        this.address = address;
         this.callableFuture = future;
         this.context = context;
         this.disconnecListener = disconnecListener;
@@ -93,7 +94,7 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
     }
 
     public void readCharacteristic(String serviceUUID, String characteristicUUID, GattCharacteristicCallBack callBack, SimpleCallableFuture<CommandResult> future) {
-        readOperation = new ReadCharacteristicOperation(serviceUUID, characteristicUUID, callBack, future, context);
+        readOperation = new ReadCharacteristicOperation(address, serviceUUID, characteristicUUID, callBack, future, context);
         if (gatt != null) {
             if (servicesDiscovered) {
 //                read right now
@@ -109,7 +110,7 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
     }
 
     public void writeCharacteristic(String serviceUUID, String characteristicUUID, GattCharacteristicCallBack callBack, byte[] value, SimpleCallableFuture<CommandResult> callableFuture) {
-        writeOperation = new WriteCharacteristicOperation(serviceUUID, characteristicUUID, callBack, value, callableFuture, context);
+        writeOperation = new WriteCharacteristicOperation(address, serviceUUID, characteristicUUID, callBack, value, callableFuture, context);
         if (gatt != null) {
             if (servicesDiscovered) {
 //                read right now
@@ -128,37 +129,37 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
 
     public static class ReadCharacteristicOperation extends CharacteristicOperation {
 
-        public ReadCharacteristicOperation(String serviceUUID, String characteristicUUID, GattCharacteristicCallBack callBack, SimpleCallableFuture<CommandResult> callableFuture, Context context) {
-            super(serviceUUID, characteristicUUID, callBack, callableFuture, context);
+        public ReadCharacteristicOperation(String device, String serviceUUID, String characteristicUUID, GattCharacteristicCallBack callBack, SimpleCallableFuture<CommandResult> callableFuture, Context context) {
+            super(device, serviceUUID, characteristicUUID, callBack, callableFuture, context);
         }
 
         @Override
         protected void request(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             if (!gatt.readCharacteristic(characteristic)) {
-                callableFuture.call(new CommandResult(CommandResult.STATUS_FAILED, context.getString(R.string.status_fail)));
+                callableFuture.call(commandResultFail());
             }
         }
 
         @Override
         public void onResult(BluetoothGattCharacteristic characteristic, int status) {
             byte[] value = characteristic.getValue();
-            callBack.onRead(value);
-            if (status == BluetoothGatt.GATT_SUCCESS) {
-                final String sValue = Utils.printHexBinary(value);
 
-                callableFuture.call(new CommandResult(CommandResult.STATUS_COMLETED, String.format(context.getString(R.string.value), sValue)));
-            } else {
-//                TODO: handle BluetoothGatt.GATT_WRITE_NOT_PERMITTED and others
-                callableFuture.call(new CommandResult(CommandResult.STATUS_FAILED, context.getString(R.string.gatt_failure)+status));
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                callBack.onRead(value);
+                callableFuture.call(commandResultSuccessWithValue(value));
+                return;
             }
+
+//          TODO: handle BluetoothGatt.GATT_WRITE_NOT_PERMITTED and others
+            callableFuture.call(commandResultFailWithStatusAndValue(String.valueOf(status), value));
         }
     }
 
     public static class WriteCharacteristicOperation extends CharacteristicOperation {
         private byte[] value;
 
-        public WriteCharacteristicOperation(String serviceUUID, String characteristicUUID, GattCharacteristicCallBack callBack, byte[] value, SimpleCallableFuture<CommandResult> callableFuture, Context context) {
-            super(serviceUUID, characteristicUUID, callBack, callableFuture, context);
+        public WriteCharacteristicOperation(String device, String serviceUUID, String characteristicUUID, GattCharacteristicCallBack callBack, byte[] value, SimpleCallableFuture<CommandResult> callableFuture, Context context) {
+            super(device, serviceUUID, characteristicUUID, callBack, callableFuture, context);
             this.value = value;
         }
 
@@ -166,7 +167,7 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
         protected void request(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             characteristic.setValue(value);
             if (!gatt.writeCharacteristic(characteristic)) {
-                callableFuture.call(new CommandResult(CommandResult.STATUS_FAILED, context.getString(R.string.status_fail)));
+                callableFuture.call(commandResultFail());
             }
         }
 
@@ -174,10 +175,10 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
         public void onResult(BluetoothGattCharacteristic characteristic, int status) {
             callBack.onWrite(status);
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                callableFuture.call(new CommandResult(CommandResult.STATUS_COMLETED, String.format(context.getString(R.string.status), status)));
+                callableFuture.call(commandResultSuccess());
             } else {
 //                TODO: handle BluetoothGatt.GATT_WRITE_NOT_PERMITTED and others
-                callableFuture.call(new CommandResult(CommandResult.STATUS_FAILED, context.getString(R.string.gatt_failure)+status));
+                callableFuture.call(commandResultFailWithStatusAndValue(String.valueOf(status), value));
             }
         }
     }
@@ -185,11 +186,13 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
     public abstract static class CharacteristicOperation {
         private String serviceUUID;
         private String characteristicUUID;
+        protected String device;
         protected GattCharacteristicCallBack callBack;
         protected SimpleCallableFuture<CommandResult> callableFuture;
         protected Context context;
 
-        public CharacteristicOperation(String serviceUUID, String characteristicUUID, GattCharacteristicCallBack callBack, SimpleCallableFuture<CommandResult> callableFuture, Context context) {
+        public CharacteristicOperation(String device, String serviceUUID, String characteristicUUID, GattCharacteristicCallBack callBack, SimpleCallableFuture<CommandResult> callableFuture, Context context) {
+            this.device = device;
             this.serviceUUID = serviceUUID;
             this.characteristicUUID = characteristicUUID;
             this.callBack = callBack;
@@ -204,32 +207,70 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
                 if (characteristic != null) {
                     request(gatt, characteristic);
                     return;
-                } else {
-                    noSuchCharacteristic(context, characteristicUUID, serviceUUID, callableFuture);
                 }
-            } else {
-                noSuchService(context, serviceUUID, callableFuture);
             }
-            String m = String.format(context.getString(R.string.read_ch_failed), characteristicUUID, serviceUUID);
-            Timber.d(m);
-            callableFuture.call(new CommandResult(CommandResult.STATUS_FAILED, m));
-        }
 
-        private static void noSuchCharacteristic(Context context, String characteristicUUID, String serviceUUID, SimpleCallableFuture<CommandResult> callableFuture) {
-            String m = String.format(context.getString(R.string.no_such_characteristic), characteristicUUID, serviceUUID);
-            Timber.d(m);
-            callableFuture.call(new CommandResult(CommandResult.STATUS_FAILED, m));
-        }
-
-        private static void noSuchService(Context context, String serviceUUID, SimpleCallableFuture<CommandResult> callableFuture) {
-            String m = String.format(context.getString(R.string.no_such_service), serviceUUID);
-            Timber.d(m);
-            callableFuture.call(new CommandResult(CommandResult.STATUS_FAILED, m));
+            callableFuture.call(commandResultFailWithStatus(context.getString(R.string.status_json_not_found)));
         }
 
         abstract protected void request(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic);
 
         abstract public void onResult(BluetoothGattCharacteristic characteristic, int status);
+
+        private String jsonStatus(int statusStringId) {
+            return jsonStatus(context.getString(statusStringId));
+        }
+
+        private String jsonStatus(String status) {
+            return new Gson().toJson(new StatusJson.Status(
+                    status,
+                    device,
+                    serviceUUID,
+                    characteristicUUID
+            ));
+        }
+
+        private String jsonStatusWithValue(String status, byte[] value) {
+            return new Gson().toJson(new StatusJson.StatusWithValue(
+                    status,
+                    value,
+                    device,
+                    serviceUUID,
+                    characteristicUUID
+            ));
+        }
+
+        private String jsonStatusWithValue(int statusStringId, byte[] value) {
+            return jsonStatusWithValue(context.getString(statusStringId), value);
+        }
+
+        protected CommandResult commandResultSuccessWithValue(byte[] value) {
+            return new CommandResult(CommandResult.STATUS_COMLETED, jsonStatusWithValue(R.string.status_json_success, value));
+        }
+
+        protected CommandResult commandResultSuccess() {
+            return new CommandResult(CommandResult.STATUS_COMLETED, jsonStatus(R.string.status_json_success));
+        }
+
+        protected CommandResult commandResultFailWithStatus(String status) {
+            return new CommandResult(CommandResult.STATUS_FAILED, jsonStatus(status));
+        }
+
+        protected CommandResult commandResultFail() {
+            return new CommandResult(CommandResult.STATUS_FAILED, jsonStatus(R.string.status_json_fail));
+        }
+
+        protected CommandResult commandResultFailWithStatusAndValue(String status, byte[] value) {
+            return new CommandResult(CommandResult.STATUS_FAILED, jsonStatusWithValue(status, value));
+        }
+
+        protected CommandResult commandResultFailWithValue(byte[] value) {
+            return new CommandResult(CommandResult.STATUS_FAILED, jsonStatusWithValue(R.string.status_json_fail, value));
+        }
+
+        protected CommandResult commandResultNotFound() {
+            return new CommandResult(CommandResult.STATUS_FAILED, jsonStatus(R.string.status_json_not_found));
+        }
     }
 
     public interface DisconnecListener {
