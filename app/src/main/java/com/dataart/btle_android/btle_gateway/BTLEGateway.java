@@ -84,7 +84,7 @@ public class BTLEGateway {
                     });
                     break;
                 case GATT_READ:
-                    bluetoothServerGateway.gattRead(context, address, serviceUUID, characteristicUUID, new GattCharacteristicCallBack() {
+                    return bluetoothServerGateway.gattRead(context, address, serviceUUID, characteristicUUID, new GattCharacteristicCallBack() {
                         @Override
                         public void onRead(byte[] value) {
                             final String sValue = Utils.printHexBinary(value);
@@ -92,18 +92,18 @@ public class BTLEGateway {
                             sendNotification(dh, leCommand, json);
                         }
                     });
-                    break;
+
                 case GATT_WRITE:
                     final String sValue = (String) (params!=null ? params.get("value") : null);
                     final byte[] value = Utils.parseHexBinary(sValue);
-                    bluetoothServerGateway.gattWrite(context, address, serviceUUID, characteristicUUID, value, new GattCharacteristicCallBack() {
+                    return bluetoothServerGateway.gattWrite(context, address, serviceUUID, characteristicUUID, value, new GattCharacteristicCallBack() {
                         @Override
                         public void onWrite(int state) {
                             final String json = new Gson().toJson(state);
                             sendNotification(dh, leCommand, json);
                         }
                     });
-                    break;
+
                 case GATT_NOTIFICATION:
                     bluetoothServerGateway.gattNotifications(context, address, serviceUUID, characteristicUUID, true, new GattCharacteristicCallBack() {
 

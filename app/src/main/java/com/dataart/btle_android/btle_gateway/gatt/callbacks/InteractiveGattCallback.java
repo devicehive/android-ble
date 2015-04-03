@@ -192,9 +192,25 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
                 if (characteristic != null) {
                     request(gatt, characteristic);
                     return;
+                } else {
+                    noSuchCharacteristic(context, characteristicUUID, serviceUUID, callableFuture);
                 }
+            } else {
+                noSuchService(context, serviceUUID, callableFuture);
             }
             String m = String.format(context.getString(R.string.read_ch_failed), characteristicUUID, serviceUUID);
+            Timber.d(m);
+            callableFuture.call(new CommandResult(CommandResult.STATUS_FAILED, m));
+        }
+
+        private static void noSuchCharacteristic(Context context, String characteristicUUID, String serviceUUID, SimpleCallableFuture<CommandResult> callableFuture) {
+            String m = String.format(context.getString(R.string.no_such_characteristic), characteristicUUID, serviceUUID);
+            Timber.d(m);
+            callableFuture.call(new CommandResult(CommandResult.STATUS_FAILED, m));
+        }
+
+        private static void noSuchService(Context context, String serviceUUID, SimpleCallableFuture<CommandResult> callableFuture) {
+            String m = String.format(context.getString(R.string.no_such_service), serviceUUID);
             Timber.d(m);
             callableFuture.call(new CommandResult(CommandResult.STATUS_FAILED, m));
         }
