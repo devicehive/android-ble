@@ -11,7 +11,6 @@ import com.dataart.android.devicehive.device.Equipment;
  * Represents equipment data. Used to initialize {@link com.dataart.android.devicehive.device.Equipment} object.
  */
 public class EquipmentData extends DataContainer {
-	private int id;
 	private String name;
 	private String code;
 	private String type;
@@ -29,25 +28,15 @@ public class EquipmentData extends DataContainer {
 	 *            capabilities.
 	 */
 	public EquipmentData(String name, String code, String type) {
-		this(null, -1, name, code, type);
+		this(null, name, code, type);
 	}
 
-	/* package */EquipmentData(Serializable data, int id, String name,
+	/* package */EquipmentData(Serializable data, String name,
 			String code, String type) {
 		super(data);
-		this.id = id;
 		this.name = name;
 		this.code = code;
 		this.type = type;
-	}
-
-	/**
-	 * Get equipment identifier.
-	 * 
-	 * @return Equipment identifier.
-	 */
-	public int getId() {
-		return id;
 	}
 
 	/**
@@ -82,7 +71,6 @@ public class EquipmentData extends DataContainer {
 	@Override
 	public void writeToParcel(Parcel dest, int flags) {
 		super.writeToParcel(dest, flags);
-		dest.writeInt(id);
 		dest.writeString(name);
 		dest.writeString(code);
 		dest.writeString(type);
@@ -98,7 +86,7 @@ public class EquipmentData extends DataContainer {
 		@Override
 		public EquipmentData createFromParcel(Parcel source) {
 			return new EquipmentData(source.readSerializable(),
-					source.readInt(), source.readString(), source.readString(),
+					source.readString(), source.readString(),
 					source.readString());
 		}
 	};

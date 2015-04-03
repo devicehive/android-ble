@@ -50,7 +50,7 @@ public class Command implements Parcelable {
 
 	/**
 	 * Get command identifier.
-	 * 
+	 *
 	 * @return Command identifier set by the server.
 	 */
 	public int getId() {

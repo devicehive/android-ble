@@ -1,7 +1,14 @@
 package com.dataart.android.devicehive.network;
 
-import java.io.IOException;
-import java.util.Map;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.os.Parcelable;
+import android.util.Base64;
+import android.util.Log;
+
+import com.dataart.android.devicehive.DeviceHive;
+import com.dataart.btle_android.devicehive.BTLEDevicePreferences;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -28,14 +35,8 @@ import org.apache.http.params.HttpParams;
 import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.util.EntityUtils;
 
-import android.content.Context;
-import android.content.Intent;
-import android.os.Bundle;
-import android.os.Parcelable;
-import android.os.ResultReceiver;
-import android.util.Log;
-
-import com.dataart.android.devicehive.DeviceHive;
+import java.io.IOException;
+import java.util.Map;
 
 /**
  * Common base class for all service commands.
@@ -200,7 +201,7 @@ public abstract class NetworkCommand implements Parcelable {
 		addHeaders(httpRequest);
 		final UsernamePasswordCredentials creds = config.getBasicAuthorisation();
 		if (creds != null) {
-		//	addBasicAuthenticationHeader(httpRequest, creds);
+			//addBasicAuthenticationHeader(httpRequest, creds);
 		}
 
 		try {
@@ -274,7 +275,20 @@ public abstract class NetworkCommand implements Parcelable {
 		for (Map.Entry<String, String> header : headers.entrySet()) {
 			request.addHeader(header.getKey(), header.getValue());
 		}
-        request.addHeader("Authorization", "Basic c3U6YXNkQVNEcXdlMTIz");
+
+
+//        request.addHeader( //"Basic c3U6YXNkQVNEcXdlMTIz");
+//                "Authorization", "Basic " +
+//                        Base64.encode("myuser:mypass".getBytes(), Base64.DEFAULT));
+
+
+        //"Basic c3U6YXNkQVNEcXdlMTIz");
+
+        BTLEDevicePreferences pref = new BTLEDevicePreferences();
+        String s = pref.getUsername() + ":" + pref.getPassword();
+        s = "Basic " + Base64.encodeToString(s.getBytes(), Base64.NO_WRAP);
+
+        request.addHeader("Authorization",s);
 	}
 
 	private HttpUriRequest toHttpRequest() {

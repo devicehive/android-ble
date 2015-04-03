@@ -90,7 +90,7 @@ public class DeviceData extends DataContainer {
 
 	/**
 	 * Get device identifier.
-	 * 
+	 *
 	 * @return Device identifier.
 	 */
 	public String getId() {

@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="10dp">
+
+    <View
+        android:id="@+id/focus_grabber"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:focusableInTouchMode="true" />
+
+    <LinearLayout style="@style/ListItem">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/settings_server_url"
+            android:textAppearance="@android:style/TextAppearance.Medium" />
+
+        <EditText
+            android:id="@+id/server_url_edit"
+            android:imeOptions="actionNext"
+            style="@style/SingleLineEditText" />
+    </LinearLayout>
+
+    <View style="@style/ListItemDivider" />
+
+    <LinearLayout
+        style="@style/ListItem"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/settings_gateway_id"
+            android:textAppearance="@android:style/TextAppearance.Medium" />
+
+        <EditText
+            style="@style/SingleLineEditText"
+            android:id="@+id/settings_gateway_id"
+            android:imeOptions="actionNext"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/default_gateway_id" />
+    </LinearLayout>
+
+    <View style="@style/ListItemDivider" />
+
+    <LinearLayout style="@style/ListItem">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/settings_username"
+            android:textAppearance="@android:style/TextAppearance.Medium" />
+
+        <EditText
+            android:id="@+id/username_edit"
+            android:imeOptions="actionNext"
+            style="@style/SingleLineEditText" />
+    </LinearLayout>
+
+    <View style="@style/ListItemDivider" />
+
+    <LinearLayout style="@style/ListItem">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/settings_password"
+            android:textAppearance="@android:style/TextAppearance.Medium" />
+
+        <EditText
+            android:id="@+id/password_edit"
+            style="@style/SingleLineEditText" />
+    </LinearLayout>
+
+    <View style="@style/ListItemDivider" />
+
+    <RelativeLayout
+        android:id="@+id/ip_conf_buttons_frame"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp">
+
+        <Button
+            android:id="@+id/service_button"
+            android:layout_width="160dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:text="@string/button_start" />
+
+        <Button
+            android:id="@+id/save_button"
+            android:layout_width="160dp"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:text="@string/button_restart"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true" />
+
+    </RelativeLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:drawableLeft="@drawable/ic_information"
+        android:text="@string/settings_restart_hint"
+        android:gravity="center"
+        android:textAppearance="@android:style/TextAppearance.Medium"
+        android:editable="false"
+        android:visibility="gone"
+        android:id="@+id/hintText"
+        android:textColor="#ff858585"
+        android:layout_centerVertical="true"
+        android:layout_toEndOf="@+id/service_button" />
+
+</LinearLayout>

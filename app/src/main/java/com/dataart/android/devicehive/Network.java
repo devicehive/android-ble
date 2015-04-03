@@ -7,30 +7,14 @@ import android.os.Parcelable;
  * Represents a network, an isolated area where {@link Client}s reside.
  */
 public class Network implements Parcelable {
-	private int id;
 	private String key;
 	private String name;
 	private String description;
 
-	public Network(int id, String key, String name, String description) {
-		this.id = id;
+	public Network(String key, String name, String description) {
 		this.key = key;
 		this.name = name;
 		this.description = description;
-	}
-
-	/**
-	 * Constructs network object with given name and description and key.
-	 * 
-	 * @param key
-	 *            Network key.
-	 * @param name
-	 *            Network display name.
-	 * @param description
-	 *            Network description.
-	 */
-	public Network(String key, String name, String description) {
-		this(-1, key, name, description);
 	}
 
 	/**
@@ -42,16 +26,7 @@ public class Network implements Parcelable {
 	 *            Network description.
 	 */
 	public Network(String name, String description) {
-		this(-1, null, name, description);
-	}
-
-	/**
-	 * Get network identifier.
-	 * 
-	 * @return Network identifier.
-	 */
-	public int getId() {
-		return id;
+		this(null, name, description);
 	}
 
 	/**
@@ -89,7 +64,6 @@ public class Network implements Parcelable {
 
 	@Override
 	public void writeToParcel(Parcel dest, int flags) {
-		dest.writeInt(id);
 		dest.writeString(key);
 		dest.writeString(name);
 		dest.writeString(description);
@@ -104,14 +78,14 @@ public class Network implements Parcelable {
 
 		@Override
 		public Network createFromParcel(Parcel source) {
-			return new Network(source.readInt(), source.readString(),
+			return new Network(source.readString(),
 					source.readString(), source.readString());
 		}
 	};
 
 	@Override
 	public String toString() {
-		return "Network [id=" + id + ", key=" + key + ", name=" + name
+		return "Network [key=" + key + ", name=" + name
 				+ ", description=" + description + "]";
 	}
 

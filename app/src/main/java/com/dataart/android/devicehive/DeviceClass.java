@@ -9,7 +9,6 @@ import android.os.Parcelable;
  * Represents a device class which holds meta-information about {@link Client}s.
  */
 public class DeviceClass extends DataContainer {
-	private int id;
 	private String name;
 	private String version;
 	private boolean isPermanent;
@@ -18,9 +17,7 @@ public class DeviceClass extends DataContainer {
 	/**
 	 * Construct a new device class with given parameters. This method is
 	 * intended for internal use.
-	 * 
-	 * @param id
-	 *            Device class identifier.
+	 *
 	 * @param name
 	 *            Device class display name.
 	 * @param version
@@ -31,37 +28,18 @@ public class DeviceClass extends DataContainer {
 	 *            If set, specifies inactivity timeout in seconds before the
 	 *            framework changes device status to "Offline".
 	 */
-	public DeviceClass(int id, String name, String version,
+	public DeviceClass(String name, String version,
 			boolean isPermanent, Integer offlineTimeout) {
-		this(null, id, name, version, isPermanent, offlineTimeout);
+		this(null, name, version, isPermanent, offlineTimeout);
 	}
 
-	/* package */DeviceClass(Serializable data, int id, String name,
+	/* package */DeviceClass(Serializable data, String name,
 			String version, boolean isPermanent, Integer offlineTimeout) {
 		super(data);
-		this.id = id;
 		this.name = name;
 		this.version = version;
 		this.isPermanent = isPermanent;
 		this.offlineTimeout = offlineTimeout;
-	}
-
-	/**
-	 * Construct a new device class with given parameters.
-	 * 
-	 * @param name
-	 *            Device class display name.
-	 * @param version
-	 *            Device class version.
-	 * @param isPermanent
-	 *            Whether this device class is permanent.
-	 * @param offlineTimeout
-	 *            If set, specifies inactivity timeout in seconds before the
-	 *            framework changes device status to "Offline".
-	 */
-	public DeviceClass(String name, String version, boolean isPermanent,
-			Integer offlineTimeout) {
-		this(-1, name, version, isPermanent, offlineTimeout);
 	}
 
 	/**
@@ -74,15 +52,6 @@ public class DeviceClass extends DataContainer {
 	 */
 	public DeviceClass(String name, String version) {
 		this(-1, name, version, false, null);
-	}
-
-	/**
-	 * Get device class identifier.
-	 * 
-	 * @return Device class identifier.
-	 */
-	public int getId() {
-		return id;
 	}
 
 	/**
@@ -126,7 +95,6 @@ public class DeviceClass extends DataContainer {
 	@Override
 	public void writeToParcel(Parcel dest, int flags) {
 		super.writeToParcel(dest, flags);
-		dest.writeInt(id);
 		dest.writeString(name);
 		dest.writeString(version);
 		dest.writeInt(isPermanent ? 1 : 0);
@@ -142,7 +110,7 @@ public class DeviceClass extends DataContainer {
 
 		@Override
 		public DeviceClass createFromParcel(Parcel source) {
-			return new DeviceClass(source.readSerializable(), source.readInt(),
+			return new DeviceClass(source.readSerializable(),
 					source.readString(), source.readString(),
 					source.readInt() > 0, (Integer) source.readValue(null));
 		}
@@ -150,7 +118,7 @@ public class DeviceClass extends DataContainer {
 
 	@Override
 	public String toString() {
-		return "DeviceClass [id=" + id + ", name=" + name + ", version="
+		return "DeviceClass [name=" + name + ", version="
 				+ version + ", isPermanent=" + isPermanent
 				+ ", offlineTimeout=" + offlineTimeout + ", data=" + data + "]";
 	}

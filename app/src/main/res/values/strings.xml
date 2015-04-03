@@ -1,15 +1,37 @@
 <resources>
-    <string name="app_name">btle_android</string>
+    <string name="app_name">DeviceHive BLE Gateway</string>
+    <string name="device_hive">DeviceHive</string>
 
-    <string name="title_section1">BLE devices</string>
-    <string name="title_section2">DeviceHive Settings</string>
-    <string name="title_section3">DeviceHive Log</string>
+    <string name="menu_devices">BLE Devices</string>
+    <string name="menu_gateway">Gateway</string>
+
+    <string name="settings_server_url">Server URL</string>
+    <string name="settings_gateway_id">Gateway ID</string>
+    <string name="settings_username">Username</string>
+    <string name="settings_password">Password</string>
+    <string name="settings_restart_hint">You have to restart the service in order to apply new parameters</string>
+
+    <string name="button_restart">Restart</string>
+    <string name="button_start">Start service</string>
+    <string name="button_stop">Stop service</string>
+
+    <string name="default_gateway_id">devicehive_ble_andoid</string>
+
+    <string name="error_message_btle_not_supported">Bluetooth LE is not supported</string>
+    <string name="error_message_bt_not_supported">Bluetooth not supported</string>
+    <string name="error_message_empty_server_url">Server URL is required</string>
+    <string name="error_message_empty_gateway_id">Gateway ID is required</string>
+    <string name="error_message_empty_username">Username is required</string>
+    <string name="error_message_empty_password">Password is required</string>
+
+    <string name="info_message_save_settings">Settings were saved</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
-    <string name="action_example"> </string>
-
     <string name="action_settings">Settings</string>
-    <string name="unknown_device">Unkown device</string>
+    <string name="unknown_device">Unknown device</string>
+
+    <string name="notification_bt_off">Bluetooth is off. Please turn on Bluetooth to continue working with DeviceHive BLE Gateway</string>
+    <string name="notification_bt_on">BLE Service is working...</string>
 </resources>

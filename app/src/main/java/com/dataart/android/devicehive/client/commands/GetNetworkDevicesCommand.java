@@ -74,8 +74,8 @@ public class GetNetworkDevicesCommand extends DeviceClientCommand {
 
 		ArrayList<DeviceData> devices;
 
-		NetworkExtended(int id, String key, String name, String description) {
-			super(id, key, name, description);
+		NetworkExtended(String key, String name, String description) {
+			super(key, name, description);
 		}
 
 	}
