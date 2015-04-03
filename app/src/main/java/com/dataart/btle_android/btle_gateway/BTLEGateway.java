@@ -10,6 +10,7 @@ import com.dataart.android.devicehive.Notification;
 import com.dataart.android.devicehive.device.CommandResult;
 import com.dataart.btle_android.R;
 import com.dataart.android.devicehive.device.future.SimpleCallableFuture;
+import com.dataart.btle_android.btle_gateway.gatt.callbacks.InteractiveGattCallback;
 import com.dataart.btle_android.devicehive.BTLEDeviceHive;
 import com.google.gson.Gson;
 
@@ -27,7 +28,7 @@ public class BTLEGateway {
         this.bluetoothServerGateway = bluetoothServer;
     }
 
-    public SimpleCallableFuture<CommandResult> doCommand(Context context, final BTLEDeviceHive dh, final Command command) {
+    public SimpleCallableFuture<CommandResult> doCommand(final Context context, final BTLEDeviceHive dh, final Command command) {
         try {
             final String name = command.getCommand();
             final LeCommand leCommand = LeCommand.fromName(name);
@@ -59,7 +60,14 @@ public class BTLEGateway {
                     break;
                 case GATT_CONNECT:
                     Timber.d("connecting to " + address);
-                    return bluetoothServerGateway.gattConnect(address);
+                    return bluetoothServerGateway.gattConnect(address, new InteractiveGattCallback.DisconnecListener() {
+
+                        @Override
+                        public void onDisconnect() {
+                            final String json = new Gson().toJson(String.format(context.getString(R.string.is_disconnected), address));
+                            sendNotification(dh, leCommand, json);
+                        }
+                    });
 
                 case GATT_DISCONNECT:
                     Timber.d("disconnecting from" + address);

@@ -27,8 +27,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import timber.log.Timber;
 
@@ -48,7 +46,6 @@ public class BluetoothServer extends BluetoothGattCallback {
 
     private ArrayList<LeScanResult> deviceList = new ArrayList<LeScanResult>();
     private DiscoveredDeviceListener discoveredDeviceListener;
-    private ExecutorService executor = Executors.newSingleThreadExecutor();
 
     public BluetoothServer(Context context) {
         this.context = context;
@@ -168,7 +165,7 @@ public class BluetoothServer extends BluetoothGattCallback {
         }
     }
 
-    public SimpleCallableFuture<CommandResult> gattConnect(final String address) {
+    public SimpleCallableFuture<CommandResult> gattConnect(final String address, final InteractiveGattCallback.DisconnecListener disconnecListener) {
         final SimpleCallableFuture<CommandResult> future = new SimpleCallableFuture<CommandResult>();
 
         applyForDevice(address, new DeviceOperation() {
@@ -177,7 +174,7 @@ public class BluetoothServer extends BluetoothGattCallback {
                 Timber.d("connecting to " + address);
 
 //              We can store mutliple connections - and each should have it's own callback
-                final InteractiveGattCallback callback = new InteractiveGattCallback(future, context);
+                final InteractiveGattCallback callback = new InteractiveGattCallback(future, context, disconnecListener);
                 BluetoothGatt gatt = device.connectGatt(context, false, callback);
                 activeConnections.put(address, new DeviceConnection(address, gatt, callback));
 

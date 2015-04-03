@@ -11,6 +11,8 @@ import com.dataart.android.devicehive.device.CommandResult;
 import com.dataart.btle_android.R;
 import com.dataart.btle_android.btle_gateway.GattCharacteristicCallBack;
 import com.dataart.android.devicehive.device.future.SimpleCallableFuture;
+import com.dataart.btle_android.btle_gateway.Utils;
+import com.google.gson.Gson;
 
 import java.util.UUID;
 
@@ -27,14 +29,16 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
     private WriteCharacteristicOperation writeOperation;
     private SimpleCallableFuture<CommandResult> callableFuture;
     private Context context;
+    private DisconnecListener disconnecListener;
     private boolean connectionStateChanged = false;
     public boolean isConnectionStateChanged() {
         return connectionStateChanged;
     }
 
-    public InteractiveGattCallback(SimpleCallableFuture<CommandResult> future, Context context) {
+    public InteractiveGattCallback(SimpleCallableFuture<CommandResult> future, Context context, DisconnecListener disconnecListener) {
         this.callableFuture = future;
         this.context = context;
+        this.disconnecListener = disconnecListener;
     }
 
     @Override
@@ -46,11 +50,16 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
             Timber.d("isConnectionStateChanged. discovering services");
             this.gatt = gatt;
             this.gatt.discoverServices();
-            callableFuture.call(new CommandResult(CommandResult.STATUS_COMLETED, context.getString(R.string.status_ok)));
+            if (!callableFuture.isGetDone()) {
+                callableFuture.call(new CommandResult(CommandResult.STATUS_COMLETED, context.getString(R.string.status_ok)));
+            }
         } else {
             String m = String.format(context.getString(R.string.connection_failed_result), status, newState);
             Timber.d(m);
-            callableFuture.call(new CommandResult(CommandResult.STATUS_FAILED, m));
+            if (!callableFuture.isGetDone()) {
+                callableFuture.call(new CommandResult(CommandResult.STATUS_FAILED, m));
+            }
+            disconnecListener.onDisconnect();
         }
     }
 
@@ -132,9 +141,11 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
 
         @Override
         public void onResult(BluetoothGattCharacteristic characteristic, int status) {
-            callBack.onRead(characteristic.getValue());
+            byte[] value = characteristic.getValue();
+            callBack.onRead(value);
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                callableFuture.call(new CommandResult(CommandResult.STATUS_COMLETED, context.getString(R.string.status_ok)));
+                final String sValue = Utils.printHexBinary(value);
+                callableFuture.call(new CommandResult(CommandResult.STATUS_COMLETED, String.format(context.getString(R.string.value), sValue)));
             } else {
 //                TODO: handle BluetoothGatt.GATT_WRITE_NOT_PERMITTED and others
                 callableFuture.call(new CommandResult(CommandResult.STATUS_FAILED, context.getString(R.string.gatt_failure)+status));
@@ -162,7 +173,7 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
         public void onResult(BluetoothGattCharacteristic characteristic, int status) {
             callBack.onWrite(status);
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                callableFuture.call(new CommandResult(CommandResult.STATUS_COMLETED, context.getString(R.string.status_ok)));
+                callableFuture.call(new CommandResult(CommandResult.STATUS_COMLETED, String.format(context.getString(R.string.status), status)));
             } else {
 //                TODO: handle BluetoothGatt.GATT_WRITE_NOT_PERMITTED and others
                 callableFuture.call(new CommandResult(CommandResult.STATUS_FAILED, context.getString(R.string.gatt_failure)+status));
@@ -218,5 +229,9 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
         abstract protected void request(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic);
 
         abstract public void onResult(BluetoothGattCharacteristic characteristic, int status);
+    }
+
+    public interface DisconnecListener {
+        void onDisconnect();
     }
 }

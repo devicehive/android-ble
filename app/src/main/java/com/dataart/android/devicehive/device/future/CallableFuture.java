@@ -19,6 +19,7 @@ public class CallableFuture<T, U> implements RunnableFuture<T> {
     private T result;
     private U arg;
     private boolean done;
+    private boolean getDone = false;
 
     public CallableFuture(CallableWithArg<T, U> callable) { this.callable = callable; }
 
@@ -54,6 +55,10 @@ public class CallableFuture<T, U> implements RunnableFuture<T> {
         return done;
     }
 
+    public boolean isGetDone() {
+        return getDone;
+    }
+
     @Override
     public T get() throws InterruptedException, ExecutionException {
         if (result == null) {
@@ -61,6 +66,8 @@ public class CallableFuture<T, U> implements RunnableFuture<T> {
                 wait();
             }
         }
+
+        getDone = true;
         return result;
     }
 
@@ -72,6 +79,8 @@ public class CallableFuture<T, U> implements RunnableFuture<T> {
                 wait();
             }
         }
+
+        getDone = true;
         return result;
     }
 

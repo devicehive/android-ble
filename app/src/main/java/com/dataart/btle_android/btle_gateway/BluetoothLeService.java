@@ -24,6 +24,8 @@ import com.dataart.android.devicehive.device.future.SimpleCallableFuture;
 import com.dataart.btle_android.devicehive.BTLEDeviceHive;
 import com.dataart.btle_android.devicehive.BTLEDevicePreferences;
 
+import timber.log.Timber;
+
 /**
  * Created by idyuzheva
  */
@@ -73,6 +75,7 @@ public class BluetoothLeService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Timber.d("Service.onStartCommand");
         if (mBluetoothAdapter.isEnabled()) {
             mBluetoothServer.scanStart(BluetoothLeService.this);
         }
@@ -91,6 +94,7 @@ public class BluetoothLeService extends Service {
 
     @Override
     public void onDestroy() {
+        Timber.d("Service.onDestroy");
         mDeviceHive.removeCommandListener();
         mDeviceHive.stopProcessingCommands();
         stopService(new Intent(this, DeviceHiveApiService.class));
@@ -112,15 +116,18 @@ public class BluetoothLeService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
+        Timber.d("Service.onBind");
         return null;
     }
 
     @Override
     public boolean onUnbind(Intent intent) {
+        Timber.d("Service.onUnbind");
         return super.onUnbind(intent);
     }
 
     private void notifyNewState(final String text) {
+        Timber.d("Service.onUnbind");
         mBuilder.setContentText(text);
         mNotificationManager.notify(LE_NOTIFICATION_ID, mBuilder.build());
     }
