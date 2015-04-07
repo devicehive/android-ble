@@ -363,55 +363,29 @@ public class BluetoothServer extends BluetoothGattCallback {
         return future;
     }
 
-    public void gattNotifications(Context context, final String deviceUUID, final String serviceUUID, final String characteristicUUID,
+    public SimpleCallableFuture<CommandResult> gattNotifications(final Context context, final String address, final String serviceUUID, final String characteristicUUID,
                                   final boolean isOn, final GattCharacteristicCallBack gattCharachteristicCallBack) {
-        final LeScanResult result = getResultByUDID(deviceUUID);
-        if (result != null) {
-            BluetoothGatt gatt = result.getDevice().connectGatt(context, false, new BluetoothGattCallback() {
-                @Override
-                public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-                    super.onCharacteristicRead(gatt, characteristic, status);
-                    gattCharachteristicCallBack.onRead(characteristic.getValue());
-                }
 
-                @Override
-                public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-                    super.onCharacteristicWrite(gatt, characteristic, status);
-                }
-
-                @Override
-                public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-                    super.onConnectionStateChange(gatt, status, newState);
-                    if (newState == BluetoothProfile.STATE_CONNECTED) {
-                        gatt.discoverServices();
+        final SimpleCallableFuture<CommandResult> future = new SimpleCallableFuture<>();
+        applyForConnection(address, new ConnectionOperation() {
+            @Override
+            public void call(DeviceConnection connection) {
+                connection.getCallback().setNotificaitonSubscription(new InteractiveGattCallback.NotificaitonSubscription(serviceUUID, characteristicUUID, address, context, isOn, future) {
+                    @Override
+                    public void onNotification(byte[] value) {
+                        Timber.d("onNotification"+value);
+                        gattCharachteristicCallBack.onRead(value);
                     }
-                }
+                });
+            }
 
-                @Override
-                public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-                    super.onServicesDiscovered(gatt, status);
-                    final BluetoothGattService service = gatt.getService(UUID.fromString(serviceUUID));
-                    if (service != null) {
-                        BluetoothGattCharacteristic characteristic = service.getCharacteristic(UUID.fromString(characteristicUUID));
+            @Override
+            public void fail(String message) {
+                Timber.d(message);
+            }
+        }, true);
 
-                        gatt.setCharacteristicNotification(characteristic, isOn);
-
-                        BluetoothGattDescriptor descriptor = characteristic.getDescriptor(
-                                UUID.fromString("00002902-0000-1000-8000-00805f9b34fb"));
-                        descriptor.setValue(isOn ?
-                                BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE :
-                                BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
-                        gatt.writeDescriptor(descriptor);
-                    }
-                }
-
-                @Override
-                public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-                    super.onCharacteristicChanged(gatt, characteristic);
-                    gattCharachteristicCallBack.onRead(characteristic.getValue());
-                }
-            });
-        }
+        return future;
     }
 
     public interface DiscoveredDeviceListener {

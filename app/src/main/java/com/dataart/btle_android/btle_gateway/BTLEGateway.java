@@ -97,8 +97,7 @@ public class BTLEGateway {
                     });
 
                 case GATT_NOTIFICATION:
-                    bluetoothServerGateway.gattNotifications(context, address, serviceUUID, characteristicUUID, true, new GattCharacteristicCallBack() {
-
+                    return bluetoothServerGateway.gattNotifications(context, address, serviceUUID, characteristicUUID, true, new GattCharacteristicCallBack() {
                         @Override
                         public void onRead(byte[] value) {
                             final String sValue = Utils.printHexBinary(value);
@@ -106,9 +105,9 @@ public class BTLEGateway {
                             sendNotification(dh, leCommand, json);
                         }
                     });
-                    break;
+
                 case GATT_NOTIFICATION_STOP:
-                    bluetoothServerGateway.gattNotifications(context, address, serviceUUID, characteristicUUID, false, new GattCharacteristicCallBack() {
+                    return bluetoothServerGateway.gattNotifications(context, address, serviceUUID, characteristicUUID, false, new GattCharacteristicCallBack() {
 
                         @Override
                         public void onRead(byte[] value) {
@@ -117,7 +116,6 @@ public class BTLEGateway {
                             sendNotification(dh, leCommand, json);
                         }
                     });
-                    break;
                 case UNKNOWN:
                 default:
                     new SimpleCallableFuture<>(new CommandResult(CommandResult.STATUS_FAILED, context.getString(R.string.unknown_command)));
