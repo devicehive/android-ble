@@ -188,7 +188,7 @@ public class BluetoothServer extends BluetoothGattCallback {
 
                         @Override
                         public void fail(String message) {
-                            Timber.d("device "+address+" not found - try to scan once more");
+                            Timber.d("device " + address + " not found - try to scan once more");
                             operation.fail(message);
                         }
                     });
@@ -268,36 +268,34 @@ public class BluetoothServer extends BluetoothGattCallback {
         return future;
     }
 
-    public void gattCharacteristics(final String mac, final Context context, final GattCharacteristicCallBack gattCharacteristicCallBack) {
-        final LeScanResult result = getResultByUDID(mac);
+    public void gattCharacteristics(final String address, final GattCharacteristicCallBack gattCharacteristicCallBack) {
         final ArrayList<BTLECharacteristic> allCharacteristics = new ArrayList<>();
-        if (result != null) {
-            final BluetoothGatt gatt = result.getDevice().connectGatt(context, false, new BluetoothGattCallback() {
 
-                @Override
-                public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-                    super.onConnectionStateChange(gatt, status, newState);
-                    if (newState == BluetoothProfile.STATE_CONNECTED) {
-                        gatt.discoverServices();
-                    }
-                }
+        applyForConnection(address, new ConnectionOperation() {
+            @Override
+            public void call(DeviceConnection connection) {
+                connection.getCallback().setCharacteristicsDiscoveringCallback(new InteractiveGattCallback.CharacteristicsDiscoveringCallback() {
+                    @Override
+                    public void call(BluetoothGatt gatt) {
+                        Timber.d("ServicesDiscoveredCallback.call() - installed from .gattPrimary()");
 
-                @Override
-                public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-                    super.onServicesDiscovered(gatt, status);
-                    for (BluetoothGattService service : gatt.getServices()) {
-                        final List<BluetoothGattCharacteristic> characteristics = service.getCharacteristics();
-                        for (BluetoothGattCharacteristic characteristic : characteristics) {
-                            final BTLECharacteristic btleCharacteristic = new BTLECharacteristic(mac,
-                                    service.getUuid().toString(), characteristic.getUuid().toString());
-                            allCharacteristics.add(btleCharacteristic);
+                        for (BluetoothGattService service : gatt.getServices()) {
+                            final List<BluetoothGattCharacteristic> characteristics = service.getCharacteristics();
+                            for (BluetoothGattCharacteristic characteristic : characteristics) {
+                                BTLECharacteristic btleCharacteristic = new BTLECharacteristic(address, service.getUuid().toString(), characteristic.getUuid().toString());
+                                allCharacteristics.add(btleCharacteristic);
+                            }
                         }
+                        gattCharacteristicCallBack.onCharacteristics(allCharacteristics);
                     }
-                    gattCharacteristicCallBack.onCharacteristics(allCharacteristics);
-                    gatt.disconnect();
-                }
-            });
-        }
+                });
+            }
+
+            @Override
+            public void fail(String message) {
+                Timber.d("fail");
+            }
+        }, true);
     }
 
     public void gattPrimary(final String address, final GattCharacteristicCallBack gattCharacteristicCallBack) {

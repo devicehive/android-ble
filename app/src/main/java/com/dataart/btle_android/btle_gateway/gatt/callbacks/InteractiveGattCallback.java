@@ -12,9 +12,6 @@ import com.dataart.btle_android.R;
 import com.dataart.btle_android.btle_gateway.GattCharacteristicCallBack;
 import com.dataart.android.devicehive.device.future.SimpleCallableFuture;
 import com.google.gson.Gson;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.UUID;
 
 import timber.log.Timber;
@@ -29,18 +26,22 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
     private BluetoothGatt gatt;
     private ReadCharacteristicOperation readOperation;
     private WriteCharacteristicOperation writeOperation;
-
-    public void setServicesDiscoveredCallback(ServicesDiscoveredCallback servicesDiscoveredCallback) {
-        this.servicesDiscoveredCallback = servicesDiscoveredCallback;
-    }
-
     private ServicesDiscoveredCallback servicesDiscoveredCallback;
+    private CharacteristicsDiscoveringCallback characteristicsDiscoveringCallback;
     private SimpleCallableFuture<CommandResult> callableFuture;
     private Context context;
     private DisconnecListener disconnecListener;
     private boolean connectionStateChanged = false;
     public boolean isConnectionStateChanged() {
         return connectionStateChanged;
+    }
+
+    public void setServicesDiscoveredCallback(ServicesDiscoveredCallback servicesDiscoveredCallback) {
+        this.servicesDiscoveredCallback = servicesDiscoveredCallback;
+    }
+
+    public void setCharacteristicsDiscoveringCallback(CharacteristicsDiscoveringCallback characteristicsDiscoveringCallback) {
+        this.characteristicsDiscoveringCallback = characteristicsDiscoveringCallback;
     }
 
     public InteractiveGattCallback(String address, SimpleCallableFuture<CommandResult> future, Context context, DisconnecListener disconnecListener) {
@@ -79,14 +80,20 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
     public void onServicesDiscovered(BluetoothGatt gatt, int status) {
         super.onServicesDiscovered(gatt, status);
         servicesDiscovered = true;
-        if (readOperation!=null) {
-            readOperation.call(gatt);
-        }
-        if (writeOperation!=null) {
-            writeOperation.call(gatt);
-        }
-        if (status == BluetoothGatt.GATT_SUCCESS && servicesDiscoveredCallback!=null){
-            servicesDiscoveredCallback.call(gatt);
+
+        if (status == BluetoothGatt.GATT_SUCCESS) {
+            if (readOperation!=null) {
+                readOperation.call(gatt);
+            }
+            if (writeOperation!=null) {
+                writeOperation.call(gatt);
+            }
+            if (servicesDiscoveredCallback!=null){
+                servicesDiscoveredCallback.call(gatt);
+            }
+            if (characteristicsDiscoveringCallback!=null){
+                characteristicsDiscoveringCallback.call(gatt);
+            }
         }
     }
 
@@ -298,6 +305,10 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
     }
 
     public interface ServicesDiscoveredCallback {
+        void call(BluetoothGatt gatt);
+    }
+
+    public interface CharacteristicsDiscoveringCallback {
         void call(BluetoothGatt gatt);
     }
 
