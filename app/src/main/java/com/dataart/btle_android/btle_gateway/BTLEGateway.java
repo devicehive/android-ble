@@ -22,9 +22,11 @@ import timber.log.Timber;
 
 public class BTLEGateway {
 
+    private Context context;
     private BluetoothServer bluetoothServerGateway;
 
-    public BTLEGateway(BluetoothServer bluetoothServer) {
+    public BTLEGateway(Context context, BluetoothServer bluetoothServer) {
+        this.context = context;
         this.bluetoothServerGateway = bluetoothServer;
     }
 
@@ -51,15 +53,8 @@ public class BTLEGateway {
                     sendStopResult(dh);
                     break;
                 case SCAN:
-                    bluetoothServerGateway.scanStart(context);
-                    Handler handler = new Handler();
-                    handler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            sendStopResult(dh);
-                        }
-                    }, BluetoothServer.COMMAND_SCAN_DELAY);
-                    break;
+                    return scanAndReturnResults(dh);
+
                 case GATT_CONNECT:
                     Timber.d("connecting to " + address);
                     return bluetoothServerGateway.gattConnect(address, new InteractiveGattCallback.DisconnecListener() {
@@ -138,20 +133,18 @@ public class BTLEGateway {
                     break;
                 case UNKNOWN:
                 default:
-                    new SimpleCallableFuture<CommandResult>(new CommandResult(CommandResult.STATUS_FAILED, context.getString(R.string.unknown_command)));
+                    new SimpleCallableFuture<>(new CommandResult(CommandResult.STATUS_FAILED, context.getString(R.string.unknown_command)));
             }
         } catch (Exception e) {
             Timber.e("error:"+e.toString());
 //            Log.e("TAG", "Error during handling" + e.toString());
             final Notification notification = new Notification("Error", e.toString());
             dh.sendNotification(notification);
-            SimpleCallableFuture<CommandResult> future = new SimpleCallableFuture<CommandResult>(new CommandResult(CommandResult.STATUS_FAILED, "Error: \""+e.toString()+"\""));
-            return future;
+            return new SimpleCallableFuture<>(new CommandResult(CommandResult.STATUS_FAILED, "Error: \""+e.toString()+"\""));
         }
 
         Timber.d("default status ok");
-        String json = new Gson().toJson(new Res("ok"));
-        return new SimpleCallableFuture<CommandResult>(new CommandResult(CommandResult.STATUS_COMLETED, json));//context.getString(R.string.status_ok)));
+        return new SimpleCallableFuture<>(new CommandResult(CommandResult.STATUS_COMLETED, commandResultOk()));
     }
 
     private class Res {
@@ -166,17 +159,41 @@ public class BTLEGateway {
         }
     }
 
+    private SimpleCallableFuture<CommandResult> scanAndReturnResults(final BTLEDeviceHive dh) {
+        final SimpleCallableFuture<CommandResult> future = new SimpleCallableFuture<>();
+
+        bluetoothServerGateway.scanStart(context);
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                sendStopResult(dh, future);
+            }
+        }, BluetoothServer.COMMAND_SCAN_DELAY);
+
+        return future;
+    }
+
     private void sendNotification(final BTLEDeviceHive dh, final LeCommand leCommand, final String json) {
         final Notification notification = new Notification(leCommand.getCommand(), json);
         dh.sendNotification(notification);
     }
 
     private void sendStopResult(BTLEDeviceHive dh) {
+        sendStopResult(dh, null);
+    }
+
+    private void sendStopResult(BTLEDeviceHive dh, SimpleCallableFuture<CommandResult> future) {
         final ArrayList<BTLEDevice> devices = bluetoothServerGateway.getDiscoveredDevices();
         final String json = new Gson().toJson(devices);
 
-        final HashMap<String, String> result = new HashMap<String, String>();
+        final HashMap<String, String> result = new HashMap<>();
         result.put("result", json);
+
+//        notify calling code about result
+        if (future!=null) {
+            future.call(new CommandResult(CommandResult.STATUS_COMLETED, json));
+        }
 
         final Notification notification = new Notification("discoveredDevices", result);
         dh.sendNotification(notification);
@@ -214,6 +231,11 @@ public class BTLEGateway {
         public String getCommand() {
             return command;
         }
+
+    }
+
+    private String commandResultOk(){
+        return new Gson().toJson(new Res(context.getString(R.string.status_ok)));
     }
 
 }

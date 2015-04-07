@@ -50,11 +50,11 @@ public class BluetoothLeService extends Service {
         super();
     }
 
-    public static final void start(final Context context) {
+    public static void start(final Context context) {
         context.startService(new Intent(context, BluetoothLeService.class));
     }
 
-    public static final void stop(final Context context) {
+    public static void stop(final Context context) {
         context.stopService(new Intent(context, BluetoothLeService.class));
     }
 
@@ -69,7 +69,7 @@ public class BluetoothLeService extends Service {
         mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         mDeviceHive = BTLEDeviceHive.newInstance(this);
         mBluetoothServer = new BluetoothServer(getApplicationContext());
-        mGateway = new BTLEGateway(mBluetoothServer);
+        mGateway = new BTLEGateway(this, mBluetoothServer);
         registerReceiver(getBtStateReceiver(), new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
     }
 
