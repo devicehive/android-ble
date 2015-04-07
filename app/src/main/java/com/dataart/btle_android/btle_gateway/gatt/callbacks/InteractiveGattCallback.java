@@ -29,6 +29,12 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
     private BluetoothGatt gatt;
     private ReadCharacteristicOperation readOperation;
     private WriteCharacteristicOperation writeOperation;
+
+    public void setServicesDiscoveredCallback(ServicesDiscoveredCallback servicesDiscoveredCallback) {
+        this.servicesDiscoveredCallback = servicesDiscoveredCallback;
+    }
+
+    private ServicesDiscoveredCallback servicesDiscoveredCallback;
     private SimpleCallableFuture<CommandResult> callableFuture;
     private Context context;
     private DisconnecListener disconnecListener;
@@ -53,16 +59,19 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
             Timber.d("isConnectionStateChanged. discovering services");
             this.gatt = gatt;
             this.gatt.discoverServices();
-            if (!callableFuture.isGetDone()) {
+
+            if (callableFuture!=null && !callableFuture.isGetDone()) {
                 callableFuture.call(new CommandResult(CommandResult.STATUS_COMLETED, context.getString(R.string.status_ok)));
             }
         } else {
             String m = String.format(context.getString(R.string.connection_failed_result), status, newState);
             Timber.d(m);
-            if (!callableFuture.isGetDone()) {
+            if (callableFuture!=null && !callableFuture.isGetDone()) {
                 callableFuture.call(new CommandResult(CommandResult.STATUS_FAILED, m));
             }
-            disconnecListener.onDisconnect();
+            if (disconnecListener!=null) {
+                disconnecListener.onDisconnect();
+            }
         }
     }
 
@@ -75,6 +84,9 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
         }
         if (writeOperation!=null) {
             writeOperation.call(gatt);
+        }
+        if (status == BluetoothGatt.GATT_SUCCESS && servicesDiscoveredCallback!=null){
+            servicesDiscoveredCallback.call(gatt);
         }
     }
 
@@ -126,7 +138,9 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
 
         String m = context.getString(R.string.gatt_null);
         Timber.d(m);
-        callableFuture.call(new CommandResult(CommandResult.STATUS_FAILED, m));
+        if (callableFuture!=null) {
+            callableFuture.call(new CommandResult(CommandResult.STATUS_FAILED, m));
+        }
     }
 
     public static class ReadCharacteristicOperation extends CharacteristicOperation {
@@ -137,7 +151,7 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
 
         @Override
         protected void request(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-            if (!gatt.readCharacteristic(characteristic)) {
+            if (!gatt.readCharacteristic(characteristic) && callableFuture!=null) {
                 callableFuture.call(commandResultFail());
             }
         }
@@ -148,12 +162,16 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
 
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 callBack.onRead(value);
-                callableFuture.call(commandResultSuccessWithValue(value));
+                if (callableFuture!=null) {
+                    callableFuture.call(commandResultSuccessWithValue(value));
+                }
                 return;
             }
 
 //          TODO: handle BluetoothGatt.GATT_WRITE_NOT_PERMITTED and others
-            callableFuture.call(commandResultFailWithStatusAndValue(String.valueOf(status), value));
+            if (callableFuture!=null) {
+                callableFuture.call(commandResultFailWithStatusAndValue(String.valueOf(status), value));
+            }
         }
     }
 
@@ -168,7 +186,7 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
         @Override
         protected void request(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             characteristic.setValue(value);
-            if (!gatt.writeCharacteristic(characteristic)) {
+            if (!gatt.writeCharacteristic(characteristic) && callableFuture!=null) {
                 callableFuture.call(commandResultFail());
             }
         }
@@ -176,11 +194,13 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
         @Override
         public void onResult(BluetoothGattCharacteristic characteristic, int status) {
             callBack.onWrite(status);
-            if (status == BluetoothGatt.GATT_SUCCESS) {
-                callableFuture.call(commandResultSuccess());
-            } else {
+            if (callableFuture!=null) {
+                if (status == BluetoothGatt.GATT_SUCCESS) {
+                    callableFuture.call(commandResultSuccess());
+                } else {
 //                TODO: handle BluetoothGatt.GATT_WRITE_NOT_PERMITTED and others
-                callableFuture.call(commandResultFailWithStatusAndValue(String.valueOf(status), value));
+                    callableFuture.call(commandResultFailWithStatusAndValue(String.valueOf(status), value));
+                }
             }
         }
     }
@@ -212,7 +232,9 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
                 }
             }
 
-            callableFuture.call(commandResultFailWithStatus(context.getString(R.string.status_json_not_found)));
+            if (callableFuture!=null) {
+                callableFuture.call(commandResultFailWithStatus(context.getString(R.string.status_json_not_found)));
+            }
         }
 
         abstract protected void request(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic);
@@ -273,6 +295,10 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
         protected CommandResult commandResultNotFound() {
             return new CommandResult(CommandResult.STATUS_FAILED, jsonStatus(R.string.status_json_not_found));
         }
+    }
+
+    public interface ServicesDiscoveredCallback {
+        void call(BluetoothGatt gatt);
     }
 
     public interface DisconnecListener {

@@ -3,7 +3,6 @@ package com.dataart.btle_android.btle_gateway;
 import android.content.Context;
 import android.os.Handler;
 import android.os.ParcelUuid;
-import android.util.Log;
 
 import com.dataart.android.devicehive.Command;
 import com.dataart.android.devicehive.Notification;
@@ -71,14 +70,18 @@ public class BTLEGateway {
                     return bluetoothServerGateway.gattDisconnect(address);
 
                 case GATT_PRIMARY:
-                    bluetoothServerGateway.gattPrimary(address, context, new GattCharacteristicCallBack() {
+
+                    final SimpleCallableFuture<CommandResult> future = new SimpleCallableFuture<>();
+                    bluetoothServerGateway.gattPrimary(address, new GattCharacteristicCallBack() {
                         @Override
                         public void onServices(List<ParcelUuid> uuidList) {
                             final String json = new Gson().toJson(uuidList);
+                            future.call(cmdResSuccessWithJson(json));
                             sendNotification(dh, leCommand, json);
+                            future.call(cmdResSuccessWithJson(json));
                         }
                     });
-                    break;
+                    return future;
                 case GATT_CHARACTERISTICS:
                     bluetoothServerGateway.gattCharacteristics(address, context, new GattCharacteristicCallBack() {
                         @Override
@@ -144,7 +147,7 @@ public class BTLEGateway {
         }
 
         Timber.d("default status ok");
-        return new SimpleCallableFuture<>(new CommandResult(CommandResult.STATUS_COMLETED, commandResultOk()));
+        return new SimpleCallableFuture<>(cmdResSuccess());
     }
 
     private class Res {
@@ -234,8 +237,12 @@ public class BTLEGateway {
 
     }
 
-    private String commandResultOk(){
-        return new Gson().toJson(new Res(context.getString(R.string.status_ok)));
+    private CommandResult cmdResSuccess(){
+        return new CommandResult(CommandResult.STATUS_COMLETED, new Gson().toJson(new Res(context.getString(R.string.status_ok))));
+    }
+
+    private CommandResult cmdResSuccessWithJson(String json) {
+        return new CommandResult(CommandResult.STATUS_COMLETED, json);
     }
 
 }

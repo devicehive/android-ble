@@ -42,9 +42,9 @@ public class BluetoothServer extends BluetoothGattCallback {
     private Context context;
     private BluetoothAdapter bluetoothAdapter = null;
 //    Stores list of currently connected devices with adress, gatt and callback
-    private Map<String, DeviceConnection> activeConnections = new HashMap<String, DeviceConnection>();
+    private Map<String, DeviceConnection> activeConnections = new HashMap<>();
 
-    private ArrayList<LeScanResult> deviceList = new ArrayList<LeScanResult>();
+    private ArrayList<LeScanResult> deviceList = new ArrayList<>();
     private DiscoveredDeviceListener discoveredDeviceListener;
 
     public BluetoothServer(Context context) {
@@ -60,7 +60,7 @@ public class BluetoothServer extends BluetoothGattCallback {
     }
 
     public ArrayList<BTLEDevice> getDiscoveredDevices() {
-        final ArrayList<BTLEDevice> devices = new ArrayList<BTLEDevice>(deviceList.size());
+        final ArrayList<BTLEDevice> devices = new ArrayList<>(deviceList.size());
         for (LeScanResult result : deviceList) {
             String name = "Unknown name";
             String address = "Unknown address";
@@ -165,8 +165,55 @@ public class BluetoothServer extends BluetoothGattCallback {
         }
     }
 
+    private void applyForConnection(final String address, final ConnectionOperation operation, final boolean autoconnect) {
+        applyForConnection(address, new ConnectionOperation() {
+            @Override
+            public void call(DeviceConnection connection) {
+                Timber.d("connection already established");
+                operation.call(connection);
+            }
+
+            @Override
+            public void fail(String message) {
+                if (autoconnect) {
+                    Timber.d("use autoconnect");
+                    applyForDevice(address, new DeviceOperation() {
+                        @Override
+                        public void call(BluetoothDevice device) {
+                            Timber.d("device found. connecting");
+                            DeviceConnection connection = connectAndSave(address, device);
+                            Timber.d("calling operation on new connection");
+                            operation.call(connection);
+                        }
+
+                        @Override
+                        public void fail(String message) {
+                            Timber.d("device "+address+" not found - try to scan once more");
+                            operation.fail(message);
+                        }
+                    });
+                } else {
+                    Timber.d("failed without autoconnect");
+                    operation.fail(message);
+                }
+            }
+        });
+    }
+
+    private DeviceConnection connectAndSave(String address, BluetoothDevice device) {
+        return connectAndSave(address, device, null, null);
+    }
+
+    private DeviceConnection connectAndSave(String address, BluetoothDevice device, InteractiveGattCallback.DisconnecListener disconnecListener, SimpleCallableFuture<CommandResult> future) {
+        final InteractiveGattCallback callback = new InteractiveGattCallback(address, future, context, disconnecListener);
+        BluetoothGatt gatt = device.connectGatt(context, false, callback);
+        DeviceConnection connection = new DeviceConnection(address, gatt, callback);
+        activeConnections.put(address, connection);
+        return connection;
+    }
+
     public SimpleCallableFuture<CommandResult> gattConnect(final String address, final InteractiveGattCallback.DisconnecListener disconnecListener) {
-        final SimpleCallableFuture<CommandResult> future = new SimpleCallableFuture<CommandResult>();
+        final SimpleCallableFuture<CommandResult> future = new SimpleCallableFuture<>();
 
         applyForDevice(address, new DeviceOperation() {
             @Override
@@ -174,12 +221,10 @@ public class BluetoothServer extends BluetoothGattCallback {
                 Timber.d("connecting to " + address);
 
 //              We can store mutliple connections - and each should have it's own callback
-                final InteractiveGattCallback callback = new InteractiveGattCallback(address, future, context, disconnecListener);
-                BluetoothGatt gatt = device.connectGatt(context, false, callback);
-                activeConnections.put(address, new DeviceConnection(address, gatt, callback));
+                final InteractiveGattCallback callback = connectAndSave(address, device, disconnecListener, future).getCallback();
 
 //              Send connection failed result after timeout
-                Handler handler = new Handler();
+                final Handler handler = new Handler();
                 handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
@@ -225,7 +270,7 @@ public class BluetoothServer extends BluetoothGattCallback {
 
     public void gattCharacteristics(final String mac, final Context context, final GattCharacteristicCallBack gattCharacteristicCallBack) {
         final LeScanResult result = getResultByUDID(mac);
-        final ArrayList<BTLECharacteristic> allCharacteristics = new ArrayList<BTLECharacteristic>();
+        final ArrayList<BTLECharacteristic> allCharacteristics = new ArrayList<>();
         if (result != null) {
             final BluetoothGatt gatt = result.getDevice().connectGatt(context, false, new BluetoothGattCallback() {
 
@@ -255,48 +300,31 @@ public class BluetoothServer extends BluetoothGattCallback {
         }
     }
 
-    public void gattPrimary(final String mac, final Context context, final GattCharacteristicCallBack gattCharacteristicCallBack) {
-        final LeScanResult result = getResultByUDID(mac);
-        final List<ParcelUuid> parcelUuidList = new ArrayList<ParcelUuid>();
-        if (result != null) {
-            final BluetoothGatt gatt = result.getDevice().connectGatt(context, false, new BluetoothGattCallback() {
+    public void gattPrimary(final String address, final GattCharacteristicCallBack gattCharacteristicCallBack) {
+        final List<ParcelUuid> parcelUuidList = new ArrayList<>();
 
-                @Override
-                public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-                    if (newState == BluetoothProfile.STATE_CONNECTED) {
-                        Log.i(TAG, "Connected to GATT server.");
-                        gatt.discoverServices();
+        applyForConnection(address, new ConnectionOperation() {
+            @Override
+            public void call(DeviceConnection connection) {
+                connection.getCallback().setServicesDiscoveredCallback(new InteractiveGattCallback.ServicesDiscoveredCallback() {
+                    @Override
+                    public void call(BluetoothGatt gatt) {
+                        Timber.d("ServicesDiscoveredCallback.call() - installed from .gattPrimary()");
 
-                    } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                        Log.i(TAG, "Disconnected from GATT server.");
-                    }
-                }
-
-                @Override
-                public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-                    if (status == BluetoothGatt.GATT_SUCCESS) {
-                        super.onServicesDiscovered(gatt, status);
                         final List<BluetoothGattService> services = gatt.getServices();
                         for (BluetoothGattService service : services) {
                             parcelUuidList.add(new ParcelUuid(service.getUuid()));
                         }
                         gattCharacteristicCallBack.onServices(parcelUuidList);
-                        gatt.disconnect();
                     }
-                }
+                });
+            }
 
-                @Override
-                public void onCharacteristicRead(BluetoothGatt gatt,
-                                                 BluetoothGattCharacteristic characteristic,
-                                                 int status) {
-                }
-
-                @Override
-                public void onCharacteristicChanged(BluetoothGatt gatt,
-                                                    BluetoothGattCharacteristic characteristic) {
-                }
-            });
-        }
+            @Override
+            public void fail(String message) {
+                Timber.d("fail");
+            }
+        }, true);
     }
 
     public SimpleCallableFuture<CommandResult> gattRead(Context context, final String address, final String serviceUUID, final String characteristicUUID,
