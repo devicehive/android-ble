@@ -13,6 +13,8 @@ import com.dataart.btle_android.btle_gateway.GattCharacteristicCallBack;
 import com.dataart.android.devicehive.device.future.SimpleCallableFuture;
 import com.google.gson.Gson;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.UUID;
 
 import timber.log.Timber;

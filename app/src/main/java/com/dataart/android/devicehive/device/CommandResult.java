@@ -3,9 +3,13 @@ package com.dataart.android.devicehive.device;
 import java.io.Serializable;
 
 import com.dataart.android.devicehive.ObjectWrapper;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+
+import timber.log.Timber;
 
 /**
  * Command execution result which is reported to the server.
@@ -28,7 +32,7 @@ public class CommandResult implements Parcelable {
 	public static final String STATUS_WAITING = "Waiting";
 
 	private final String status;
-	private final ObjectWrapper<Serializable> result;
+	private final String result; //ObjectWrapper<Serializable>
 
 	/**
 	 * Constructs command result with given status and result.
@@ -38,9 +42,10 @@ public class CommandResult implements Parcelable {
 	 * @param result
 	 *            Command execution result.
 	 */
-	public CommandResult(String status, Serializable result) {
+	public CommandResult(String status, String result) {
 		this.status = status;
-		this.result = new ObjectWrapper<Serializable>(result);
+		this.result = result; //new ObjectWrapper<Serializable>(
+		Timber.d("CommandResult constructor: r="+result+", this.r="+this.result);
 	}
 
 	/**
@@ -69,7 +74,7 @@ public class CommandResult implements Parcelable {
 	@Override
 	public void writeToParcel(Parcel dest, int flags) {
 		dest.writeString(status);
-		dest.writeSerializable(result.getObject());
+		dest.writeString(result); //writeSerializable(result.getObject());
 	}
 
 	public static Creator<CommandResult> CREATOR = new Creator<CommandResult>() {
@@ -82,7 +87,24 @@ public class CommandResult implements Parcelable {
 		@Override
 		public CommandResult createFromParcel(Parcel source) {
 			return new CommandResult(source.readString(),
-					source.readSerializable());
+					source.readString());
 		}
 	};
+
+	public String toJson() {
+//		FIXME: should be implemented with serializable or custom gson serializer
+		String json = "{\"result\":"+ result +",\"status\":\""+status+"\"}";
+		return json;
+	}
+
+	public static boolean isValidJson(String json){
+		Gson gson = new Gson();
+		try {
+			Object o = gson.fromJson(json, Object.class);
+			String reversed = new GsonBuilder().setPrettyPrinting().create().toJson(o);
+		} catch (Exception e) {
+			return false;
+		}
+		return true;
+	}
 }

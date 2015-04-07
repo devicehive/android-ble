@@ -48,7 +48,7 @@ public class BTLEDeviceHive extends Device {
 
     private static DeviceData getTestDeviceData() {
         final Network network = new Network("AndroidBTLE", "");
-        final DeviceClass deviceClass = new DeviceClass("c.mars_device.class", "1.0");//AndroidBTLE Device", "1.0");
+        final DeviceClass deviceClass = new DeviceClass("AndroidBTLE Device", "1.0");
 
         return new DeviceData(
                 new BTLEDevicePreferences().getGatewayId(),

@@ -33,7 +33,7 @@ public class UpdateCommandStatusCommand extends DeviceCommand {
 	 *            Device unique identifier.
 	 * @param deviceKey
 	 *            Device key.
-	 * @param command
+	 * @param commandId
 	 *            {@link Command} to be updated.
 	 * @param commandResult
 	 *            {@link CommandResult} object describing command status.
@@ -82,7 +82,7 @@ public class UpdateCommandStatusCommand extends DeviceCommand {
 
 	@Override
 	protected String toJson(Gson gson) {
-		return gson.toJson(commandResult);
+		return commandResult.toJson();
 	}
 
 	@Override

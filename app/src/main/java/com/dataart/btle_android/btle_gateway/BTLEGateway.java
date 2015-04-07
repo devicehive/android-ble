@@ -30,6 +30,7 @@ public class BTLEGateway {
 
     public SimpleCallableFuture<CommandResult> doCommand(final Context context, final BTLEDeviceHive dh, final Command command) {
         try {
+            Timber.d("doCommand");
             final String name = command.getCommand();
             final LeCommand leCommand = LeCommand.fromName(name);
 
@@ -40,6 +41,7 @@ public class BTLEGateway {
             final String serviceUUID = (params != null) ? (String) params.get("serviceUUID") : null;
             final String characteristicUUID = (params != null) ? (String) params.get("characteristicUUID") : null;
 
+            Timber.d("switch");
             switch (leCommand) {
                 case SCAN_START:
                     bluetoothServerGateway.scanStart(context);
@@ -139,14 +141,29 @@ public class BTLEGateway {
                     new SimpleCallableFuture<CommandResult>(new CommandResult(CommandResult.STATUS_FAILED, context.getString(R.string.unknown_command)));
             }
         } catch (Exception e) {
-            Log.e("TAG", "Error during handling" + e.toString());
+            Timber.e("error:"+e.toString());
+//            Log.e("TAG", "Error during handling" + e.toString());
             final Notification notification = new Notification("Error", e.toString());
             dh.sendNotification(notification);
             SimpleCallableFuture<CommandResult> future = new SimpleCallableFuture<CommandResult>(new CommandResult(CommandResult.STATUS_FAILED, "Error: \""+e.toString()+"\""));
             return future;
         }
 
-        return new SimpleCallableFuture<CommandResult>(new CommandResult(CommandResult.STATUS_COMLETED, context.getString(R.string.status_ok)));
+        Timber.d("default status ok");
+        String json = new Gson().toJson(new Res("ok"));
+        return new SimpleCallableFuture<CommandResult>(new CommandResult(CommandResult.STATUS_COMLETED, json));//context.getString(R.string.status_ok)));
+    }
+
+    private class Res {
+        public String getStatus() {
+            return status;
+        }
+
+        private String status;
+
+        private Res(String status) {
+            this.status = status;
+        }
     }
 
     private void sendNotification(final BTLEDeviceHive dh, final LeCommand leCommand, final String json) {
