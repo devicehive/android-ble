@@ -52,31 +52,35 @@ public class CommandResultReporter {
         return jsonStatusWithValue(context.getString(statusStringId), value);
     }
 
-    protected CommandResult commandResultSuccessWithValue(byte[] value) {
-        return new CommandResult(CommandResult.STATUS_COMLETED, jsonStatusWithValue(R.string.status_json_success, value));
-    }
-
-    public CommandResult commandResultFailWithStatus(String status) {
-        return new CommandResult(CommandResult.STATUS_FAILED, jsonStatus(status));
-    }
-
-    protected CommandResult commandResultSuccess() {
+    protected CommandResult cmdResSuccess() {
         return new CommandResult(CommandResult.STATUS_COMLETED, jsonStatus(R.string.status_json_success));
     }
 
-    protected CommandResult commandResultFail() {
+    protected CommandResult cmdResSuccessValue(byte[] value) {
+        return new CommandResult(CommandResult.STATUS_COMLETED, jsonStatusWithValue(R.string.status_json_success, value));
+    }
+
+    public CommandResult cmdResSuccessStatus(String status) {
+        return new CommandResult(CommandResult.STATUS_COMLETED, jsonStatus(status));
+    }
+
+    protected CommandResult cmdResFail() {
         return new CommandResult(CommandResult.STATUS_FAILED, jsonStatus(R.string.status_json_fail));
     }
 
-    protected CommandResult commandResultFailWithStatusAndValue(String status, byte[] value) {
-        return new CommandResult(CommandResult.STATUS_FAILED, jsonStatusWithValue(status, value));
+    public CommandResult cmdResFailStatus(String status) {
+        return new CommandResult(CommandResult.STATUS_FAILED, jsonStatus(status));
     }
 
-    protected CommandResult commandResultFailWithValue(byte[] value) {
+    protected CommandResult cmdResFailValue(byte[] value) {
         return new CommandResult(CommandResult.STATUS_FAILED, jsonStatusWithValue(R.string.status_json_fail, value));
     }
 
-    protected CommandResult commandResultNotFound() {
+    protected CommandResult cmdResFailStatusAndValue(String status, byte[] value) {
+        return new CommandResult(CommandResult.STATUS_FAILED, jsonStatusWithValue(status, value));
+    }
+
+    protected CommandResult cmdResNotFound() {
         return new CommandResult(CommandResult.STATUS_FAILED, jsonStatus(R.string.status_json_not_found));
     }
 }

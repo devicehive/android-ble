@@ -45,6 +45,7 @@
 
     <string name="connection_failed">Connection failed</string>
     <string name="connection_timeout">Connection timeout reached</string>
+    <string name="status_timeout">Timeout reached</string>
     <string name="device_not_found">Device %1$s is not found in discovered devices</string>
     <string name="connection_not_established">Connection to %1$s is not established</string>
     <string name="read_ch_failed">Failed to read characteristic %1$s from service %2$s</string>
