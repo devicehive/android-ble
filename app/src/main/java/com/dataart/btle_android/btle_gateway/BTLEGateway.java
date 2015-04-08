@@ -45,7 +45,7 @@ public class BTLEGateway {
             Timber.d("switch");
             switch (leCommand) {
                 case SCAN_START:
-                    bluetoothServerGateway.scanStart(context);
+                    bluetoothServerGateway.scanStart();
                     break;
                 case SCAN_STOP:
                     bluetoothServerGateway.scanStop();
@@ -147,7 +147,7 @@ public class BTLEGateway {
     private SimpleCallableFuture<CommandResult> scanAndReturnResults(final BTLEDeviceHive dh) {
         final SimpleCallableFuture<CommandResult> future = new SimpleCallableFuture<>();
 
-        bluetoothServerGateway.scanStart(context);
+        bluetoothServerGateway.scanStart();
         Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             @Override

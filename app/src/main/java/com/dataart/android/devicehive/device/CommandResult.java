@@ -32,7 +32,7 @@ public class CommandResult implements Parcelable {
 	public static final String STATUS_WAITING = "Waiting";
 
 	private final String status;
-	private final String result; //ObjectWrapper<Serializable>
+	private final String result;
 
 	/**
 	 * Constructs command result with given status and result.
@@ -44,7 +44,7 @@ public class CommandResult implements Parcelable {
 	 */
 	public CommandResult(String status, String result) {
 		this.status = status;
-		this.result = result; //new ObjectWrapper<Serializable>(
+		this.result = result;
 		Timber.d("CommandResult constructor: r="+result+", this.r="+this.result);
 	}
 
@@ -74,7 +74,7 @@ public class CommandResult implements Parcelable {
 	@Override
 	public void writeToParcel(Parcel dest, int flags) {
 		dest.writeString(status);
-		dest.writeString(result); //writeSerializable(result.getObject());
+		dest.writeString(result);
 	}
 
 	public static Creator<CommandResult> CREATOR = new Creator<CommandResult>() {

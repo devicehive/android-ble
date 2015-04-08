@@ -77,7 +77,7 @@ public class BluetoothLeService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Timber.d("Service.onStartCommand");
         if (mBluetoothAdapter.isEnabled()) {
-            mBluetoothServer.scanStart(BluetoothLeService.this);
+            mBluetoothServer.scanStart();
         }
 
         final BTLEDevicePreferences prefs = new BTLEDevicePreferences();
@@ -144,7 +144,7 @@ public class BluetoothLeService extends Service {
 
                 @Override
                 protected void onBluetoothOn() {
-                    mBluetoothServer.scanStart(BluetoothLeService.this);
+                    mBluetoothServer.scanStart();
                     notifyNewState(getString(R.string.notification_bt_on));
                 }
             };
