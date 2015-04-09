@@ -15,6 +15,9 @@ import com.dataart.btle_android.btle_gateway.BluetoothServer;
 import com.dataart.btle_android.btle_gateway.GattCharacteristicCallBack;
 import com.dataart.android.devicehive.device.future.SimpleCallableFuture;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import timber.log.Timber;
@@ -36,6 +39,9 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
     private Context context;
     private DisconnecListener disconnecListener;
     private boolean connectionStateChanged = false;
+//    Mapping from short to long service naming
+    private Map<String, String> services = new HashMap<>();
+    private Map<String, String> characteristics = new HashMap<>();
 
     public boolean isConnectionStateChanged() {
         return connectionStateChanged;
@@ -72,7 +78,7 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
         connectionStateChanged = true;
 
         if (newState == BluetoothProfile.STATE_CONNECTED) {
-            Timber.d("isConnectionStateChanged. discovering services");
+            Timber.d("isConnectionStateChanged. discovering services...");
             this.gatt = gatt;
             this.gatt.discoverServices();
 
@@ -95,6 +101,26 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
     public void onServicesDiscovered(BluetoothGatt gatt, int status) {
         super.onServicesDiscovered(gatt, status);
         servicesDiscovered = true;
+
+//        Put each service to mapping
+        List<BluetoothGattService> bluetoothGattServices = gatt.getServices();
+        Timber.d("uuids map: {");
+        for(BluetoothGattService bluetoothGattService:bluetoothGattServices){
+            String uuid = bluetoothGattService.getUuid().toString();
+//            F000XXXX-0451-4000-B000-000000000000
+            String shortUuid = uuid.substring(4,8);
+            Timber.d("uuid: " + shortUuid + "=" + uuid);
+            services.put(shortUuid, uuid);
+
+            List<BluetoothGattCharacteristic> bluetoothGattCharacteristics = bluetoothGattService.getCharacteristics();
+            for(BluetoothGattCharacteristic bluetoothGattCharacteristic:bluetoothGattCharacteristics){
+                String cUuid = bluetoothGattCharacteristic.getUuid().toString();
+//                F000AA12-0451-4000-B000-000000000000
+                String cShortUuid = uuid.substring(4,8);
+                characteristics.put(cShortUuid, cUuid);
+            }
+        }
+        Timber.d("}");
 
         if (status == BluetoothGatt.GATT_SUCCESS) {
             if (readOperation!=null){
@@ -184,6 +210,14 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
         }
     }
 
+    public String getFullServiceUuid(String shortUuid){
+        return services.get(shortUuid);
+    }
+
+    public String getFullCharacteristicUuid(String shortUuid){
+        return characteristics.get(shortUuid);
+    }
+
     public static class ReadCharacteristicOperation extends CharacteristicOperation {
 
         public ReadCharacteristicOperation(String device, String serviceUUID, String characteristicUUID, GattCharacteristicCallBack callBack, SimpleCallableFuture<CommandResult> callableFuture, Context context) {
@@ -193,7 +227,7 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
         @Override
         protected void request(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             if (!gatt.readCharacteristic(characteristic) && callableFuture!=null) {
-                callableFuture.call(cmdResFail());
+                callableFuture.call(cmdResFullFail());
             }
         }
 
@@ -204,14 +238,14 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 callBack.onRead(value);
                 if (callableFuture!=null) {
-                    callableFuture.call(cmdResSuccessValue(value));
+                    callableFuture.call(cmdResFullSuccessValue(value));
                 }
                 return;
             }
 
 //          TODO: handle BluetoothGatt.GATT_WRITE_NOT_PERMITTED and others
             if (callableFuture!=null) {
-                callableFuture.call(cmdResFailStatusAndValue(String.valueOf(status), value));
+                callableFuture.call(cmdResFullFailStatusAndValue(String.valueOf(status), value));
             }
         }
     }
@@ -228,7 +262,7 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
         protected void request(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             characteristic.setValue(value);
             if (!gatt.writeCharacteristic(characteristic) && callableFuture!=null) {
-                callableFuture.call(cmdResFail());
+                callableFuture.call(cmdResFullFail());
             }
         }
 
@@ -237,10 +271,10 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
             callBack.onWrite(status);
             if (callableFuture!=null) {
                 if (status == BluetoothGatt.GATT_SUCCESS) {
-                    callableFuture.call(cmdResSuccess());
+                    callableFuture.call(cmdResFullSuccess());
                 } else {
 //                TODO: handle BluetoothGatt.GATT_WRITE_NOT_PERMITTED and others
-                    callableFuture.call(cmdResFailStatusAndValue(String.valueOf(status), value));
+                    callableFuture.call(cmdResFullFailStatusAndValue(String.valueOf(status), value));
                 }
             }
         }
@@ -267,7 +301,7 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
                         @Override
                         public void run() {
                             if (!callableFuture.isGetDone()) {
-                                callableFuture.call(cmdResSuccessStatus(context.getString(R.string.status_timeout)));
+                                callableFuture.call(cmdResFullSuccessStatus(context.getString(R.string.status_timeout)));
                             }
                         }
                     }, BluetoothServer.COMMAND_SCAN_DELAY);
@@ -276,7 +310,7 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
             }
 
             if (callableFuture!=null) {
-                callableFuture.call(cmdResFailStatus(context.getString(R.string.status_json_not_found)));
+                callableFuture.call(cmdResFullFailStatus(context.getString(R.string.status_json_not_found)));
             }
         }
 
@@ -327,21 +361,21 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
                             if (!descriptor.setValue(isOn ?
                                     BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE :
                                     BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE)) {
-                                future.call(cmdResFailStatus("failed set descriptor value"));
+                                future.call(cmdResFullFailStatus("failed set descriptor value"));
                                 return;
                             }
 
                             if (gatt.writeDescriptor(descriptor)) {
-                                future.call(cmdResSuccess());
+                                future.call(cmdResFullSuccess());
                                 return;
                             }
                         }
-                        future.call(cmdResFailStatus("failed set characteristic notification"));
+                        future.call(cmdResFullFailStatus("failed set characteristic notification"));
                     }
                 }
             }
 
-            future.call(cmdResNotFound());
+            future.call(cmdResFullNotFound());
         }
 
         abstract public void onNotification(byte[] value);

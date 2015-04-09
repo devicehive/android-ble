@@ -29,8 +29,20 @@ public class CommandResultReporter {
         return jsonStatus(context.getString(statusStringId));
     }
 
+    private String jsonStatusOk() {
+        return new Gson().toJson(StatusJson.Status.statusOk());
+    }
+
+    private String jsonStatusFail() {
+        return new Gson().toJson(StatusJson.Status.statusFail());
+    }
+
+    private String jsonStatusTimeoutReached() {
+        return new Gson().toJson(StatusJson.Status.statusTimeoutReached());
+    }
+
     private String jsonStatus(String status) {
-        return new Gson().toJson(new StatusJson.Status(
+        return new Gson().toJson(new StatusJson.FullStatus(
                 status,
                 device,
                 serviceUUID,
@@ -39,7 +51,7 @@ public class CommandResultReporter {
     }
 
     private String jsonStatusWithValue(String status, byte[] value) {
-        return new Gson().toJson(new StatusJson.StatusWithValue(
+        return new Gson().toJson(new StatusJson.FullStatusWithValue(
                 status,
                 value,
                 device,
@@ -53,34 +65,46 @@ public class CommandResultReporter {
     }
 
     protected CommandResult cmdResSuccess() {
-        return new CommandResult(CommandResult.STATUS_COMLETED, jsonStatus(R.string.status_json_success));
-    }
-
-    protected CommandResult cmdResSuccessValue(byte[] value) {
-        return new CommandResult(CommandResult.STATUS_COMLETED, jsonStatusWithValue(R.string.status_json_success, value));
-    }
-
-    public CommandResult cmdResSuccessStatus(String status) {
-        return new CommandResult(CommandResult.STATUS_COMLETED, jsonStatus(status));
+        return new CommandResult(CommandResult.STATUS_COMLETED, jsonStatusOk());
     }
 
     protected CommandResult cmdResFail() {
+        return new CommandResult(CommandResult.STATUS_FAILED, jsonStatusFail());
+    }
+
+    protected CommandResult cmdResTimeoutReached() {
+        return new CommandResult(CommandResult.STATUS_FAILED, jsonStatusTimeoutReached());
+    }
+
+    protected CommandResult cmdResFullSuccess() {
+        return new CommandResult(CommandResult.STATUS_COMLETED, jsonStatus(R.string.status_json_success));
+    }
+
+    protected CommandResult cmdResFullSuccessValue(byte[] value) {
+        return new CommandResult(CommandResult.STATUS_COMLETED, jsonStatusWithValue(R.string.status_json_success, value));
+    }
+
+    public CommandResult cmdResFullSuccessStatus(String status) {
+        return new CommandResult(CommandResult.STATUS_COMLETED, jsonStatus(status));
+    }
+
+    protected CommandResult cmdResFullFail() {
         return new CommandResult(CommandResult.STATUS_FAILED, jsonStatus(R.string.status_json_fail));
     }
 
-    public CommandResult cmdResFailStatus(String status) {
+    public CommandResult cmdResFullFailStatus(String status) {
         return new CommandResult(CommandResult.STATUS_FAILED, jsonStatus(status));
     }
 
-    protected CommandResult cmdResFailValue(byte[] value) {
+    protected CommandResult cmdResFullFailValue(byte[] value) {
         return new CommandResult(CommandResult.STATUS_FAILED, jsonStatusWithValue(R.string.status_json_fail, value));
     }
 
-    protected CommandResult cmdResFailStatusAndValue(String status, byte[] value) {
+    protected CommandResult cmdResFullFailStatusAndValue(String status, byte[] value) {
         return new CommandResult(CommandResult.STATUS_FAILED, jsonStatusWithValue(status, value));
     }
 
-    protected CommandResult cmdResNotFound() {
+    protected CommandResult cmdResFullNotFound() {
         return new CommandResult(CommandResult.STATUS_FAILED, jsonStatus(R.string.status_json_not_found));
     }
 }
