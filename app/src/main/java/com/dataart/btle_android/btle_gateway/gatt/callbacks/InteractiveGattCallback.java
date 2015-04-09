@@ -83,13 +83,13 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
             this.gatt.discoverServices();
 
             if (callableFuture!=null && !callableFuture.isGetDone()) {
-                callableFuture.call(new CommandResult(CommandResult.STATUS_COMLETED, context.getString(R.string.status_ok)));
+                callableFuture.call(CommandResultReporter.commandResultSuccess());
             }
         } else {
             String m = String.format(context.getString(R.string.connection_failed_result), status, newState);
             Timber.d(m);
             if (callableFuture!=null && !callableFuture.isGetDone()) {
-                callableFuture.call(new CommandResult(CommandResult.STATUS_FAILED, m));
+                callableFuture.call(CommandResultReporter.commandResultFailWithVal(m));
             }
             if (disconnecListener!=null) {
                 disconnecListener.onDisconnect();

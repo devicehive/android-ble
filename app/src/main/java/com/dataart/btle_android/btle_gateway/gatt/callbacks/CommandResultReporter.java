@@ -29,15 +29,19 @@ public class CommandResultReporter {
         return jsonStatus(context.getString(statusStringId));
     }
 
-    private String jsonStatusOk() {
+    private static String jsonStatusOk() {
         return new Gson().toJson(StatusJson.Status.statusOk());
     }
 
-    private String jsonStatusFail() {
+    private static String jsonStatusFail() {
         return new Gson().toJson(StatusJson.Status.statusFail());
     }
 
-    private String jsonStatusTimeoutReached() {
+    private static String jsonStatusFailWithVal(String val) {
+        return new Gson().toJson(StatusJson.Status.statusFailWithVal(val));
+    }
+
+    private static String jsonStatusTimeoutReached() {
         return new Gson().toJson(StatusJson.Status.statusTimeoutReached());
     }
 
@@ -64,15 +68,19 @@ public class CommandResultReporter {
         return jsonStatusWithValue(context.getString(statusStringId), value);
     }
 
-    protected CommandResult cmdResSuccess() {
+    public static CommandResult commandResultSuccess() {
         return new CommandResult(CommandResult.STATUS_COMLETED, jsonStatusOk());
     }
 
-    protected CommandResult cmdResFail() {
+    public static CommandResult commandResultFail() {
         return new CommandResult(CommandResult.STATUS_FAILED, jsonStatusFail());
     }
 
-    protected CommandResult cmdResTimeoutReached() {
+    public static CommandResult commandResultFailWithVal(String val) {
+        return new CommandResult(CommandResult.STATUS_FAILED, jsonStatusFailWithVal(val));
+    }
+
+    public static CommandResult commandResultTimeoutReached() {
         return new CommandResult(CommandResult.STATUS_FAILED, jsonStatusTimeoutReached());
     }
 

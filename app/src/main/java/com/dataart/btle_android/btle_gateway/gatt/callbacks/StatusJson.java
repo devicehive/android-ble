@@ -10,7 +10,7 @@ import com.dataart.btle_android.R;
  * Created by Constantine Mars on 4/3/15.
  */
 public abstract class StatusJson {
-    public static class Status implements Parcelable {
+    public static class Status {
         private String status;
 
         public Status(String status) {
@@ -25,21 +25,27 @@ public abstract class StatusJson {
             return new Status(BTLEApplication.getApplication().getString(R.string.status_ok));
         }
 
+        public static Status statusFailWithVal(String val) {
+            return new Status(val);
+        }
+
         public static Status statusTimeoutReached() {
             return new Status(BTLEApplication.getApplication().getString(R.string.status_timeout));
         }
 
-        @Override
-        public int describeContents() {
-            return 0;
-        }
-
-        @Override
-        public void writeToParcel(Parcel parcel, int i) {
-            parcel.writeString(status);
-        }
+//        @Override
+//        public int describeContents() {
+//            return 0;
+//        }
+//
+//        @Override
+//        public void writeToParcel(Parcel parcel, int i) {
+//            parcel.writeString(status);
+//        }
     }
 
+
+    
     public static class FullStatus implements Parcelable {
         private String status;
         private String device;
