@@ -83,13 +83,13 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
             this.gatt.discoverServices();
 
             if (callableFuture!=null && !callableFuture.isGetDone()) {
-                callableFuture.call(CommandResultReporter.commandResultSuccess());
+                callableFuture.call(CmdResReporter.success());
             }
         } else {
             String m = String.format(context.getString(R.string.connection_failed_result), status, newState);
             Timber.d(m);
             if (callableFuture!=null && !callableFuture.isGetDone()) {
-                callableFuture.call(CommandResultReporter.commandResultFailWithVal(m));
+                callableFuture.call(CmdResReporter.failWithStatus(m));
             }
             if (disconnecListener!=null) {
                 disconnecListener.onDisconnect();
@@ -206,7 +206,9 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
         String m = context.getString(R.string.gatt_null);
         Timber.d(m);
         if (callableFuture!=null) {
-            callableFuture.call(new CommandResult(CommandResult.STATUS_FAILED, m));
+            callableFuture.call(
+                    CmdResReporter.failWithStatus(m));
+//                    new CommandResult(CommandResult.STATUS_FAILED, m));
         }
     }
 
@@ -280,7 +282,7 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
         }
     }
 
-    public abstract static class CharacteristicOperation extends CommandResultReporter {
+    public abstract static class CharacteristicOperation extends CmdResReporter {
         protected GattCharacteristicCallBack callBack;
         protected SimpleCallableFuture<CommandResult> callableFuture;
 
@@ -331,7 +333,7 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
         void onDisconnect();
     }
 
-    abstract public static class NotificaitonSubscription extends CommandResultReporter{
+    abstract public static class NotificaitonSubscription extends CmdResReporter {
         private static final String DESCRIPTOR_UUID = "00002902-0000-1000-8000-00805f9b34fb";
         private SimpleCallableFuture<CommandResult> future;
         private boolean isOn;

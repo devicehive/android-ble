@@ -9,6 +9,7 @@ import com.dataart.android.devicehive.Notification;
 import com.dataart.android.devicehive.device.CommandResult;
 import com.dataart.btle_android.R;
 import com.dataart.android.devicehive.device.future.SimpleCallableFuture;
+import com.dataart.btle_android.btle_gateway.gatt.callbacks.CmdResReporter;
 import com.dataart.btle_android.btle_gateway.gatt.callbacks.InteractiveGattCallback;
 import com.dataart.btle_android.devicehive.BTLEDeviceHive;
 import com.google.gson.Gson;
@@ -118,30 +119,18 @@ public class BTLEGateway {
                     });
                 case UNKNOWN:
                 default:
-                    new SimpleCallableFuture<>(new CommandResult(CommandResult.STATUS_FAILED, context.getString(R.string.unknown_command)));
+                    new SimpleCallableFuture<>(CmdResReporter.failWithStatus(context.getString(R.string.unknown_command)));
             }
         } catch (Exception e) {
             Timber.e("error:"+e.toString());
 //            Log.e("TAG", "Error during handling" + e.toString());
             final Notification notification = new Notification("Error", e.toString());
             dh.sendNotification(notification);
-            return new SimpleCallableFuture<>(new CommandResult(CommandResult.STATUS_FAILED, "Error: \""+e.toString()+"\""));
+            return new SimpleCallableFuture<>(CmdResReporter.failWithStatus("Error: \"" + e.toString() + "\""));
         }
 
         Timber.d("default status ok");
-        return new SimpleCallableFuture<>(cmdResSuccess());
-    }
-
-    private class Res {
-        public String getStatus() {
-            return status;
-        }
-
-        private String status;
-
-        private Res(String status) {
-            this.status = status;
-        }
+        return new SimpleCallableFuture<>(CmdResReporter.success());
     }
 
     private SimpleCallableFuture<CommandResult> scanAndReturnResults(final BTLEDeviceHive dh) {
@@ -190,9 +179,8 @@ public class BTLEGateway {
             @Override
             public void onServices(List<ParcelUuid> uuidList) {
                 final String json = new Gson().toJson(uuidList);
-                future.call(cmdResSuccessWithJson(json));
+                future.call( CmdResReporter.successWithVal(json));
                 sendNotification(dh, leCommand, json);
-                future.call(cmdResSuccessWithJson(json));
             }
         });
         return future;
@@ -205,7 +193,7 @@ public class BTLEGateway {
             public void onCharacteristics(ArrayList<BTLECharacteristic> characteristics) {
                 final String json = new Gson().toJson(characteristics);
                 sendNotification(dh, leCommand, json);
-                future.call(cmdResSuccessWithJson(json));
+                future.call(CmdResReporter.successWithVal(json));
             }
         });
         return future;
@@ -244,14 +232,6 @@ public class BTLEGateway {
             return command;
         }
 
-    }
-
-    private CommandResult cmdResSuccess(){
-        return new CommandResult(CommandResult.STATUS_COMLETED, new Gson().toJson(new Res(context.getString(R.string.status_ok))));
-    }
-
-    private CommandResult cmdResSuccessWithJson(String json) {
-        return new CommandResult(CommandResult.STATUS_COMLETED, json);
     }
 
 }

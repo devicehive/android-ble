@@ -21,6 +21,10 @@ public abstract class StatusJson {
             return new Status(BTLEApplication.getApplication().getString(R.string.status_ok));
         }
 
+        public static Status statusOkWithVal(String val) {
+            return new Status(val);
+        }
+
         public static Status statusFail() {
             return new Status(BTLEApplication.getApplication().getString(R.string.status_ok));
         }

@@ -11,12 +11,12 @@ import com.google.gson.Gson;
  *
  * Formatter for json command results
  */
-public class CommandResultReporter {
+public class CmdResReporter {
     protected String serviceUUID;
     protected String characteristicUUID;
     protected String device;
 
-    public CommandResultReporter(String serviceUUID, String characteristicUUID, String device, Context context) {
+    public CmdResReporter(String serviceUUID, String characteristicUUID, String device, Context context) {
         this.serviceUUID = serviceUUID;
         this.characteristicUUID = characteristicUUID;
         this.device = device;
@@ -31,6 +31,10 @@ public class CommandResultReporter {
 
     private static String jsonStatusOk() {
         return new Gson().toJson(StatusJson.Status.statusOk());
+    }
+
+    private static String jsonStatusOkWithVal(String val) {
+        return new Gson().toJson(StatusJson.Status.statusOkWithVal(val));
     }
 
     private static String jsonStatusFail() {
@@ -68,19 +72,23 @@ public class CommandResultReporter {
         return jsonStatusWithValue(context.getString(statusStringId), value);
     }
 
-    public static CommandResult commandResultSuccess() {
+    public static CommandResult success() {
         return new CommandResult(CommandResult.STATUS_COMLETED, jsonStatusOk());
+    }
+
+    public static CommandResult successWithVal(String val) {
+        return new CommandResult(CommandResult.STATUS_COMLETED, jsonStatusOkWithVal(val));
     }
 
     public static CommandResult commandResultFail() {
         return new CommandResult(CommandResult.STATUS_FAILED, jsonStatusFail());
     }
 
-    public static CommandResult commandResultFailWithVal(String val) {
+    public static CommandResult failWithStatus(String val) {
         return new CommandResult(CommandResult.STATUS_FAILED, jsonStatusFailWithVal(val));
     }
 
-    public static CommandResult commandResultTimeoutReached() {
+    public static CommandResult failTimeoutReached() {
         return new CommandResult(CommandResult.STATUS_FAILED, jsonStatusTimeoutReached());
     }
 

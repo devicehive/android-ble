@@ -5,10 +5,8 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
-import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.os.Handler;
 import android.os.ParcelUuid;
@@ -17,19 +15,17 @@ import android.util.Log;
 
 import com.dataart.android.devicehive.device.CommandResult;
 import com.dataart.android.devicehive.device.future.SimpleCallableFuture;
+import com.dataart.btle_android.BTLEApplication;
 import com.dataart.btle_android.R;
+import com.dataart.btle_android.btle_gateway.gatt.callbacks.CmdResReporter;
 import com.dataart.btle_android.btle_gateway.gatt.callbacks.DeviceConnection;
 import com.dataart.btle_android.btle_gateway.gatt.callbacks.InteractiveGattCallback;
-import com.dataart.btle_android.btle_gateway.gatt.callbacks.StatusJson;
-import com.google.gson.Gson;
 
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import timber.log.Timber;
 
@@ -200,7 +196,7 @@ public class BluetoothServer extends BluetoothGattCallback {
 //              "Never scan on a loop, and set a time limit on your scan. " - https://developer.android.com/guide/topics/connectivity/bluetooth-le.html#find
                     Timber.d("on timeout");
                     stop();
-                    operation.fail("\"s\":\"ok\"");
+                    operation.fail(BTLEApplication.getApplication().getString(R.string.status_timeout));
                 }
             }, BluetoothServer.COMMAND_SCAN_DELAY);
         }
@@ -303,7 +299,7 @@ public class BluetoothServer extends BluetoothGattCallback {
                     @Override
                     public void run() {
                         if (!callback.isConnectionStateChanged()) {
-                            future.call(new CommandResult(CommandResult.STATUS_FAILED, context.getString(R.string.connection_timeout)));
+                            future.call(CmdResReporter.failTimeoutReached());
                         }
                     }
                 }, BluetoothServer.COMMAND_SCAN_DELAY);
@@ -313,7 +309,7 @@ public class BluetoothServer extends BluetoothGattCallback {
 
             @Override
             public void fail(String message) {
-                future.call(new CommandResult(CommandResult.STATUS_FAILED, message));
+                future.call(CmdResReporter.failWithStatus(message));
             }
         });
 
@@ -330,12 +326,12 @@ public class BluetoothServer extends BluetoothGattCallback {
                 connection.getGatt().disconnect();
                 activeConnections.remove(address);
                 Timber.d("disconnected. connections left: " + activeConnections.size());
-                future.call(new CommandResult(CommandResult.STATUS_COMLETED, context.getString(R.string.status_ok)));
+                future.call(CmdResReporter.success());
             }
 
             @Override
             public void fail(String message) {
-                future.call(new CommandResult(CommandResult.STATUS_FAILED, message));
+                future.call(CmdResReporter.failWithStatus(message));
             }
         });
 
@@ -411,7 +407,7 @@ public class BluetoothServer extends BluetoothGattCallback {
 
             @Override
             public void fail(String message) {
-                future.call(new CommandResult(CommandResult.STATUS_FAILED, message));
+                future.call(CmdResReporter.failWithStatus(message));
             }
         });
 
@@ -430,7 +426,7 @@ public class BluetoothServer extends BluetoothGattCallback {
 
             @Override
             public void fail(String message) {
-                future.call(new CommandResult(CommandResult.STATUS_FAILED, message));
+                future.call(CmdResReporter.failWithStatus(message));
             }
         });
 
