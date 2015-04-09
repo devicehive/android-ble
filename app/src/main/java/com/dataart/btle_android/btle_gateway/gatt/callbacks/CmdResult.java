@@ -3,6 +3,7 @@ package com.dataart.btle_android.btle_gateway.gatt.callbacks;
 import android.content.Context;
 
 import com.dataart.android.devicehive.device.CommandResult;
+import com.dataart.btle_android.BTLEApplication;
 import com.dataart.btle_android.R;
 import com.google.gson.Gson;
 
@@ -25,8 +26,8 @@ public class CmdResult {
 
     protected Context context;
 
-    private String jsonStatus(int statusStringId) {
-        return jsonStatus(context.getString(statusStringId));
+    private  String jsonFullStatus(int statusStringId) {
+        return jsonFullStatus(context.getString(statusStringId));
     }
 
     private static String jsonStatusOk() {
@@ -49,7 +50,11 @@ public class CmdResult {
         return new Gson().toJson(StatusJson.Status.statusTimeoutReached());
     }
 
-    private String jsonStatus(String status) {
+    private static String jsonStatus(int strResId){
+        return new Gson().toJson(new StatusJson.Status(BTLEApplication.getApplication().getString(strResId)));
+    }
+
+    private String jsonFullStatus(String status) {
         return new Gson().toJson(new StatusJson.FullStatus(
                 status,
                 device,
@@ -58,7 +63,7 @@ public class CmdResult {
         ));
     }
 
-    private String jsonStatusWithValue(String status, byte[] value) {
+    private String jsonFullStatusWithValue(String status, byte[] value) {
         return new Gson().toJson(new StatusJson.FullStatusWithValue(
                 status,
                 value,
@@ -68,8 +73,8 @@ public class CmdResult {
         ));
     }
 
-    private String jsonStatusWithValue(int statusStringId, byte[] value) {
-        return jsonStatusWithValue(context.getString(statusStringId), value);
+    private String jsonFullStatusWithValue(int statusStringId, byte[] value) {
+        return jsonFullStatusWithValue(context.getString(statusStringId), value);
     }
 
     public static CommandResult success() {
@@ -88,39 +93,43 @@ public class CmdResult {
         return new CommandResult(CommandResult.STATUS_FAILED, jsonStatusFailWithVal(val));
     }
 
+    public static CommandResult failWithStatus(int strResId) {
+        return new CommandResult(CommandResult.STATUS_FAILED, jsonStatus(strResId));
+    }
+
     public static CommandResult failTimeoutReached() {
         return new CommandResult(CommandResult.STATUS_FAILED, jsonStatusTimeoutReached());
     }
 
     protected CommandResult cmdResFullSuccess() {
-        return new CommandResult(CommandResult.STATUS_COMLETED, jsonStatus(R.string.status_json_success));
+        return new CommandResult(CommandResult.STATUS_COMLETED, jsonFullStatus(R.string.status_json_success));
     }
 
     public CommandResult successFullWithVal(byte[] value) {
-        return new CommandResult(CommandResult.STATUS_COMLETED, jsonStatusWithValue(R.string.status_json_success, value));
+        return new CommandResult(CommandResult.STATUS_COMLETED, jsonFullStatusWithValue(R.string.status_json_success, value));
     }
 
     public CommandResult successFullWithStatus(String status) {
-        return new CommandResult(CommandResult.STATUS_COMLETED, jsonStatus(status));
+        return new CommandResult(CommandResult.STATUS_COMLETED, jsonFullStatus(status));
     }
 
     protected CommandResult cmdResFullFail() {
-        return new CommandResult(CommandResult.STATUS_FAILED, jsonStatus(R.string.status_json_fail));
+        return new CommandResult(CommandResult.STATUS_FAILED, jsonFullStatus(R.string.status_json_fail));
     }
 
     public CommandResult cmdResFullFailStatus(String status) {
-        return new CommandResult(CommandResult.STATUS_FAILED, jsonStatus(status));
+        return new CommandResult(CommandResult.STATUS_FAILED, jsonFullStatus(status));
     }
 
     protected CommandResult cmdResFullFailValue(byte[] value) {
-        return new CommandResult(CommandResult.STATUS_FAILED, jsonStatusWithValue(R.string.status_json_fail, value));
+        return new CommandResult(CommandResult.STATUS_FAILED, jsonFullStatusWithValue(R.string.status_json_fail, value));
     }
 
     protected CommandResult cmdResFullFailStatusAndValue(String status, byte[] value) {
-        return new CommandResult(CommandResult.STATUS_FAILED, jsonStatusWithValue(status, value));
+        return new CommandResult(CommandResult.STATUS_FAILED, jsonFullStatusWithValue(status, value));
     }
 
     protected CommandResult cmdResFullNotFound() {
-        return new CommandResult(CommandResult.STATUS_FAILED, jsonStatus(R.string.status_json_not_found));
+        return new CommandResult(CommandResult.STATUS_FAILED, jsonFullStatus(R.string.status_json_not_found));
     }
 }

@@ -37,23 +37,34 @@ public abstract class StatusJson {
             return new Status(BTLEApplication.getApplication().getString(R.string.status_timeout));
         }
 
-//        @Override
-//        public int describeContents() {
-//            return 0;
-//        }
-//
-//        @Override
-//        public void writeToParcel(Parcel parcel, int i) {
-//            parcel.writeString(status);
-//        }
+        public String getStatus() {
+            return status;
+        }
     }
 
 
     
-    public static class FullStatus implements Parcelable {
+    public static class FullStatus {
         private String status;
         private String device;
         private String serviceUUID;
+
+        public String getCharacteristicUUID() {
+            return characteristicUUID;
+        }
+
+        public String getServiceUUID() {
+            return serviceUUID;
+        }
+
+        public String getDevice() {
+            return device;
+        }
+
+        public String getStatus() {
+            return status;
+        }
+
         private String characteristicUUID;
 
         public FullStatus(String status, String device, String serviceUUID, String characteristicUUID) {
@@ -61,19 +72,6 @@ public abstract class StatusJson {
             this.device = device;
             this.serviceUUID = serviceUUID;
             this.characteristicUUID = characteristicUUID;
-        }
-
-        @Override
-        public void writeToParcel(Parcel parcel, int i) {
-            parcel.writeString(status);
-            parcel.writeString(device);
-            parcel.writeString(serviceUUID);
-            parcel.writeString(characteristicUUID);
-        }
-
-        @Override
-        public int describeContents() {
-            return 0;
         }
     }
 
@@ -83,12 +81,6 @@ public abstract class StatusJson {
         public FullStatusWithValue(String status, byte[] value, String device, String serviceUUID, String characteristicUUID) {
             super(status, device, serviceUUID, characteristicUUID);
             this.value = value;
-        }
-
-        @Override
-        public void writeToParcel(Parcel parcel, int i) {
-            super.writeToParcel(parcel, i);
-            parcel.writeByteArray(value);
         }
     }
 }

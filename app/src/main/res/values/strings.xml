@@ -60,4 +60,8 @@
     <string name="unknown_command">Unknown command</string>
     <string name="status_service_uuid_nf">service uuid not found</string>
     <string name="status_char_uuid_nf">characteristic uuid not found</string>
+
+    <string name="fail_address">Invalid args. Device address required</string>
+    <string name="fail_service">Invalid args. Service UUID required</string>
+    <string name="fail_characteristic">Invalid args. Characteristic UUID required</string>
 </resources>

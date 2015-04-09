@@ -7,6 +7,7 @@ import android.os.ParcelUuid;
 import com.dataart.android.devicehive.Command;
 import com.dataart.android.devicehive.Notification;
 import com.dataart.android.devicehive.device.CommandResult;
+import com.dataart.android.devicehive.device.future.CmdResFuture;
 import com.dataart.btle_android.R;
 import com.dataart.android.devicehive.device.future.SimpleCallableFuture;
 import com.dataart.btle_android.btle_gateway.gatt.callbacks.CmdResult;
@@ -74,7 +75,11 @@ public class BTLEGateway {
                 case GATT_CHARACTERISTICS:
                     return gattCharacteristics(address, dh, leCommand);
 
-                case GATT_READ:
+                case GATT_READ: {
+                    CmdResFuture future = validateArgs(address, serviceUUID, characteristicUUID);
+                    if (future != null) {
+                        return future;
+                    }
                     return bluetoothServerGateway.gattRead(address, serviceUUID, characteristicUUID, new GattCharacteristicCallBack() {
                         @Override
                         public void onRead(byte[] value) {
@@ -83,9 +88,14 @@ public class BTLEGateway {
                             sendNotification(dh, leCommand, json);
                         }
                     });
+                }
 
-                case GATT_WRITE:
-                    final String sValue = (String) (params!=null ? params.get("value") : null);
+                case GATT_WRITE: {
+                    CmdResFuture future = validateArgs(address, serviceUUID, characteristicUUID);
+                    if (future != null) {
+                        return future;
+                    }
+                    final String sValue = (String) (params != null ? params.get("value") : null);
                     final byte[] value = Utils.parseHexBinary(sValue);
                     return bluetoothServerGateway.gattWrite(address, serviceUUID, characteristicUUID, value, new GattCharacteristicCallBack() {
                         @Override
@@ -94,7 +104,7 @@ public class BTLEGateway {
                             sendNotification(dh, leCommand, json);
                         }
                     });
-
+                }
                 case GATT_NOTIFICATION:
                     return bluetoothServerGateway.gattNotifications(context, address, serviceUUID, characteristicUUID, true, new GattCharacteristicCallBack() {
                         @Override
@@ -129,6 +139,19 @@ public class BTLEGateway {
 
         Timber.d("default status ok");
         return new SimpleCallableFuture<>(CmdResult.success());
+    }
+
+    private CmdResFuture validateArgs(String address, String serviceUUID, String characteristicUUID){
+        if(address==null){
+            return new CmdResFuture(CmdResult.failWithStatus(R.string.fail_address));
+        }
+        if(serviceUUID==null){
+            return new CmdResFuture(CmdResult.failWithStatus(R.string.fail_service));
+        }
+        if(characteristicUUID==null){
+            return new CmdResFuture(CmdResult.failWithStatus(R.string.fail_characteristic));
+        }
+        return null;
     }
 
     private SimpleCallableFuture<CommandResult> scanAndReturnResults(final BTLEDeviceHive dh) {

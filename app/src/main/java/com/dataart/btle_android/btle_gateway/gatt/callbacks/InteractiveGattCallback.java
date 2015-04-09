@@ -226,10 +226,22 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
     }
 
     public String getFullServiceUuid(String shortUuid){
-        return (shortUuid!=null ? services.get(shortUuid.toLowerCase()) : null);
+        if (shortUuid==null){
+            return null;
+        }
+        if (shortUuid.length()!=4){
+            return shortUuid;
+        }
+        return services.get(shortUuid.toLowerCase());
     }
 
     public String getFullCharacteristicUuid(String shortUuid){
+        if (shortUuid==null){
+            return null;
+        }
+        if (shortUuid.length()!=4){
+            return shortUuid;
+        }
         return (shortUuid!=null ? characteristics.get(shortUuid.toLowerCase()) : null);
     }
 
