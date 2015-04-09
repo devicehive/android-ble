@@ -9,7 +9,7 @@ import com.dataart.android.devicehive.Notification;
 import com.dataart.android.devicehive.device.CommandResult;
 import com.dataart.btle_android.R;
 import com.dataart.android.devicehive.device.future.SimpleCallableFuture;
-import com.dataart.btle_android.btle_gateway.gatt.callbacks.CmdResReporter;
+import com.dataart.btle_android.btle_gateway.gatt.callbacks.CmdResult;
 import com.dataart.btle_android.btle_gateway.gatt.callbacks.InteractiveGattCallback;
 import com.dataart.btle_android.devicehive.BTLEDeviceHive;
 import com.google.gson.Gson;
@@ -22,11 +22,9 @@ import timber.log.Timber;
 
 public class BTLEGateway {
 
-    private Context context;
     private BluetoothServer bluetoothServerGateway;
 
-    public BTLEGateway(Context context, BluetoothServer bluetoothServer) {
-        this.context = context;
+    public BTLEGateway(BluetoothServer bluetoothServer) {
         this.bluetoothServerGateway = bluetoothServer;
     }
 
@@ -57,7 +55,7 @@ public class BTLEGateway {
 
                 case GATT_CONNECT:
                     Timber.d("connecting to " + address);
-                    return bluetoothServerGateway.gattConnect(address, new InteractiveGattCallback.DisconnecListener() {
+                    return bluetoothServerGateway.gattConnect(address, new InteractiveGattCallback.DisconnectListener() {
 
                         @Override
                         public void onDisconnect() {
@@ -77,7 +75,7 @@ public class BTLEGateway {
                     return gattCharacteristics(address, dh, leCommand);
 
                 case GATT_READ:
-                    return bluetoothServerGateway.gattRead(context, address, serviceUUID, characteristicUUID, new GattCharacteristicCallBack() {
+                    return bluetoothServerGateway.gattRead(address, serviceUUID, characteristicUUID, new GattCharacteristicCallBack() {
                         @Override
                         public void onRead(byte[] value) {
                             final String sValue = Utils.printHexBinary(value);
@@ -89,7 +87,7 @@ public class BTLEGateway {
                 case GATT_WRITE:
                     final String sValue = (String) (params!=null ? params.get("value") : null);
                     final byte[] value = Utils.parseHexBinary(sValue);
-                    return bluetoothServerGateway.gattWrite(context, address, serviceUUID, characteristicUUID, value, new GattCharacteristicCallBack() {
+                    return bluetoothServerGateway.gattWrite(address, serviceUUID, characteristicUUID, value, new GattCharacteristicCallBack() {
                         @Override
                         public void onWrite(int state) {
                             final String json = new Gson().toJson(state);
@@ -119,18 +117,18 @@ public class BTLEGateway {
                     });
                 case UNKNOWN:
                 default:
-                    new SimpleCallableFuture<>(CmdResReporter.failWithStatus(context.getString(R.string.unknown_command)));
+                    new SimpleCallableFuture<>(CmdResult.failWithStatus(context.getString(R.string.unknown_command)));
             }
         } catch (Exception e) {
             Timber.e("error:"+e.toString());
 //            Log.e("TAG", "Error during handling" + e.toString());
             final Notification notification = new Notification("Error", e.toString());
             dh.sendNotification(notification);
-            return new SimpleCallableFuture<>(CmdResReporter.failWithStatus("Error: \"" + e.toString() + "\""));
+            return new SimpleCallableFuture<>(CmdResult.failWithStatus("Error: \"" + e.toString() + "\""));
         }
 
         Timber.d("default status ok");
-        return new SimpleCallableFuture<>(CmdResReporter.success());
+        return new SimpleCallableFuture<>(CmdResult.success());
     }
 
     private SimpleCallableFuture<CommandResult> scanAndReturnResults(final BTLEDeviceHive dh) {
@@ -179,7 +177,7 @@ public class BTLEGateway {
             @Override
             public void onServices(List<ParcelUuid> uuidList) {
                 final String json = new Gson().toJson(uuidList);
-                future.call( CmdResReporter.successWithVal(json));
+                future.call( CmdResult.successWithVal(json));
                 sendNotification(dh, leCommand, json);
             }
         });
@@ -193,7 +191,7 @@ public class BTLEGateway {
             public void onCharacteristics(ArrayList<BTLECharacteristic> characteristics) {
                 final String json = new Gson().toJson(characteristics);
                 sendNotification(dh, leCommand, json);
-                future.call(CmdResReporter.successWithVal(json));
+                future.call(CmdResult.successWithVal(json));
             }
         });
         return future;

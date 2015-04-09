@@ -58,5 +58,6 @@
     <string name="value">Value: %1$s</string>
     <string name="status">Status: %1$d</string>
     <string name="unknown_command">Unknown command</string>
-
+    <string name="status_service_uuid_nf">service uuid not found</string>
+    <string name="status_char_uuid_nf">characteristic uuid not found</string>
 </resources>

@@ -11,12 +11,12 @@ import com.google.gson.Gson;
  *
  * Formatter for json command results
  */
-public class CmdResReporter {
+public class CmdResult {
     protected String serviceUUID;
     protected String characteristicUUID;
     protected String device;
 
-    public CmdResReporter(String serviceUUID, String characteristicUUID, String device, Context context) {
+    public CmdResult(String serviceUUID, String characteristicUUID, String device, Context context) {
         this.serviceUUID = serviceUUID;
         this.characteristicUUID = characteristicUUID;
         this.device = device;
@@ -96,11 +96,11 @@ public class CmdResReporter {
         return new CommandResult(CommandResult.STATUS_COMLETED, jsonStatus(R.string.status_json_success));
     }
 
-    protected CommandResult cmdResFullSuccessValue(byte[] value) {
+    public CommandResult successFullWithVal(byte[] value) {
         return new CommandResult(CommandResult.STATUS_COMLETED, jsonStatusWithValue(R.string.status_json_success, value));
     }
 
-    public CommandResult cmdResFullSuccessStatus(String status) {
+    public CommandResult successFullWithStatus(String status) {
         return new CommandResult(CommandResult.STATUS_COMLETED, jsonStatus(status));
     }
 

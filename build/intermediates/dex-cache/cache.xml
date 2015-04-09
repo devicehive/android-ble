@@ -2,6 +2,13 @@
 <items version="2" >
 
     <item
+        jar="/Users/mars/.gradle/caches/modules-2/files-2.1/commons-codec/commons-codec/1.5/cf993e250ff71804754ec2734a16f23c0be99f70/commons-codec-1.5.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="cf993e250ff71804754ec2734a16f23c0be99f70">
+        <dex dex="/Users/mars/projects/android/devicehive-android/app/build/intermediates/pre-dexed/debug/commons-codec-1.5-6626b1626bc4f434650ea02055cf0c20ef9d3af3.jar" />
+    </item>
+    <item
         jar="/Users/mars/.gradle/caches/modules-2/files-2.1/com.jakewharton.timber/timber/2.7.1/8fa5f11686c7a44386b41a6890e655cf2b7d5e70/timber-2.7.1.jar"
         jumboMode="false"
         revision="21.1.2"
