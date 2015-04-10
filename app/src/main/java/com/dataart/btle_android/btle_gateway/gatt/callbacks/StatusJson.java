@@ -8,6 +8,8 @@ import com.dataart.btle_android.R;
 
 /**
  * Created by Constantine Mars on 4/3/15.
+ *
+ * Wraps data for json conversion
  */
 public abstract class StatusJson {
     public static class Status {
@@ -42,20 +44,19 @@ public abstract class StatusJson {
         }
     }
 
+    public static class FullStatusWithVal extends FullStatus {
+        private String value;
 
-    
+        public FullStatusWithVal(String status, String device, String serviceUUID, String characteristicUUID, String value) {
+            super(status, device, serviceUUID, characteristicUUID);
+            this.value = value;
+        }
+    }
+
     public static class FullStatus {
         private String status;
         private String device;
         private String serviceUUID;
-
-        public String getCharacteristicUUID() {
-            return characteristicUUID;
-        }
-
-        public String getServiceUUID() {
-            return serviceUUID;
-        }
 
         public String getDevice() {
             return device;
@@ -75,10 +76,10 @@ public abstract class StatusJson {
         }
     }
 
-    public static class FullStatusWithValue extends FullStatus {
+    public static class FullStatusWithByteArray extends FullStatus {
         private byte[] value;
 
-        public FullStatusWithValue(String status, byte[] value, String device, String serviceUUID, String characteristicUUID) {
+        public FullStatusWithByteArray(String status, byte[] value, String device, String serviceUUID, String characteristicUUID) {
             super(status, device, serviceUUID, characteristicUUID);
             this.value = value;
         }

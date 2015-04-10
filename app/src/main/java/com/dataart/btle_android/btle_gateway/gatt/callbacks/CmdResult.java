@@ -63,8 +63,22 @@ public class CmdResult {
         ));
     }
 
+    private String jsonFullStatusWithVal(String status, String val) {
+        return new Gson().toJson(new StatusJson.FullStatusWithVal(
+                status,
+                device,
+                serviceUUID,
+                characteristicUUID,
+                val
+        ));
+    }
+
+    private String jsonFullStatusWithVal(int statusResId, String val) {
+        return jsonFullStatusWithVal(BTLEApplication.getApplication().getString(statusResId), val);
+    }
+
     private String jsonFullStatusWithValue(String status, byte[] value) {
-        return new Gson().toJson(new StatusJson.FullStatusWithValue(
+        return new Gson().toJson(new StatusJson.FullStatusWithByteArray(
                 status,
                 value,
                 device,
@@ -101,11 +115,15 @@ public class CmdResult {
         return new CommandResult(CommandResult.STATUS_FAILED, jsonStatusTimeoutReached());
     }
 
-    protected CommandResult cmdResFullSuccess() {
+    protected CommandResult sucessFull() {
         return new CommandResult(CommandResult.STATUS_COMLETED, jsonFullStatus(R.string.status_json_success));
     }
 
-    public CommandResult successFullWithVal(byte[] value) {
+    protected CommandResult successFullWithVal(String val) {
+        return new CommandResult(CommandResult.STATUS_COMLETED, jsonFullStatusWithVal(R.string.status_json_success, val));
+    }
+
+    public CommandResult successFullWithByteArray(byte[] value) {
         return new CommandResult(CommandResult.STATUS_COMLETED, jsonFullStatusWithValue(R.string.status_json_success, value));
     }
 

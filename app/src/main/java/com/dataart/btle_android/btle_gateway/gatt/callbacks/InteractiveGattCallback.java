@@ -242,7 +242,7 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
         if (shortUuid.length()!=4){
             return shortUuid;
         }
-        return (shortUuid!=null ? characteristics.get(shortUuid.toLowerCase()) : null);
+        return characteristics.get(shortUuid.toLowerCase());
     }
 
     public class ReadCharacteristicOperation extends CharacteristicOperation {
@@ -265,7 +265,7 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 callBack.onRead(value);
                 if (future !=null) {
-                    future.call(successFullWithStatus("0x" + String.valueOf(Hex.encodeHex(value))));
+                    future.call(successFullWithVal("0x" + String.valueOf(Hex.encodeHex(value))));
                 }
                 return;
             }
@@ -298,7 +298,7 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
             callBack.onWrite(status);
             if (future !=null) {
                 if (status == BluetoothGatt.GATT_SUCCESS) {
-                    future.call(cmdResFullSuccess());
+                    future.call(sucessFull());
                 } else {
 //                TODO: handle BluetoothGatt.GATT_WRITE_NOT_PERMITTED and others
                     future.call(cmdResFullFailStatus(statusWithValue(status, value)));
@@ -416,7 +416,7 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
                             }
 
                             if (gatt.writeDescriptor(descriptor)) {
-                                future.call(cmdResFullSuccess());
+                                future.call(sucessFull());
                                 return;
                             }
                         }

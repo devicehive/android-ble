@@ -91,11 +91,12 @@ public class BTLEGateway {
                 }
 
                 case GATT_WRITE: {
-                    CmdResFuture future = validateArgs(address, serviceUUID, characteristicUUID);
+                    final String sValue = (String) (params != null ? params.get("value") : null);
+                    CmdResFuture future = validateArgs(address, serviceUUID, characteristicUUID, sValue);
                     if (future != null) {
                         return future;
                     }
-                    final String sValue = (String) (params != null ? params.get("value") : null);
+
                     final byte[] value = Utils.parseHexBinary(sValue);
                     return bluetoothServerGateway.gattWrite(address, serviceUUID, characteristicUUID, value, new GattCharacteristicCallBack() {
                         @Override
@@ -127,7 +128,7 @@ public class BTLEGateway {
                     });
                 case UNKNOWN:
                 default:
-                    new SimpleCallableFuture<>(CmdResult.failWithStatus(context.getString(R.string.unknown_command)));
+                     return new CmdResFuture(CmdResult.failWithStatus(R.string.unknown_command));
             }
         } catch (Exception e) {
             Timber.e("error:"+e.toString());
@@ -139,6 +140,17 @@ public class BTLEGateway {
 
         Timber.d("default status ok");
         return new SimpleCallableFuture<>(CmdResult.success());
+    }
+
+    private CmdResFuture validateArgs(String address, String serviceUUID, String characteristicUUID, String value) {
+        CmdResFuture future=validateArgs(address, serviceUUID, characteristicUUID);
+        if(future!=null){
+            return future;
+        }
+        if(value==null){
+            return new CmdResFuture(CmdResult.failWithStatus(R.string.fail_val));
+        }
+        return null;
     }
 
     private CmdResFuture validateArgs(String address, String serviceUUID, String characteristicUUID){

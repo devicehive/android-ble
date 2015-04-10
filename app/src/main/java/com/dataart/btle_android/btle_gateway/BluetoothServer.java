@@ -200,8 +200,8 @@ public class BluetoothServer extends BluetoothGattCallback {
                 public void run() {
 //              "Never scan on a loop, and set a time limit on your scan. " - https://developer.android.com/guide/topics/connectivity/bluetooth-le.html#find
                     Timber.d("on timeout");
-                     stop();
-                    operation.fail(BTLEApplication.getApplication().getString(R.string.status_timeout));
+                    stop();
+                    operation.fail(BTLEApplication.getApplication().getString(R.string.status_notfound_timeout));
                 }
             }, BluetoothServer.COMMAND_SCAN_DELAY);
         }
