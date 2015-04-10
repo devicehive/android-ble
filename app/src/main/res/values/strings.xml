@@ -42,6 +42,8 @@
     <string name="status_ok">ok</string>
     <string name="status_fail">fail</string>
     <string name="status_waiting">waiting for completion</string>
+    <string name="status_fail_write_not_permitted">write not permitted</string>
+    <string name="status_fail_read_not_permitted">read not permitted</string>
 
     <string name="connection_failed">connection failed</string>
     <string name="connection_timeout">connection timeout reached</string>

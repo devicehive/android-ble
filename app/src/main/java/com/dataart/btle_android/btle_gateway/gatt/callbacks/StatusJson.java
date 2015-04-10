@@ -6,6 +6,8 @@ import android.os.Parcelable;
 import com.dataart.btle_android.BTLEApplication;
 import com.dataart.btle_android.R;
 
+import org.apache.commons.codec.binary.Hex;
+
 /**
  * Created by Constantine Mars on 4/3/15.
  *
@@ -83,5 +85,16 @@ public abstract class StatusJson {
             super(status, device, serviceUUID, characteristicUUID);
             this.value = value;
         }
+    }
+
+    public static String bytes2String(byte[] value){
+        String s = "";
+        for(byte b:value){
+            if(!s.isEmpty()){
+                s+=", ";
+            }
+            s+=String.format("0x%02X",b);
+        }
+        return s;
     }
 }

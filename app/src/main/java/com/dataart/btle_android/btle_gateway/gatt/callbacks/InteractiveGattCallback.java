@@ -265,7 +265,8 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 callBack.onRead(value);
                 if (future !=null) {
-                    future.call(successFullWithVal("0x" + String.valueOf(Hex.encodeHex(value))));
+                    future.call(successFullWithVal(StatusJson.bytes2String(value)));
+//                            "0x" + String.valueOf(Hex.encodeHex(value))));
                 }
                 return;
             }
@@ -300,8 +301,14 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
                 if (status == BluetoothGatt.GATT_SUCCESS) {
                     future.call(sucessFull());
                 } else {
-//                TODO: handle BluetoothGatt.GATT_WRITE_NOT_PERMITTED and others
-                    future.call(cmdResFullFailStatus(statusWithValue(status, value)));
+                    int resId = R.string.status_fail;
+                    switch (status) {
+                        case BluetoothGatt.GATT_WRITE_NOT_PERMITTED:
+                            resId = R.string.status_fail_write_not_permitted;
+                            break;
+//                TODO: handle other BluetoothGatt error codes
+                    }
+                    future.call(withStatusAndVal(resId, StatusJson.bytes2String(value)));
                 }
             }
         }

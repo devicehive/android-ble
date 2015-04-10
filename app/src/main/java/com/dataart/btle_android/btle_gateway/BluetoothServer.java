@@ -181,8 +181,13 @@ public class BluetoothServer extends BluetoothGattCallback {
                         stop();
                         onDeviceFound(bluetoothDevice, i, bytes);
 
-                        DeviceConnection connection = connectAndSave(address, bluetoothDevice);
-                        operation.call(connection);
+                        connectAndSave(address, bluetoothDevice, new InteractiveGattCallback.OnConnectedListener() {
+                            @Override
+                            public void call() {
+                                Timber.d("on connected - calling operation");
+                                applyForConnection(address, operation);
+                            }
+                        });
                     }
                 }
             };
