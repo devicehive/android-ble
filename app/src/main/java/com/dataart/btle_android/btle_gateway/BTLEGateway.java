@@ -83,9 +83,10 @@ public class BTLEGateway {
                     return bluetoothServerGateway.gattRead(address, serviceUUID, characteristicUUID, new GattCharacteristicCallBack() {
                         @Override
                         public void onRead(byte[] value) {
-                            final String sValue = Utils.printHexBinary(value);
-                            final String json = new Gson().toJson(sValue);
-                            sendNotification(dh, leCommand, json);
+//                            no notifications
+//                            final String sValue = Utils.printHexBinary(value);
+//                            final String json = new Gson().toJson(sValue);
+//                            sendNotification(dh, leCommand, json);
                         }
                     });
                 }
@@ -101,8 +102,9 @@ public class BTLEGateway {
                     return bluetoothServerGateway.gattWrite(address, serviceUUID, characteristicUUID, value, new GattCharacteristicCallBack() {
                         @Override
                         public void onWrite(int state) {
-                            final String json = new Gson().toJson(state);
-                            sendNotification(dh, leCommand, json);
+//                            no notifications
+//                            final String json = new Gson().toJson(state);
+//                            sendNotification(dh, leCommand, json);
                         }
                     });
                 }
@@ -207,28 +209,26 @@ public class BTLEGateway {
     }
 
     private SimpleCallableFuture<CommandResult> gattPrimary(String address, final BTLEDeviceHive dh, final LeCommand leCommand) {
-        final SimpleCallableFuture<CommandResult> future = new SimpleCallableFuture<>();
+        final CmdResFuture future = new CmdResFuture();
         bluetoothServerGateway.gattPrimary(address, new GattCharacteristicCallBack() {
             @Override
             public void onServices(List<ParcelUuid> uuidList) {
                 final String json = new Gson().toJson(uuidList);
                 future.call( CmdResult.successWithVal(json));
-                sendNotification(dh, leCommand, json);
             }
-        });
+        }, future);
         return future;
     }
 
     private SimpleCallableFuture<CommandResult> gattCharacteristics(String address, final BTLEDeviceHive dh, final LeCommand leCommand) {
-        final SimpleCallableFuture<CommandResult> future = new SimpleCallableFuture<>();
+        final CmdResFuture future = new CmdResFuture();
         bluetoothServerGateway.gattCharacteristics(address, new GattCharacteristicCallBack() {
             @Override
             public void onCharacteristics(ArrayList<BTLECharacteristic> characteristics) {
                 final String json = new Gson().toJson(characteristics);
-                sendNotification(dh, leCommand, json);
                 future.call(CmdResult.successWithVal(json));
             }
-        });
+        }, future);
         return future;
     }
 

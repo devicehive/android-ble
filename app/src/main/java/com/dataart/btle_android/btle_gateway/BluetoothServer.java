@@ -14,6 +14,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.dataart.android.devicehive.device.CommandResult;
+import com.dataart.android.devicehive.device.future.CmdResFuture;
 import com.dataart.android.devicehive.device.future.SimpleCallableFuture;
 import com.dataart.btle_android.BTLEApplication;
 import com.dataart.btle_android.R;
@@ -360,16 +361,16 @@ public class BluetoothServer extends BluetoothGattCallback {
         return future;
     }
 
-    public void gattCharacteristics(final String address, final GattCharacteristicCallBack gattCharacteristicCallBack) {
+    public void gattCharacteristics(final String address, final GattCharacteristicCallBack gattCharacteristicCallBack, final CmdResFuture future) {
         final ArrayList<BTLECharacteristic> allCharacteristics = new ArrayList<>();
 
-        applyForConnection(address, new ConnectionOperation() {
+        applyForConnectionOrScan(address, new ConnectionOperation() {
             @Override
             public void call(DeviceConnection connection) {
                 connection.getCallback().setCharacteristicsDiscoveringCallback(new InteractiveGattCallback.CharacteristicsDiscoveringCallback() {
                     @Override
                     public void call(BluetoothGatt gatt) {
-                        Timber.d("ServicesDiscoveredCallback.call() - installed from .gattPrimary()");
+                        Timber.d("CharacteristicsDiscoveredCallback.call()");
 
                         for (BluetoothGattService service : gatt.getServices()) {
                             final List<BluetoothGattCharacteristic> characteristics = service.getCharacteristics();
@@ -386,20 +387,21 @@ public class BluetoothServer extends BluetoothGattCallback {
             @Override
             public void fail(String message) {
                 Timber.d("fail");
+                future.call(CmdResult.failWithStatus(message));
             }
-        }, true);
+        });
     }
 
-    public void gattPrimary(final String address, final GattCharacteristicCallBack gattCharacteristicCallBack) {
+    public void gattPrimary(final String address, final GattCharacteristicCallBack gattCharacteristicCallBack, final CmdResFuture future) {
         final List<ParcelUuid> parcelUuidList = new ArrayList<>();
 
-        applyForConnection(address, new ConnectionOperation() {
+        applyForConnectionOrScan(address, new ConnectionOperation() {
             @Override
             public void call(DeviceConnection connection) {
                 connection.getCallback().setServicesDiscoveredCallback(new InteractiveGattCallback.ServicesDiscoveredCallback() {
                     @Override
                     public void call(BluetoothGatt gatt) {
-                        Timber.d("ServicesDiscoveredCallback.call() - installed from .gattPrimary()");
+                        Timber.d("ServicesDiscoveredCallback.call()");
 
                         final List<BluetoothGattService> services = gatt.getServices();
                         for (BluetoothGattService service : services) {
@@ -412,9 +414,11 @@ public class BluetoothServer extends BluetoothGattCallback {
 
             @Override
             public void fail(String message) {
+                future.call(CmdResult.failWithStatus(message));
+
                 Timber.d("fail");
             }
-        }, true);
+        });
     }
 
     public SimpleCallableFuture<CommandResult> gattRead(final String address, final String serviceUUID, final String characteristicUUID,

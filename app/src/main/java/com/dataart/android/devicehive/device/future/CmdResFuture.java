@@ -9,4 +9,8 @@ public class CmdResFuture extends SimpleCallableFuture<CommandResult> {
     public CmdResFuture(CommandResult arg) {
         super(arg);
     }
+
+    public CmdResFuture() {
+        super(null);
+    }
 }
