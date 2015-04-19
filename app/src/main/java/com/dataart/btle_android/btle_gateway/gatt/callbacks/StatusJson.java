@@ -46,6 +46,18 @@ public abstract class StatusJson {
         }
     }
 
+    public static class StatusWithObject {
+        private Object result;
+
+        public StatusWithObject(Object result) {
+            this.result = result;
+        }
+
+        public static StatusWithObject statusWithObject(Object object){
+            return new StatusWithObject(object);
+        }
+    }
+
     public static class FullStatusWithVal extends FullStatus {
         private String value;
 

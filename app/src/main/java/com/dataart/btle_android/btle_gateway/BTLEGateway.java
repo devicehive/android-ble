@@ -213,8 +213,7 @@ public class BTLEGateway {
         bluetoothServerGateway.gattPrimary(address, new GattCharacteristicCallBack() {
             @Override
             public void onServices(List<ParcelUuid> uuidList) {
-                final String json = new Gson().toJson(uuidList);
-                future.call( CmdResult.successWithVal(json));
+                future.call( CmdResult.successWithObject(uuidList));
             }
         }, future);
         return future;
@@ -225,8 +224,7 @@ public class BTLEGateway {
         bluetoothServerGateway.gattCharacteristics(address, new GattCharacteristicCallBack() {
             @Override
             public void onCharacteristics(ArrayList<BTLECharacteristic> characteristics) {
-                final String json = new Gson().toJson(characteristics);
-                future.call(CmdResult.successWithVal(json));
+                future.call( CmdResult.successWithObject(characteristics));
             }
         }, future);
         return future;

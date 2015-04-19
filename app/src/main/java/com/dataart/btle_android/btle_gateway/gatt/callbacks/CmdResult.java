@@ -38,6 +38,10 @@ public class CmdResult {
         return new Gson().toJson(StatusJson.Status.statusOkWithVal(val));
     }
 
+    private static String jsonStatusWithObject(Object object) {
+        return new Gson().toJson(StatusJson.StatusWithObject.statusWithObject(object));
+    }
+
     private static String jsonStatusFail() {
         return new Gson().toJson(StatusJson.Status.statusFail());
     }
@@ -97,6 +101,10 @@ public class CmdResult {
 
     public static CommandResult successWithVal(String val) {
         return new CommandResult(CommandResult.STATUS_COMLETED, jsonStatusOkWithVal(val));
+    }
+
+    public static CommandResult successWithObject(Object object) {
+        return new CommandResult(CommandResult.STATUS_COMLETED, jsonStatusWithObject(object));
     }
 
     public static CommandResult commandResultFail() {
