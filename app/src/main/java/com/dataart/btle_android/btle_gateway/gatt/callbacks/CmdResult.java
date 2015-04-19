@@ -34,16 +34,8 @@ public class CmdResult {
         return new Gson().toJson(StatusJson.Status.statusOk());
     }
 
-    private static String jsonStatusOkWithVal(String val) {
-        return new Gson().toJson(StatusJson.Status.statusOkWithVal(val));
-    }
-
     private static String jsonStatusWithObject(Object object) {
         return new Gson().toJson(StatusJson.StatusWithObject.statusWithObject(object));
-    }
-
-    private static String jsonStatusFail() {
-        return new Gson().toJson(StatusJson.Status.statusFail());
     }
 
     private static String jsonStatusTimeoutReached() {
@@ -81,34 +73,12 @@ public class CmdResult {
         return jsonFullStatusWithVal(BTLEApplication.getApplication().getString(statusResId), val);
     }
 
-    private String jsonFullStatusWithByteArray(String status, byte[] value) {
-        return new Gson().toJson(new StatusJson.FullStatusWithByteArray(
-                status,
-                value,
-                device,
-                serviceUUID,
-                characteristicUUID
-        ));
-    }
-
-    private String jsonFullStatusWithByteArray(int statusStringId, byte[] value) {
-        return jsonFullStatusWithByteArray(context.getString(statusStringId), value);
-    }
-
     public static CommandResult success() {
         return new CommandResult(CommandResult.STATUS_COMLETED, jsonStatusOk());
     }
 
-    public static CommandResult successWithVal(String val) {
-        return new CommandResult(CommandResult.STATUS_COMLETED, jsonStatusOkWithVal(val));
-    }
-
     public static CommandResult successWithObject(Object object) {
         return new CommandResult(CommandResult.STATUS_COMLETED, jsonStatusWithObject(object));
-    }
-
-    public static CommandResult commandResultFail() {
-        return new CommandResult(CommandResult.STATUS_FAILED, jsonStatusFail());
     }
 
     public static CommandResult failWithStatus(String status) {
@@ -135,10 +105,6 @@ public class CmdResult {
         return new CommandResult(CommandResult.STATUS_COMLETED, jsonFullStatusWithVal(R.string.status_json_success, val));
     }
 
-    public CommandResult successFullWithByteArray(byte[] value) {
-        return new CommandResult(CommandResult.STATUS_COMLETED, jsonFullStatusWithByteArray(R.string.status_json_success, value));
-    }
-
     public CommandResult successFullWithStatus(String status) {
         return new CommandResult(CommandResult.STATUS_COMLETED, jsonFullStatus(status));
     }
@@ -149,14 +115,6 @@ public class CmdResult {
 
     public CommandResult cmdResFullFailStatus(String status) {
         return new CommandResult(CommandResult.STATUS_FAILED, jsonFullStatus(status));
-    }
-
-    protected CommandResult cmdResFullFailValue(byte[] value) {
-        return new CommandResult(CommandResult.STATUS_FAILED, jsonFullStatusWithByteArray(R.string.status_json_fail, value));
-    }
-
-    protected CommandResult cmdResFullFailStatusAndValue(String status, byte[] value) {
-        return new CommandResult(CommandResult.STATUS_FAILED, jsonFullStatusWithByteArray(status, value));
     }
 
     protected CommandResult cmdResFullNotFound() {

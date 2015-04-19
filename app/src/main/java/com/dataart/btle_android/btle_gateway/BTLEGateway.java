@@ -83,7 +83,7 @@ public class BTLEGateway {
                     return bluetoothServerGateway.gattRead(address, serviceUUID, characteristicUUID, new GattCharacteristicCallBack() {
                         @Override
                         public void onRead(byte[] value) {
-//                            no notifications
+//                            no notifications needed
 //                            final String sValue = Utils.printHexBinary(value);
 //                            final String json = new Gson().toJson(sValue);
 //                            sendNotification(dh, leCommand, json);
@@ -102,7 +102,7 @@ public class BTLEGateway {
                     return bluetoothServerGateway.gattWrite(address, serviceUUID, characteristicUUID, value, new GattCharacteristicCallBack() {
                         @Override
                         public void onWrite(int state) {
-//                            no notifications
+//                            no notifications needed
 //                            final String json = new Gson().toJson(state);
 //                            sendNotification(dh, leCommand, json);
                         }

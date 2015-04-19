@@ -9,9 +9,9 @@ import java.util.concurrent.TimeoutException;
  * Created by Constantine Mars on 4/1/15.
  *
  * Can be called and can return future result
- * It blocks on .get() and is notified from any other thread about result by calling .call()
- * But also can be used as simple wrapper for value in case of construction with argument or setting arg by .setArg() -
- * in that case it will not block on .get()
+ * This implementation of callable future blocks on .get() and returns only after notification from any thread about result by calling .call(arg)
+ * It also can be used as simple wrapper for value in case of construction with argument or setting arg by .setArg(arg) -
+ * in that case CallableFuture will not block on .get() and return immediately
  */
 public class CallableFuture<T, U> implements RunnableFuture<T> {
 
