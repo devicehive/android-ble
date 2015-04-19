@@ -366,20 +366,22 @@ public class BluetoothServer extends BluetoothGattCallback {
 
         applyForConnectionOrScan(address, new ConnectionOperation() {
             @Override
-            public void call(DeviceConnection connection) {
+            public void call(final DeviceConnection connection) {
                 connection.getCallback().setCharacteristicsDiscoveringCallback(new InteractiveGattCallback.CharacteristicsDiscoveringCallback() {
                     @Override
                     public void call(BluetoothGatt gatt) {
-                        Timber.d("CharacteristicsDiscoveredCallback.call()");
+                        synchronized (connection) {
+                            Timber.d("CharacteristicsDiscoveredCallback.call()");
 
-                        for (BluetoothGattService service : gatt.getServices()) {
-                            final List<BluetoothGattCharacteristic> characteristics = service.getCharacteristics();
-                            for (BluetoothGattCharacteristic characteristic : characteristics) {
-                                BTLECharacteristic btleCharacteristic = new BTLECharacteristic(address, service.getUuid().toString(), characteristic.getUuid().toString());
-                                allCharacteristics.add(btleCharacteristic);
+                            for (BluetoothGattService service : gatt.getServices()) {
+                                final List<BluetoothGattCharacteristic> characteristics = service.getCharacteristics();
+                                for (BluetoothGattCharacteristic characteristic : characteristics) {
+                                    BTLECharacteristic btleCharacteristic = new BTLECharacteristic(address, service.getUuid().toString(), characteristic.getUuid().toString());
+                                    allCharacteristics.add(btleCharacteristic);
+                                }
                             }
+                            gattCharacteristicCallBack.onCharacteristics(allCharacteristics);
                         }
-                        gattCharacteristicCallBack.onCharacteristics(allCharacteristics);
                     }
                 });
             }

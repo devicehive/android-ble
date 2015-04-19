@@ -56,6 +56,7 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
 
     public void setCharacteristicsDiscoveringCallback(CharacteristicsDiscoveringCallback characteristicsDiscoveringCallback) {
         this.characteristicsDiscoveringCallback = characteristicsDiscoveringCallback;
+        gatt.discoverServices();
     }
 
     public void setNotificaitonSubscription(NotificaitonSubscription notificaitonSubscription) {
@@ -147,6 +148,7 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
             }
             if (characteristicsDiscoveringCallback!=null){
                 characteristicsDiscoveringCallback.call(gatt);
+                characteristicsDiscoveringCallback = null;
             }
             if (notificaitonSubscription!=null){
                 notificaitonSubscription.subscribe(gatt);
