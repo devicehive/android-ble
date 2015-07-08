@@ -52,11 +52,20 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
 
     public void setServicesDiscoveredCallback(ServicesDiscoveredCallback servicesDiscoveredCallback) {
         this.servicesDiscoveredCallback = servicesDiscoveredCallback;
+//        call callback is services are already discovered
+        if(servicesDiscovered){
+            servicesDiscoveredCallback.call(gatt);
+        }
     }
 
     public void setCharacteristicsDiscoveringCallback(CharacteristicsDiscoveringCallback characteristicsDiscoveringCallback) {
         this.characteristicsDiscoveringCallback = characteristicsDiscoveringCallback;
-        gatt.discoverServices();
+//        call callback is services are already discovered
+        if(servicesDiscovered){
+            characteristicsDiscoveringCallback.call(gatt);
+        }else {
+            gatt.discoverServices();
+        }
     }
 
     public void setNotificaitonSubscription(NotificaitonSubscription notificaitonSubscription) {
