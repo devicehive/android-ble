@@ -43,11 +43,18 @@ public class BluetoothServer extends BluetoothGattCallback {
 
     private Context context;
     private BluetoothAdapter bluetoothAdapter = null;
-//    Stores list of currently connected devices with adress, gatt and callback
+    //    Stores list of currently connected devices with adress, gatt and callback
     private Map<String, DeviceConnection> activeConnections = new HashMap<>();
 
     private ArrayList<LeScanResult> deviceList = new ArrayList<>();
     private DiscoveredDeviceListener discoveredDeviceListener;
+    private final BluetoothAdapter.LeScanCallback leScanCallback = new BluetoothAdapter.LeScanCallback() {
+
+        @Override
+        public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
+            onDeviceFound(device, rssi, scanRecord);
+        }
+    };
 
     public BluetoothServer(Context context) {
         this.context = context;
@@ -55,7 +62,7 @@ public class BluetoothServer extends BluetoothGattCallback {
 
     private BluetoothAdapter bluetoothAdapter() {
         if (bluetoothAdapter == null) {
-            BluetoothManager bluetoothManager = (BluetoothManager)context.getSystemService(Context.BLUETOOTH_SERVICE);
+            BluetoothManager bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
             bluetoothAdapter = bluetoothManager.getAdapter();
         }
         return bluetoothAdapter;
@@ -78,19 +85,11 @@ public class BluetoothServer extends BluetoothGattCallback {
         return devices;
     }
 
-    private final BluetoothAdapter.LeScanCallback leScanCallback = new BluetoothAdapter.LeScanCallback() {
-
-        @Override
-        public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
-            onDeviceFound(device, rssi, scanRecord);
-        }
-    };
-
     private LeScanResult onDeviceFound(BluetoothDevice device, int rssi, byte[] scanRecord) {
 //            Skip if already found
         //noinspection SuspiciousMethodCalls
-        for(LeScanResult leScanResult:deviceList){
-            if(leScanResult.getDevice().getAddress().equals(device.getAddress())) {
+        for (LeScanResult leScanResult : deviceList) {
+            if (leScanResult.getDevice().getAddress().equals(device.getAddress())) {
                 return leScanResult;
             }
         }
@@ -141,12 +140,7 @@ public class BluetoothServer extends BluetoothGattCallback {
         return result;
     }
 
-    private interface DeviceOperation {
-        void call(BluetoothDevice device);
-        void fail(String message);
-    }
-
-//    Will seek among discovered but not connected devices
+    //    Will seek among discovered but not connected devices
     private void applyForDevice(String address, DeviceOperation operation) {
         LeScanResult result = getResultByUDID(address);
         if (result != null) {
@@ -156,67 +150,6 @@ public class BluetoothServer extends BluetoothGattCallback {
             Timber.d(message);
             operation.fail(message);
         }
-    }
-
-    private interface ConnectionOperation {
-        void call(DeviceConnection connection);
-        void fail(String message);
-    }
-
-    private class ScanCallbacks {
-        private String address;
-        private ConnectionOperation operation;
-        private BluetoothAdapter.LeScanCallback localCallback;
-
-        public ScanCallbacks(final String address, final ConnectionOperation operation) {
-            this.address = address;
-            this.operation = operation;
-            this.localCallback = new BluetoothAdapter.LeScanCallback() {
-                private boolean found=false;
-
-                @Override
-                public void onLeScan(BluetoothDevice bluetoothDevice, int i, byte[] bytes) {
-
-                    if (!found && bluetoothDevice.getAddress().equals(address)) {
-                        found=true;
-                        stop();
-                        onDeviceFound(bluetoothDevice, i, bytes);
-
-                        connectAndSave(address, bluetoothDevice, new InteractiveGattCallback.OnConnectedListener() {
-                            @Override
-                            public void call() {
-                                Timber.d("on connected - calling operation");
-                                applyForConnection(address, operation);
-                            }
-                        });
-                    }
-                }
-            };
-        }
-
-        public void start(){
-            Timber.d("no device or connection - scanning for device");
-//              scan for device, add it to discovered devices, connect and call operation
-
-            bluetoothAdapter().startLeScan(localCallback);
-
-            final Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-//              "Never scan on a loop, and set a time limit on your scan. " - https://developer.android.com/guide/topics/connectivity/bluetooth-le.html#find
-                    Timber.d("on timeout");
-                    stop();
-                    operation.fail(BTLEApplication.getApplication().getString(R.string.status_notfound_timeout));
-                }
-            }, BluetoothServer.COMMAND_SCAN_DELAY);
-        }
-
-        public void stop(){
-            Timber.d("stop");
-            bluetoothAdapter().stopLeScan(localCallback);
-        }
-
     }
 
     private void applyForConnectionOrScan(final String address, final ConnectionOperation operation) {
@@ -234,7 +167,7 @@ public class BluetoothServer extends BluetoothGattCallback {
         }, true);
     }
 
-//    Will seek among connected devices
+    //    Will seek among connected devices
     private void applyForConnection(String address, ConnectionOperation operation) {
         DeviceConnection connection = activeConnections.get(address);
         if (connection != null) {
@@ -424,7 +357,7 @@ public class BluetoothServer extends BluetoothGattCallback {
     }
 
     public SimpleCallableFuture<CommandResult> gattRead(final String address, final String serviceUUID, final String characteristicUUID,
-                         final GattCharacteristicCallBack gattCharacteristicCallBack) {
+                                                        final GattCharacteristicCallBack gattCharacteristicCallBack) {
         final SimpleCallableFuture<CommandResult> future = new SimpleCallableFuture<>();
 
         applyForConnectionOrScan(address, new ConnectionOperation() {
@@ -443,7 +376,7 @@ public class BluetoothServer extends BluetoothGattCallback {
     }
 
     public SimpleCallableFuture<CommandResult> gattWrite(final String address, final String serviceUUID, final String characteristicUUID,
-                          final byte[] value, final GattCharacteristicCallBack gattCharacteristicCallBack) {
+                                                         final byte[] value, final GattCharacteristicCallBack gattCharacteristicCallBack) {
         final SimpleCallableFuture<CommandResult> future = new SimpleCallableFuture<>();
 
         applyForConnectionOrScan(address, new ConnectionOperation() {
@@ -462,16 +395,25 @@ public class BluetoothServer extends BluetoothGattCallback {
     }
 
     public SimpleCallableFuture<CommandResult> gattNotifications(final Context context, final String address, final String serviceUUID, final String characteristicUUID,
-                                  final boolean isOn, final GattCharacteristicCallBack gattCharachteristicCallBack) {
+                                                                 final boolean isOn, final GattCharacteristicCallBack gattCharachteristicCallBack) {
 
         final SimpleCallableFuture<CommandResult> future = new SimpleCallableFuture<>();
         applyForConnection(address, new ConnectionOperation() {
             @Override
             public void call(DeviceConnection connection) {
-                connection.getCallback().setNotificaitonSubscription(new InteractiveGattCallback.NotificaitonSubscription(serviceUUID, characteristicUUID, address, context, isOn, future) {
+                String sUUID = serviceUUID;
+                if (sUUID.length() == 4) {
+                    sUUID = connection.getCallback().getFullServiceUuid(sUUID);
+                }
+                String cUUID = characteristicUUID;
+                if (cUUID.length() == 4) {
+                    cUUID = connection.getCallback().getFullCharacteristicUuid(cUUID);
+                }
+
+                connection.getCallback().setNotificaitonSubscription(new InteractiveGattCallback.NotificaitonSubscription(sUUID, cUUID, address, context, isOn, future) {
                     @Override
                     public void onNotification(byte[] value) {
-                        Timber.d("onNotification: 0x"+ String.valueOf(Hex.encodeHex(value)));
+                        Timber.d("onNotification: 0x" + String.valueOf(Hex.encodeHex(value)));
                         gattCharachteristicCallBack.onRead(value);
                     }
                 });
@@ -486,8 +428,76 @@ public class BluetoothServer extends BluetoothGattCallback {
         return future;
     }
 
+    private interface DeviceOperation {
+        void call(BluetoothDevice device);
+
+        void fail(String message);
+    }
+
+    private interface ConnectionOperation {
+        void call(DeviceConnection connection);
+
+        void fail(String message);
+    }
+
     public interface DiscoveredDeviceListener {
         void onDiscoveredDevice(BluetoothDevice device);
+    }
+
+    private class ScanCallbacks {
+        private String address;
+        private ConnectionOperation operation;
+        private BluetoothAdapter.LeScanCallback localCallback;
+
+        public ScanCallbacks(final String address, final ConnectionOperation operation) {
+            this.address = address;
+            this.operation = operation;
+            this.localCallback = new BluetoothAdapter.LeScanCallback() {
+                private boolean found = false;
+
+                @Override
+                public void onLeScan(BluetoothDevice bluetoothDevice, int i, byte[] bytes) {
+
+                    if (!found && bluetoothDevice.getAddress().equals(address)) {
+                        found = true;
+                        stop();
+                        onDeviceFound(bluetoothDevice, i, bytes);
+
+                        connectAndSave(address, bluetoothDevice, new InteractiveGattCallback.OnConnectedListener() {
+                            @Override
+                            public void call() {
+                                Timber.d("on connected - calling operation");
+                                applyForConnection(address, operation);
+                            }
+                        });
+                    }
+                }
+            };
+        }
+
+        public void start() {
+            Timber.d("no device or connection - scanning for device");
+//              scan for device, add it to discovered devices, connect and call operation
+
+            bluetoothAdapter().startLeScan(localCallback);
+
+            final Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+//              "Never scan on a loop, and set a time limit on your scan. " - https://developer.android.com/guide/topics/connectivity/bluetooth-le.html#find
+                    Timber.d("on timeout");
+                    stop();
+                    operation.fail(BTLEApplication.getApplication().getString(R.string.status_notfound_timeout));
+                }
+            }, BluetoothServer.COMMAND_SCAN_DELAY);
+        }
+
+        public void stop() {
+            Timber.d("stop");
+            bluetoothAdapter().stopLeScan(localCallback);
+        }
+
     }
 
     private class LeScanResult {
@@ -520,12 +530,12 @@ public class BluetoothServer extends BluetoothGattCallback {
                 return true;
             }
 
-            if (o instanceof BluetoothDevice){
-                 return this.mDevice.getAddress().equals(((BluetoothDevice)o).getAddress());
+            if (o instanceof BluetoothDevice) {
+                return this.mDevice.getAddress().equals(((BluetoothDevice) o).getAddress());
             }
 
 //            devices equals by address
-            if (o instanceof LeScanResult){
+            if (o instanceof LeScanResult) {
                 //noinspection SimplifiableIfStatement
                 if (this.mDevice == null || ((LeScanResult) o).mDevice == null)
                     return false;
