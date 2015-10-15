@@ -1,15 +1,13 @@
 package com.dataart.android.devicehive.device;
 
+import android.content.Context;
+
+import com.dataart.android.devicehive.DeviceData;
+import com.dataart.android.devicehive.Notification;
+
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
-
-import com.dataart.android.devicehive.DeviceData;
-import com.dataart.android.devicehive.DeviceHive;
-import com.dataart.android.devicehive.Notification;
-
-import android.content.Context;
-import android.util.Log;
 
 /**
  * Represents a device, a unit that executes commands and communicates to the
@@ -409,7 +407,7 @@ public abstract class Device implements CommandRunner {
 	private void updateDeviceData(DeviceData newDeviceData) {
 		this.deviceData = new DeviceData(deviceData.getId(),
 				deviceData.getKey(), newDeviceData.getName(),
-				newDeviceData.getStatus(), newDeviceData.getNetwork(),
+				newDeviceData.getStatus(),
 				newDeviceData.getDeviceClass());
 		this.deviceData.setData((Serializable) newDeviceData.getData());
 		for (Equipment equipment : equipmentList) {

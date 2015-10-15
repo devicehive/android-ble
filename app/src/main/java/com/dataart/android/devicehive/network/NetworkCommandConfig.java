@@ -29,24 +29,20 @@ public class NetworkCommandConfig implements Parcelable {
 	 */
 	public final boolean isDebugLoggingEnabled;
 
-	private String username;
-	private String password;
+	private String accessKey;
 
 	private static final ClassLoader CLASS_LOADER = NetworkCommandConfig.class
 			.getClassLoader();
 
 	/* package */NetworkCommandConfig(String baseUrl,
 			ResultReceiver resultReceiver,
-			boolean isDebugLoggingEnabled, String username, String password) {
+			boolean isDebugLoggingEnabled, String accessKey) {
 		this.baseUrl = baseUrl;
 		this.resultReceiver = resultReceiver;
 		this.isDebugLoggingEnabled = isDebugLoggingEnabled;
-		this.username = username;
-		this.password = password;
 
         BTLEDevicePreferences preferences = new BTLEDevicePreferences();
-        this.username = preferences.getUsername();
-        this.password = preferences.getPassword();
+        this.accessKey = preferences.getAccessKey();
 
 
 //        //TODO: check this
@@ -69,7 +65,7 @@ public class NetworkCommandConfig implements Parcelable {
 	public NetworkCommandConfig(String baseUrl,
 			DeviceHiveResultReceiver resultReceiver,
 			boolean isDebugLoggingEnabled) {
-		this(baseUrl, resultReceiver, isDebugLoggingEnabled, null, null);
+		this(baseUrl, resultReceiver, isDebugLoggingEnabled, null);
 	}
 
 	/**
@@ -90,14 +86,11 @@ public class NetworkCommandConfig implements Parcelable {
 	/**
 	 * Set Basic Authorization parameters.
 	 * 
-	 * @param username
-	 *            Username string.
-	 * @param password
-	 *            Password string.
+	 * @param accessKey
+	 *            Access key
 	 */
-	public void setBasicAuthorisation(String username, String password) {
-		this.username = username;
-		this.password = password;
+	public void setAuthorisation(String accessKey) {
+		this.accessKey=accessKey;
 	}
 
 	/**
@@ -106,11 +99,15 @@ public class NetworkCommandConfig implements Parcelable {
 	 * @return {@link org.apache.http.auth.UsernamePasswordCredentials} instance containing Basic
 	 *         Authorization data.
 	 */
-	public UsernamePasswordCredentials getBasicAuthorisation() {
-		if (username != null && password != null) {
-			return new UsernamePasswordCredentials(username, password);
-		}
-		return null;
+//	public UsernamePasswordCredentials getBasicAuthorisation() {
+//		if (username != null && password != null) {
+//			return new UsernamePasswordCredentials(username, password);
+//		}
+//		return null;
+//	}
+
+	public String getAuthorization() {
+		return "Bearer "+accessKey;
 	}
 
 	@Override
@@ -123,8 +120,7 @@ public class NetworkCommandConfig implements Parcelable {
 		dest.writeString(baseUrl);
 		dest.writeParcelable(resultReceiver, 0);
 		dest.writeInt(isDebugLoggingEnabled ? 1 : 0);
-		dest.writeString(username);
-		dest.writeString(password);
+		dest.writeString(accessKey);
 	}
 
 	public static final Creator<NetworkCommandConfig> CREATOR = new Creator<NetworkCommandConfig>() {
@@ -132,7 +128,7 @@ public class NetworkCommandConfig implements Parcelable {
 			return new NetworkCommandConfig(source.readString(),
 					(ResultReceiver) source
 							.readParcelable(CLASS_LOADER),
-					source.readInt() > 0, source.readString(),
+					source.readInt() > 0,
 					source.readString());
 		}
 

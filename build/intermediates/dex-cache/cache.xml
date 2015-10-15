@@ -6,14 +6,42 @@
         jumboMode="false"
         revision="21.1.2"
         sha1="cf993e250ff71804754ec2734a16f23c0be99f70">
-        <dex dex="/Users/mars/projects/android/devicehive-android/app/build/intermediates/pre-dexed/debug/commons-codec-1.5-6626b1626bc4f434650ea02055cf0c20ef9d3af3.jar" />
+        <dex dex="/Users/mars/p/a/dh/android-ble/app/build/intermediates/pre-dexed/debug/commons-codec-1.5-6626b1626bc4f434650ea02055cf0c20ef9d3af3.jar" />
     </item>
     <item
         jar="/Users/mars/.gradle/caches/modules-2/files-2.1/com.jakewharton.timber/timber/2.7.1/8fa5f11686c7a44386b41a6890e655cf2b7d5e70/timber-2.7.1.jar"
         jumboMode="false"
         revision="21.1.2"
         sha1="8fa5f11686c7a44386b41a6890e655cf2b7d5e70">
-        <dex dex="/Users/mars/projects/android/devicehive-android/app/build/intermediates/pre-dexed/debug/timber-2.7.1-e77f428b81df719eb13d07b39a574a66a6b06a5e.jar" />
+        <dex dex="/Users/mars/p/a/dh/android-ble/app/build/intermediates/pre-dexed/debug/timber-2.7.1-e77f428b81df719eb13d07b39a574a66a6b06a5e.jar" />
+    </item>
+    <item
+        jar="/Users/mars/.gradle/caches/modules-2/files-2.1/com.google.code.gson/gson/2.3/5fc52c41ef0239d1093a1eb7c3697036183677ce/gson-2.3.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="5fc52c41ef0239d1093a1eb7c3697036183677ce">
+        <dex dex="/Users/mars/p/a/dh/android-ble/app/build/intermediates/pre-dexed/debug/gson-2.3-49300609bd4d02d042c1357457de2a39b5f41abb.jar" />
+    </item>
+    <item
+        jar="/Users/mars/p/a/dh/android-ble/app/build/intermediates/exploded-aar/com.android.support/support-v4/21.0.3/jars/libs/internal_impl-21.0.3.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="01ec05bfbafcc07646ba813000bf2ef11742dd03">
+        <dex dex="/Users/mars/p/a/dh/android-ble/app/build/intermediates/pre-dexed/debug/internal_impl-21.0.3-7e2eaaae182c230e9287eb00448b83b6724e1c38.jar" />
+    </item>
+    <item
+        jar="/Users/mars/p/a/dh/android-ble/app/build/intermediates/exploded-aar/com.android.support/support-v4/21.0.3/jars/classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="2c91c949a45a21cdecf26e03951e46c7beec9ad8">
+        <dex dex="/Users/mars/p/a/dh/android-ble/app/build/intermediates/pre-dexed/debug/classes-5a92da23cec329f10aff2711d12f4abf21007cf2.jar" />
+    </item>
+    <item
+        jar="/Users/mars/Library/Android/sdk/extras/android/m2repository/com/android/support/support-annotations/21.0.3/support-annotations-21.0.3.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="4b74cefe1f0c1b819e7260c8627a14674e37fd35">
+        <dex dex="/Users/mars/p/a/dh/android-ble/app/build/intermediates/pre-dexed/debug/support-annotations-21.0.3-59a4f97ac1d109c20fc7df785d27158450908b21.jar" />
     </item>
 
 </items>

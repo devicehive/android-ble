@@ -54,7 +54,8 @@ public class BTLEDeviceHive extends Device {
                 new BTLEDevicePreferences().getGatewayId(),
                 "582c2008-cbb6-4b1a-8cf1-7cec1388db9f",
                 getDeviceName(),
-                DeviceData.DEVICE_STATUS_ONLINE, network, deviceClass);
+                DeviceData.DEVICE_STATUS_ONLINE,
+                deviceClass);
     }
 
     public static String getDeviceName() {

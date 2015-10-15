@@ -32,10 +32,8 @@ import com.dataart.android.devicehive.network.ServiceConnection;
 
 	private boolean isReceivingNotifications = false;
 
-	private String username;
-	private String password;
-
 	private boolean isPollRequestInProgress = false;
+	private String accessKey;
 
 	private String lastNotificationPollTimestamp;
 	private Integer notificationPollWaitTimeout;
@@ -44,9 +42,8 @@ import com.dataart.android.devicehive.network.ServiceConnection;
 		super(context);
 	}
 
-	/* package */void setAuthorisation(String username, String password) {
-		this.username = username;
-		this.password = password;
+	/* package */void setAuthorisation(String accessKey) {
+		this.accessKey=accessKey;
 	}
 
 	/* package */void setLastNotificationPollTimestamp(String timestamp) {
@@ -235,7 +232,7 @@ import com.dataart.android.devicehive.network.ServiceConnection;
 	@Override
 	protected NetworkCommandConfig getCommandConfig() {
 		final NetworkCommandConfig config = super.getCommandConfig();
-		config.setBasicAuthorisation(username, password);
+		config.setAuthorisation(accessKey);
 		return config;
 	}
 

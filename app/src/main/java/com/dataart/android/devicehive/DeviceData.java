@@ -26,34 +26,10 @@ public class DeviceData extends DataContainer {
 	private String key;
 	private String name;
 	private String status;
-	private Network network;
 	private DeviceClass deviceClass;
-	private List<EquipmentData> equipment;
 
 	private final static ClassLoader CLASS_LOADER = DeviceData.class
 			.getClassLoader();
-
-	/**
-	 * Construct device data with given parameters.
-	 * 
-	 * @param id
-	 *            Device unique identifier.
-	 * @param key
-	 *            Device authentication key. The key maximum length is 64
-	 *            characters.
-	 * @param name
-	 *            Device display name.
-	 * @param status
-	 *            Device operation status.
-	 * @param network
-	 *            Associated {@link com.dataart.android.devicehive.Network}.
-	 * @param deviceClass
-	 *            Associated {@link DeviceClass}.
-	 */
-	public DeviceData(String id, String key, String name, String status,
-			Network network, DeviceClass deviceClass) {
-		this(null, id, key, name, status, network, deviceClass, null);
-	}
 
 	/**
 	 * Construct device data with given parameters.
@@ -72,20 +48,19 @@ public class DeviceData extends DataContainer {
 	 */
 	public DeviceData(String id, String key, String name, String status,
 			DeviceClass deviceClass) {
-		this(null, id, key, name, status, null, deviceClass, null);
+		this(null, id, key, name, status, deviceClass);
 	}
 
 	/* package */DeviceData(Serializable data, String id, String key,
-			String name, String status, Network network,
-			DeviceClass deviceClass, List<EquipmentData> equipment) {
+			String name, String status,
+			DeviceClass deviceClass) {
 		super(data);
 		this.id = id;
 		this.key = key;
 		this.name = name;
 		this.status = status;
-		this.network = network;
 		this.deviceClass = deviceClass;
-		this.equipment = equipment;
+//		// FIXME: 10/15/15 netowrk and equipment are disabled since october update for DeviceHive Playground
 	}
 
 	/**
@@ -125,15 +100,6 @@ public class DeviceData extends DataContainer {
 	}
 
 	/**
-	 * Get associated {@link com.dataart.android.devicehive.Network}.
-	 * 
-	 * @return Associated {@link com.dataart.android.devicehive.Network} object.
-	 */
-	public Network getNetwork() {
-		return network;
-	}
-
-	/**
 	 * Get device class.
 	 * 
 	 * @return Associated {@link DeviceClass} object.
@@ -143,26 +109,14 @@ public class DeviceData extends DataContainer {
 	}
 
 	/**
-	 * Get list of device equipment.
-	 * 
-	 * @return Device equipment list.
-	 */
-	public List<EquipmentData> getEquipment() {
-		return equipment;
-	}
-
-	/**
 	 * Add equipment to the device.
-	 * 
+	 *
 	 * @param equipmentData
 	 *            Equipment to be added.
 	 */
 	public void addEquipment(EquipmentData equipmentData) {
-		if (this.equipment == null) {
-			this.equipment = new LinkedList<EquipmentData>();
-		}
-		this.equipment.add(equipmentData);
-	}
+//		// FIXME: 10/15/15 empty stub
+    }
 
 	@Override
 	public int describeContents() {
@@ -176,9 +130,7 @@ public class DeviceData extends DataContainer {
 		dest.writeString(key);
 		dest.writeString(name);
 		dest.writeString(status);
-		dest.writeParcelable(network, 0);
 		dest.writeParcelable(deviceClass, 0);
-		dest.writeTypedList(equipment);
 	}
 
 	public static Parcelable.Creator<DeviceData> CREATOR = new Parcelable.Creator<DeviceData>() {
@@ -195,20 +147,16 @@ public class DeviceData extends DataContainer {
 			String key = source.readString();
 			String name = source.readString();
 			String status = source.readString();
-			Network network = source.readParcelable(CLASS_LOADER);
 			DeviceClass deviceClass = source.readParcelable(CLASS_LOADER);
-			List<EquipmentData> equipments = new LinkedList<EquipmentData>();
-			source.readTypedList(equipments, EquipmentData.CREATOR);
-			return new DeviceData(data, id, key, name, status, network,
-					deviceClass, equipments);
+			return new DeviceData(data, id, key, name, status, deviceClass);
 		}
 	};
 
 	@Override
 	public String toString() {
 		return "DeviceData [id=" + id + ", key=" + key + ", name=" + name
-				+ ", status=" + status + ", network=" + network
-				+ ", deviceClass=" + deviceClass + ", equipment=" + equipment
+				+ ", status=" + status
+				+ ", deviceClass=" + deviceClass
 				+ ", data=" + data + "]";
 	}
 

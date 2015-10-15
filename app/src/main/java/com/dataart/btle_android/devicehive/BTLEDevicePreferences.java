@@ -16,11 +16,8 @@ public class BTLEDevicePreferences {
     private final static String KEY_GATEWAY_ID = NAMESPACE
             .concat(".KEY_GATEWAY_ID");
 
-    private final static String KEY_USERNAME = NAMESPACE
-            .concat(".KEY_USERNAME");
-
-    private final static String KEY_PASSWORD = NAMESPACE
-            .concat(".KEY_PASSWORD");
+    private final static String KEY_ACCESSKEY= NAMESPACE
+            .concat(".KEY_ACCESSKEY");
 
     private final Context context;
 
@@ -54,26 +51,21 @@ public class BTLEDevicePreferences {
         editor.commit();
     }
 
-    public String getUsername() {
-        return preferences.getString(KEY_USERNAME, null);
+    public String getAccessKey() {
+        return preferences.getString(KEY_ACCESSKEY, null);
     }
 
-    public String getPassword() {
-        return preferences.getString(KEY_PASSWORD, null);
-    }
-
-    public void setCredentialsSync(String username, String password) {
+    public void setAccessKeySync(String accessKey) {
         final SharedPreferences.Editor editor = preferences.edit();
-        editor.putString(KEY_USERNAME, username);
-        editor.putString(KEY_PASSWORD, password);
+        editor.putString(KEY_ACCESSKEY, accessKey);
         editor.commit();
     }
 
-    public void setCredentialsAsync(final String username, final String password) {
+    public void setCredentialsAsync(final String accessKey) {
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... params) {
-                setCredentialsSync(username, password);
+                setAccessKeySync(accessKey);
                 return null;
             }
 
