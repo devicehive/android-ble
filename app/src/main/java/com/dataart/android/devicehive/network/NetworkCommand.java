@@ -199,10 +199,10 @@ public abstract class NetworkCommand implements Parcelable {
 
 		HttpUriRequest httpRequest = toHttpRequest();
 		addHeaders(httpRequest);
-		final UsernamePasswordCredentials creds = config.getBasicAuthorisation();
-		if (creds != null) {
-			//addBasicAuthenticationHeader(httpRequest, creds);
-		}
+//		final UsernamePasswordCredentials creds = config.getAuthorization();
+//		if (creds != null) {
+//			//addBasicAuthenticationHeader(httpRequest, creds);
+//		}
 
 		try {
 			HttpResponse responce = client.execute(httpRequest);
@@ -276,19 +276,10 @@ public abstract class NetworkCommand implements Parcelable {
 			request.addHeader(header.getKey(), header.getValue());
 		}
 
-
-//        request.addHeader( //"Basic c3U6YXNkQVNEcXdlMTIz");
-//                "Authorization", "Basic " +
-//                        Base64.encode("myuser:mypass".getBytes(), Base64.DEFAULT));
-
-
-        //"Basic c3U6YXNkQVNEcXdlMTIz");
-
         BTLEDevicePreferences pref = new BTLEDevicePreferences();
-        String s = pref.getUsername() + ":" + pref.getPassword();
-        s = "Basic " + Base64.encodeToString(s.getBytes(), Base64.NO_WRAP);
+        String s = "Bearer " + pref.getAccessKey();
 
-        request.addHeader("Authorization",s);
+        request.addHeader("Authorization", s);
 	}
 
 	private HttpUriRequest toHttpRequest() {

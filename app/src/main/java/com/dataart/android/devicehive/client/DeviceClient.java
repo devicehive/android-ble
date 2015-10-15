@@ -50,13 +50,11 @@ import com.dataart.android.devicehive.Notification;
 	/**
 	 * Set Basic Authorisation credentials.
 	 * 
-	 * @param username
-	 *            Username string.
-	 * @param password
-	 *            Password strung.
+	 * @param accessKey
+	 *            accessKey
 	 */
-	public void setAuthorisation(String username, String password) {
-		serviceConnection.setAuthorisation(username, password);
+	public void setAuthorisation(String accessKey) {
+		serviceConnection.setAuthorisation(accessKey);
 	}
 
 	/**

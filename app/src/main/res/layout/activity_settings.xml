@@ -54,28 +54,13 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/settings_username"
+            android:text="@string/settings_accesskey"
             android:textAppearance="@android:style/TextAppearance.Medium" />
 
         <EditText
-            android:id="@+id/username_edit"
+            android:id="@+id/accesskey_edit"
             android:imeOptions="actionNext"
-            style="@style/SingleLineEditText" />
-    </LinearLayout>
-
-    <View style="@style/ListItemDivider" />
-
-    <LinearLayout style="@style/ListItem">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/settings_password"
-            android:textAppearance="@android:style/TextAppearance.Medium" />
-
-        <EditText
-            android:id="@+id/password_edit"
-            android:password="true"
+            android:text="@string/default_accesskey"
             style="@style/SingleLineEditText" />
     </LinearLayout>
 

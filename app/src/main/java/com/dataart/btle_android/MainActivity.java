@@ -41,8 +41,7 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
 
     private EditText serverUrlEditText;
     private EditText gatewayIdEditText;
-    private EditText usernameEditText;
-    private EditText passwordEditText;
+    private EditText accessKeyEditText;
     private TextView hintText;
     private Button serviceButton;
     private Button restartServiceButton;
@@ -74,8 +73,7 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
 
         serverUrlEditText = (EditText) findViewById(R.id.server_url_edit);
         gatewayIdEditText = (EditText) findViewById(R.id.settings_gateway_id);
-        usernameEditText = (EditText) findViewById(R.id.username_edit);
-        passwordEditText = (EditText) findViewById(R.id.password_edit);
+        accessKeyEditText = (EditText) findViewById(R.id.accesskey_edit);
         hintText = (TextView) findViewById(R.id.hintText);
 
         resetValues();
@@ -92,11 +90,8 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
         gatewayIdEditText.setOnEditorActionListener(changeListener);
         gatewayIdEditText.addTextChangedListener(changeWatcher);
 
-        usernameEditText.setOnEditorActionListener(changeListener);
-        usernameEditText.addTextChangedListener(changeWatcher);
-
-        passwordEditText.setOnEditorActionListener(changeListener);
-        passwordEditText.addTextChangedListener(changeWatcher);
+        accessKeyEditText.setOnEditorActionListener(changeListener);
+        accessKeyEditText.addTextChangedListener(changeWatcher);
 
         if (isLeServiceRunning()) {
             onServiceRunning();
@@ -224,12 +219,10 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
     private boolean isRestartRequired() {
         final String newUrl = serverUrlEditText.getText().toString();
         final String newGatewayId = gatewayIdEditText.getText().toString();
-        final String newUserName = usernameEditText.getText().toString();
-        final String newPassword = passwordEditText.getText().toString();
+        final String newAccessKey = accessKeyEditText.getText().toString();
         return !(prefs.getServerUrl().equals(newUrl) &&
                 prefs.getGatewayId().equals(newGatewayId) &&
-                prefs.getUsername().equals(newUserName) &&
-                prefs.getPassword().equals(newPassword));
+                prefs.getAccessKey().equals(newAccessKey));
     }
 
     private void onDataChanged() {
@@ -248,25 +241,22 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
         serverUrlEditText.setText(prefs.getServerUrl());
         gatewayIdEditText.setText(TextUtils.isEmpty(prefs.getGatewayId()) ?
                 getString(R.string.default_gateway_id) : prefs.getGatewayId());
-        usernameEditText.setText(prefs.getUsername());
-        passwordEditText.setText(prefs.getPassword());
+        accessKeyEditText.setText(TextUtils.isEmpty(prefs.getAccessKey()) ?
+                getString(R.string.default_accesskey) : prefs.getAccessKey());
     }
 
     private void saveValues() {
         final String serverUrl = serverUrlEditText.getText().toString();
         final String gatewayId = gatewayIdEditText.getText().toString();
-        final String username = usernameEditText.getText().toString();
-        final String password = passwordEditText.getText().toString();
+        final String accessKey = accessKeyEditText.getText().toString();
         if (TextUtils.isEmpty(serverUrl)) {
             serverUrlEditText.setError(getString(R.string.error_message_empty_server_url));
         } else if (TextUtils.isEmpty(gatewayId)) {
             gatewayIdEditText.setError(getString(R.string.error_message_empty_gateway_id));
-        } else if (TextUtils.isEmpty(username)) {
-            usernameEditText.setError(getString(R.string.error_message_empty_username));
-        } else if (TextUtils.isEmpty(password)) {
-            passwordEditText.setError(getString(R.string.error_message_empty_password));
+        } else if (TextUtils.isEmpty(accessKey)) {
+            accessKeyEditText.setError(getString(R.string.error_message_empty_accesskey));
         } else {
-            prefs.setCredentialsSync(username, password);
+            prefs.setAccessKeySync(accessKey);
             prefs.setServerUrlSync(serverUrl);
             prefs.setGatewayIdSync(gatewayId);
         }
