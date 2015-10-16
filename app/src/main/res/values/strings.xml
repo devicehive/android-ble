@@ -17,7 +17,7 @@
     <string name="button_stop">Stop service</string>
 
     <string name="default_gateway_id">devicehive_ble_andoid</string>
-    <string name="default_accesskey">EpdvN2cWKWD5zn4M7Zv3B19zgzszbhCfeOb5OIr+XoE=</string>
+    <string name="default_accesskey">8Gff/CCqkLYkuYHwa2oXf2GCmpyaLsuOlVYkttL93LQ=</string>
 
     <string name="error_message_btle_not_supported">Bluetooth LE is not supported</string>
     <string name="error_message_bt_not_supported">Bluetooth not supported</string>
