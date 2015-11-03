@@ -57,7 +57,23 @@ Because notifications work for exact characteristic, you don't need to write any
 --------------------
 
 You can use [Dashboard](https://github.com/devicehive/freeboard) to display live data from DeviceHive notifications. 
-Just checkout latest version of freeboard with devicehive plugin, start "index.html" and load there [dashboard-sensortag-temp.json](https://github.com/devicehive/android-ble/blob/master/dashboard-sensortag-temp.json) from DeviceHive Android Gateway for BLE devices project root. Then just retrieve api_key from DeviceHive Admin Panel and insert it to Dashboard settings. Viola! As soon as you subscribe for notifications, they will update Dashboard displays in realtime.  
+Just checkout latest version of freeboard with devicehive plugin, start "index.html" and load there [dashboard-sensortag-temp.json](https://github.com/devicehive/android-ble/blob/master/dashboard-sensortag-temp.json) from DeviceHive Android Gateway for BLE devices project root. Then just retrieve api_key from DeviceHive Admin Panel and insert it to Dashboard settings.   
+  
+Enable characteristic you want to be read, for example by writing there 0x01:  
+**gatt/write**  
+`    
+{"device":"A1:A2:A3:A4:A5:A6", "serviceUUID":"AA00", "characteristicUUID":"AA02", "value":"01"}
+`  
+  
+Enable notifications:  
+**gatt/notifications**  
+`    
+{"device":"A1:A2:A3:A4:A5:A6", "serviceUUID":"AA00", "characteristicUUID":"AA01"}
+`   
+
+Viola! As soon as you subscribe for notifications, they will update Dashboard displays in realtime.  
+  
+When you need unsubscribe, use **gatt/notifications/stop** command with the same json as for subscription.
 
 **Media materials**
 ---------------
