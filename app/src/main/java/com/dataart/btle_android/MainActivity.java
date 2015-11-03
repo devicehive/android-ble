@@ -242,7 +242,7 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
         gatewayIdEditText.setText(TextUtils.isEmpty(prefs.getGatewayId()) ?
                 getString(R.string.default_gateway_id) : prefs.getGatewayId());
         accessKeyEditText.setText(TextUtils.isEmpty(prefs.getAccessKey()) ?
-                getString(R.string.default_accesskey) : prefs.getAccessKey());
+                "" : prefs.getAccessKey());
     }
 
     private void saveValues() {

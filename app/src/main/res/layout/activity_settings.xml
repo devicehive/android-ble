@@ -60,7 +60,6 @@
         <EditText
             android:id="@+id/accesskey_edit"
             android:imeOptions="actionNext"
-            android:text="@string/default_accesskey"
             style="@style/SingleLineEditText" />
     </LinearLayout>
 
