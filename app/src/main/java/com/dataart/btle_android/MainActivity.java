@@ -23,6 +23,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.dataart.android.devicehive.Notification;
+import com.dataart.btle_android.PermissionsHelper.LocationEnabledListener;
 import com.dataart.btle_android.btle_gateway.BluetoothLeService;
 import com.dataart.btle_android.devicehive.BTLEDeviceHive;
 import com.dataart.btle_android.devicehive.BTLEDevicePreferences;
@@ -35,26 +36,88 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
     private static final String TAG = MainActivity.class.getName();
 
     private static final int REQUEST_ENABLE_BT = 1;
+    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
 
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+            if (BluetoothLeService.ACTION_BT_PERMISSION_REQUEST.equals(action)) {
+                requestEnableBluetooth();
+            }
+        }
+    };
     private BluetoothManager mBluetoothManager;
     private BluetoothAdapter mBluetoothAdapter;
-
     private EditText serverUrlEditText;
     private EditText gatewayIdEditText;
     private EditText accessKeyEditText;
     private TextView hintText;
     private Button serviceButton;
     private Button restartServiceButton;
-
     private BTLEDevicePreferences prefs;
-
     private boolean isServiceStarted;
+    LocationEnabledListener locationEnabledListener = new LocationEnabledListener() {
+        @Override
+        public void onLocationEnabled() {
+            startService();
+        }
+    };
+    private final View.OnClickListener restartClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            saveValues();
+            BluetoothLeService.stop(MainActivity.this);
+            BluetoothLeService.start(MainActivity.this);
+            restartServiceButton.setVisibility(View.GONE);
+            serviceButton.setVisibility(View.VISIBLE);
+            onServiceRunning();
+            hintText.setVisibility(View.GONE);
+        }
+    };
+    private final TextView.OnEditorActionListener changeListener = new TextView.OnEditorActionListener() {
+        @Override
+        public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
+            if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT) {
+                onDataChanged();
+            }
+            return false;
+        }
+    };
+    private final TextWatcher changeWatcher = new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+        }
+
+        @Override
+        public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+        }
+
+        @Override
+        public void afterTextChanged(Editable editable) {
+            onDataChanged();
+        }
+    };
+    private PermissionsHelper permissionsHelper;
+    private final View.OnClickListener serviceClickListener = new View.OnClickListener() {
+
+        @Override
+        public void onClick(View v) {
+            permissionsHelper.checkLocationEnabled();
+//            expectedCode = PermissionsHelper.requestPermission(MainActivity.this, Manifest.permission.BLUETOOTH_PRIVILEGED);
+//            if (expectedCode == null) {
+//                startService();
+//            }
+        }
+    };
+    private Integer expectedCode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
         Timber.plant(new Timber.DebugTree());
+
+        permissionsHelper = new PermissionsHelper(locationEnabledListener, this);
 
         if (getActionBar() != null) {
             getActionBar().setTitle(R.string.app_name);
@@ -100,17 +163,6 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
         registerReceiver(mReceiver, new IntentFilter(BluetoothLeService.ACTION_BT_PERMISSION_REQUEST));
     }
 
-    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            final String action = intent.getAction();
-            if (BluetoothLeService.ACTION_BT_PERMISSION_REQUEST.equals(action)) {
-                requestEnableBluetooth();
-            }
-        }
-    };
-
     private boolean isBluetoothLeSupported() {
         return getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE);
     }
@@ -140,6 +192,8 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
     protected void onResume() {
         super.onResume();
 
+        permissionsHelper.resume();
+
         // Ensures Bluetooth is enabled on the device.  If Bluetooth is not currently enabled,
         // fire an intent to display a dialog asking the user to grant permission to enable it.
         if (!mBluetoothAdapter.isEnabled()) {
@@ -157,8 +211,23 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
             finish();
             return;
         }
+
+        permissionsHelper.onActivityResult(requestCode, resultCode, data);
+
         super.onActivityResult(requestCode, resultCode, data);
     }
+//
+//    @Override
+//    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+//        PermissionsHelper.onRequestPermissionsResult(new PermissionsHelper.OnPermissionGranted() {
+//            @Override
+//            public void call(boolean granted) {
+//                if(granted) {
+//                    startService();
+//                }
+//            }
+//        }, expectedCode, requestCode, permissions, grantResults);
+//    }
 
     @Override
     protected void onDestroy() {
@@ -178,20 +247,16 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
         return false;
     }
 
-    private final View.OnClickListener serviceClickListener = new View.OnClickListener() {
-
-        @Override
-        public void onClick(View v) {
-            if (!isServiceStarted) {
-                saveValues();
-                onServiceRunning();
-                BluetoothLeService.start(MainActivity.this);
-            } else {
-                onServiceStopped();
-                BluetoothLeService.stop(MainActivity.this);
-            }
+    private void startService() {
+        if (!isServiceStarted) {
+            saveValues();
+            onServiceRunning();
+            BluetoothLeService.start(MainActivity.this);
+        } else {
+            onServiceStopped();
+            BluetoothLeService.stop(MainActivity.this);
         }
-    };
+    }
 
     private void onServiceRunning() {
         isServiceStarted = true;
@@ -202,19 +267,6 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
         isServiceStarted = false;
         serviceButton.setText(R.string.button_start);
     }
-
-    private final View.OnClickListener restartClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View view) {
-            saveValues();
-            BluetoothLeService.stop(MainActivity.this);
-            BluetoothLeService.start(MainActivity.this);
-            restartServiceButton.setVisibility(View.GONE);
-            serviceButton.setVisibility(View.VISIBLE);
-            onServiceRunning();
-            hintText.setVisibility(View.GONE);
-        }
-    };
 
     private boolean isRestartRequired() {
         final String newUrl = serverUrlEditText.getText().toString();
@@ -262,31 +314,6 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
         }
     }
 
-    private final TextView.OnEditorActionListener changeListener = new TextView.OnEditorActionListener() {
-        @Override
-        public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
-            if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT) {
-                onDataChanged();
-            }
-            return false;
-        }
-    };
-
-    private final TextWatcher changeWatcher = new TextWatcher() {
-        @Override
-        public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
-        }
-
-        @Override
-        public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
-        }
-
-        @Override
-        public void afterTextChanged(Editable editable) {
-            onDataChanged();
-        }
-    };
-
     @Override
     public void onDeviceSentNotification(Notification notification) {
 
@@ -297,4 +324,15 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
 
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        permissionsHelper.start();
+    }
+
+    @Override
+    protected void onStop() {
+        permissionsHelper.stop();
+        super.onStop();
+    }
 }
