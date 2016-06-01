@@ -29,19 +29,18 @@ import timber.log.Timber;
  * Android M with Google Play Services requires Location enabled before starting BLE devices discovery
  * This helper implements turning on Location services programmatically
  */
-public class PermissionsHelper implements ResultCallback<LocationSettingsResult>, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
-    public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
-    public static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
-            UPDATE_INTERVAL_IN_MILLISECONDS / 2;
+class PermissionsHelper implements ResultCallback<LocationSettingsResult>, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+    private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
+    private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = UPDATE_INTERVAL_IN_MILLISECONDS / 2;
     private static final int REQUEST_CHECK_SETTINGS = 100;
-    protected LocationSettingsRequest mLocationSettingsRequest;
-    protected GoogleApiClient mGoogleApiClient;
-    protected LocationRequest mLocationRequest;
+    private LocationSettingsRequest mLocationSettingsRequest;
+    private GoogleApiClient mGoogleApiClient;
+    private LocationRequest mLocationRequest;
     private LocationEnabledListener listener;
     private Activity activity;
     private boolean waitForResume = false;
 
-    public PermissionsHelper(LocationEnabledListener listener, Activity activity) {
+    PermissionsHelper(LocationEnabledListener listener, Activity activity) {
         this.listener = listener;
         this.activity = activity;
         buildGoogleApiClient();
@@ -77,7 +76,7 @@ public class PermissionsHelper implements ResultCallback<LocationSettingsResult>
     /**
      * Location request is necessary for defining which exactly permissions must be enabled
      */
-    protected void createLocationRequest() {
+    private void createLocationRequest() {
         mLocationRequest = new LocationRequest();
         mLocationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS);
         mLocationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS);
@@ -89,54 +88,48 @@ public class PermissionsHelper implements ResultCallback<LocationSettingsResult>
         final Status status = locationSettingsResult.getStatus();
         switch (status.getStatusCode()) {
             case LocationSettingsStatusCodes.SUCCESS:
-                Timber.i("All location settings are satisfied.");
+                log(R.string.location_satisfied);
                 listener.onLocationEnabled();
                 break;
             case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
-                Timber.i("Location settings are not satisfied. Show the user a dialog to" +
-                        "upgrade location settings ");
+                log(R.string.location_unsatisfied);
 
                 try {
-                    // Show the dialog by calling startResolutionForResult(), and check the result
-                    // in onActivityResult().
+                    // Show the dialog by calling startResolutionForResult(), and check the result in onActivityResult().
                     status.startResolutionForResult(activity, REQUEST_CHECK_SETTINGS);
                 } catch (IntentSender.SendIntentException e) {
-                    Timber.i("PendingIntent unable to execute request.");
+                    log(R.string.intent_not_started);
                 }
                 break;
             case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
-                Timber.i("Location settings are inadequate, and cannot be fixed here. Dialog " +
-                        "not created.");
+                log(R.string.location_cant_be_fixed);
                 break;
         }
     }
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-
     }
 
     @Override
     public void onConnectionSuspended(int i) {
-
     }
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
     }
 
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
             // Check for the integer request code originally supplied to startResolutionForResult().
             case REQUEST_CHECK_SETTINGS:
                 switch (resultCode) {
                     case Activity.RESULT_OK:
-                        Timber.i("User agreed to make required location settings changes.");
+                        log(R.string.location_changes_applied);
                         listener.onLocationEnabled();
                         break;
                     case Activity.RESULT_CANCELED:
-                        Timber.i("User chose not to make required location settings changes.");
+                        log(R.string.loccation_changes_not_applied);
                         break;
                 }
                 break;
@@ -161,7 +154,7 @@ public class PermissionsHelper implements ResultCallback<LocationSettingsResult>
         return gps_enabled || network_enabled;
     }
 
-    protected void checkLocationEnabled() {
+    void checkLocationEnabled() {
         if (isLocationEnabled()) {
             listener.onLocationEnabled();
             return;
@@ -169,6 +162,7 @@ public class PermissionsHelper implements ResultCallback<LocationSettingsResult>
 
 //        If location isn't enabled - check whether we can call Google Play Services or user to manually
 //        switch Location
+
         final int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(activity.getApplicationContext());
         if (status == ConnectionResult.SUCCESS) {
             PendingResult<LocationSettingsResult> result =
@@ -185,58 +179,22 @@ public class PermissionsHelper implements ResultCallback<LocationSettingsResult>
         }
     }
 
-    public void resume() {
+    void resume() {
         if (waitForResume) {
             checkLocationEnabled();
         }
     }
 
-    public interface LocationEnabledListener {
-        void onLocationEnabled();
+    private String getString(int id) {
+        return activity.getString(id);
     }
 
+    private void log(int id) {
+        Timber.i(getString(id));
+    }
+
+    interface LocationEnabledListener {
+        void onLocationEnabled();
+    }
 }
-//    private AppCompatActivity activity;
-//    private static Integer requestCodeCounter = 0;
-//
-//    public static Integer requestPermission(Activity activity, String permission) {
-//
-//        // Here, thisActivity is the current activity
-//        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
-//            return null;
-//        }
-//
-//        Integer requestCode = requestCodeCounter++;
-//        // Should we show an explanation?
-//        if (ActivityCompat.shouldShowRequestPermissionRationale(activity, permission)) {
-//
-//            // Show an expanation to the user *asynchronously* -- don't block
-//            // this thread waiting for the user's response! After the user
-//            // sees the explanation, try again to request the permission.
-//
-//        } else {
-//
-//            // No explanation needed, we can request the permission.
-//
-//            ActivityCompat.requestPermissions(activity, new String[]{permission}, requestCode);
-//
-//            // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
-//            // app-defined int constant. The callback method gets the
-//            // result of the request.
-//        }
-//
-//        return requestCode;
-//    }
-//
-//    public static void onRequestPermissionsResult(OnPermissionGranted onPermissionGranted, final Integer expectedCode, int requestCode, String permissions[], int[] grantResults) {
-//
-//        if(expectedCode != null && expectedCode == requestCode) {
-//            boolean granted = grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED;
-//            onPermissionGranted.call(granted);
-//        }
-//    }
-//
-//    public interface OnPermissionGranted{
-//        void call(boolean granted);
-//    }
 

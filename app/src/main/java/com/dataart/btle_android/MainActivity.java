@@ -13,7 +13,6 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -56,12 +55,6 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
     private Button restartServiceButton;
     private BTLEDevicePreferences prefs;
     private boolean isServiceStarted;
-    LocationEnabledListener locationEnabledListener = new LocationEnabledListener() {
-        @Override
-        public void onLocationEnabled() {
-            startService();
-        }
-    };
     private final View.OnClickListener restartClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
@@ -97,19 +90,20 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
             onDataChanged();
         }
     };
+    private LocationEnabledListener locationEnabledListener = new LocationEnabledListener() {
+        @Override
+        public void onLocationEnabled() {
+            startService();
+        }
+    };
     private PermissionsHelper permissionsHelper;
     private final View.OnClickListener serviceClickListener = new View.OnClickListener() {
 
         @Override
         public void onClick(View v) {
             permissionsHelper.checkLocationEnabled();
-//            expectedCode = PermissionsHelper.requestPermission(MainActivity.this, Manifest.permission.BLUETOOTH_PRIVILEGED);
-//            if (expectedCode == null) {
-//                startService();
-//            }
         }
     };
-    private Integer expectedCode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -167,17 +161,17 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
         return getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE);
     }
 
-    public boolean isBluetoothSupported() {
+    private boolean isBluetoothSupported() {
         if (mBluetoothManager == null) {
             mBluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
             if (mBluetoothManager == null) {
-                Log.e(TAG, "Unable to initialize BluetoothManager");
+                Timber.e(getString(R.string.bt_unable_init));
                 return false;
             }
         }
         mBluetoothAdapter = mBluetoothManager.getAdapter();
         if (mBluetoothAdapter == null) {
-            Log.e(TAG, "Unable to obtain a BluetoothAdapter");
+            Timber.e(getString(R.string.bt_unable_get_btm));
             return false;
         }
         return true;
@@ -216,24 +210,10 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
 
         super.onActivityResult(requestCode, resultCode, data);
     }
-//
-//    @Override
-//    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-//        PermissionsHelper.onRequestPermissionsResult(new PermissionsHelper.OnPermissionGranted() {
-//            @Override
-//            public void call(boolean granted) {
-//                if(granted) {
-//                    startService();
-//                }
-//            }
-//        }, expectedCode, requestCode, permissions, grantResults);
-//    }
 
     @Override
     protected void onDestroy() {
-        if (mReceiver != null) {
-            unregisterReceiver(mReceiver);
-        }
+        unregisterReceiver(mReceiver);
         super.onDestroy();
     }
 
