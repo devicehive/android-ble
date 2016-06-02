@@ -79,4 +79,7 @@
     <string name="loccation_changes_not_applied">User chose not to make required location settings changes</string>
     <string name="bt_unable_init">Unable to initialize BluetoothManager</string>
     <string name="bt_unable_get_btm">Unable to obtain a BluetoothAdapter</string>
+
+    <string name="sdk_version_warning_title">Unsupported SDK version</string>
+    <string name="sdk_version_warning">Bluetooth LE is supported starting with SDK 18 (Android Jelly Bean MR2).\nPlease, update your Android version or try on another device</string>
 </resources>

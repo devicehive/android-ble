@@ -21,8 +21,9 @@
 
         <EditText
             android:id="@+id/server_url_edit"
+            style="@style/SingleLineEditText"
             android:imeOptions="actionNext"
-            style="@style/SingleLineEditText" />
+            android:inputType="textUri" />
     </LinearLayout>
 
     <View style="@style/ListItemDivider" />
@@ -39,11 +40,11 @@
             android:textAppearance="@android:style/TextAppearance.Medium" />
 
         <EditText
-            style="@style/SingleLineEditText"
             android:id="@+id/settings_gateway_id"
-            android:imeOptions="actionNext"
+            style="@style/SingleLineEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:imeOptions="actionNext"
             android:text="@string/default_gateway_id" />
     </LinearLayout>
 
@@ -59,8 +60,8 @@
 
         <EditText
             android:id="@+id/accesskey_edit"
-            android:imeOptions="actionNext"
-            style="@style/SingleLineEditText" />
+            style="@style/SingleLineEditText"
+            android:imeOptions="actionNext" />
     </LinearLayout>
 
     <View style="@style/ListItemDivider" />
@@ -82,25 +83,25 @@
             android:id="@+id/save_button"
             android:layout_width="160dp"
             android:layout_height="wrap_content"
-            android:visibility="gone"
-            android:text="@string/button_restart"
+            android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
-            android:layout_alignParentStart="true" />
+            android:text="@string/button_restart"
+            android:visibility="gone" />
 
     </RelativeLayout>
 
     <TextView
+        android:id="@+id/hintText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:drawableLeft="@drawable/ic_information"
-        android:text="@string/settings_restart_hint"
-        android:gravity="center"
-        android:textAppearance="@android:style/TextAppearance.Medium"
-        android:editable="false"
-        android:visibility="gone"
-        android:id="@+id/hintText"
-        android:textColor="#ff858585"
         android:layout_centerVertical="true"
-        android:layout_toEndOf="@+id/service_button" />
+        android:layout_toEndOf="@+id/service_button"
+        android:drawableLeft="@drawable/ic_information"
+        android:editable="false"
+        android:gravity="center"
+        android:text="@string/settings_restart_hint"
+        android:textAppearance="@android:style/TextAppearance.Medium"
+        android:textColor="#ff858585"
+        android:visibility="gone" />
 
 </LinearLayout>

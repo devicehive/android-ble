@@ -2,13 +2,16 @@ package com.dataart.btle_android;
 
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -90,12 +93,14 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
             onDataChanged();
         }
     };
+
     private LocationEnabledListener locationEnabledListener = new LocationEnabledListener() {
         @Override
         public void onLocationEnabled() {
             startService();
         }
     };
+
     private PermissionsHelper permissionsHelper;
     private final View.OnClickListener serviceClickListener = new View.OnClickListener() {
 
@@ -111,8 +116,25 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
         setContentView(R.layout.activity_settings);
         Timber.plant(new Timber.DebugTree());
 
+//        This extra check warns developers who try to lower SDK version for app
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            alertSdkVersionMismatch(new Runnable() {
+                @Override
+                public void run() {
+                    finish();
+                    System.exit(0);
+                }
+            });
+
+            return;
+        }
+
         permissionsHelper = new PermissionsHelper(locationEnabledListener, this);
 
+        init();
+    }
+
+    private void init() {
         if (getActionBar() != null) {
             getActionBar().setTitle(R.string.app_name);
         }
@@ -186,6 +208,10 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
     protected void onResume() {
         super.onResume();
 
+        if (permissionsHelper == null || mBluetoothAdapter == null) {
+            return;
+        }
+
         permissionsHelper.resume();
 
         // Ensures Bluetooth is enabled on the device.  If Bluetooth is not currently enabled,
@@ -213,7 +239,12 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
 
     @Override
     protected void onDestroy() {
-        unregisterReceiver(mReceiver);
+
+        try {
+            unregisterReceiver(mReceiver);
+        } catch (IllegalArgumentException ex) {
+            Timber.e(ex.getMessage());
+        }
         super.onDestroy();
     }
 
@@ -270,11 +301,13 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
     }
 
     private void resetValues() {
-        serverUrlEditText.setText(prefs.getServerUrl());
+        serverUrlEditText.setText("http://playground.devicehive.com/api/rest");
+//        prefs.getServerUrl());
         gatewayIdEditText.setText(TextUtils.isEmpty(prefs.getGatewayId()) ?
                 getString(R.string.default_gateway_id) : prefs.getGatewayId());
-        accessKeyEditText.setText(TextUtils.isEmpty(prefs.getAccessKey()) ?
-                "" : prefs.getAccessKey());
+        accessKeyEditText.setText("EpdvN2cWKWD5zn4M7Zv3B19zgzszbhCfeOb5OIr+XoE=");
+//                TextUtils.isEmpty(prefs.getAccessKey()) ?
+//                "" : prefs.getAccessKey());
     }
 
     private void saveValues() {
@@ -307,12 +340,29 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
     @Override
     protected void onStart() {
         super.onStart();
-        permissionsHelper.start();
+        if (permissionsHelper != null) {
+            permissionsHelper.start();
+        }
     }
 
     @Override
     protected void onStop() {
-        permissionsHelper.stop();
+        if (permissionsHelper != null) {
+            permissionsHelper.stop();
+        }
         super.onStop();
+    }
+
+    private void alertSdkVersionMismatch(final Runnable runnable) {
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.sdk_version_warning_title)
+                .setMessage(R.string.sdk_version_warning)
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        runnable.run();
+                    }
+                })
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
     }
 }

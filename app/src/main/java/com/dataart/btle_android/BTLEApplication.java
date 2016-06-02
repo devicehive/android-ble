@@ -14,16 +14,16 @@ public class BTLEApplication extends Application {
 
     private BTLEDeviceHive device;
 
+    public static BTLEApplication getApplication() {
+        return application;
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
 
         application = this;
         device = BTLEDeviceHive.newInstance(getApplicationContext());
-    }
-
-    public static BTLEApplication getApplication() {
-        return application;
     }
 
     public BTLEDeviceHive getDevice() {
