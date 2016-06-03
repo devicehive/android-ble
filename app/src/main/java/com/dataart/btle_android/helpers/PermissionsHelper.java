@@ -30,7 +30,7 @@ import timber.log.Timber;
  * Android M with Google Play Services requires Location enabled before starting BLE devices discovery
  * This helper implements turning on Location services programmatically
  */
-class PermissionsHelper implements ResultCallback<LocationSettingsResult>, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class PermissionsHelper implements ResultCallback<LocationSettingsResult>, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
     private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = UPDATE_INTERVAL_IN_MILLISECONDS / 2;
     private static final int REQUEST_CHECK_SETTINGS = 100;
@@ -41,7 +41,7 @@ class PermissionsHelper implements ResultCallback<LocationSettingsResult>, Googl
     private Activity activity;
     private boolean waitForResume = false;
 
-    PermissionsHelper(LocationEnabledListener listener, Activity activity) {
+    public PermissionsHelper(LocationEnabledListener listener, Activity activity) {
         this.listener = listener;
         this.activity = activity;
         buildGoogleApiClient();
@@ -53,7 +53,7 @@ class PermissionsHelper implements ResultCallback<LocationSettingsResult>, Googl
         mGoogleApiClient.connect();
     }
 
-    protected void stop() {
+    public void stop() {
         mGoogleApiClient.disconnect();
     }
 
@@ -120,7 +120,7 @@ class PermissionsHelper implements ResultCallback<LocationSettingsResult>, Googl
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
     }
 
-    void onActivityResult(int requestCode, int resultCode, Intent data) {
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
             // Check for the integer request code originally supplied to startResolutionForResult().
             case REQUEST_CHECK_SETTINGS:
@@ -155,7 +155,7 @@ class PermissionsHelper implements ResultCallback<LocationSettingsResult>, Googl
         return gps_enabled || network_enabled;
     }
 
-    void checkLocationEnabled() {
+    public void checkLocationEnabled() {
         if (isLocationEnabled()) {
             listener.onLocationEnabled();
             return;
@@ -180,7 +180,7 @@ class PermissionsHelper implements ResultCallback<LocationSettingsResult>, Googl
         }
     }
 
-    void resume() {
+    public void resume() {
         if (waitForResume) {
             checkLocationEnabled();
         }
@@ -194,7 +194,7 @@ class PermissionsHelper implements ResultCallback<LocationSettingsResult>, Googl
         Timber.i(getString(id));
     }
 
-    interface LocationEnabledListener {
+    public interface LocationEnabledListener {
         void onLocationEnabled();
     }
 }

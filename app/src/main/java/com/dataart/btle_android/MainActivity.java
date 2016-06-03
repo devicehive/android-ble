@@ -25,10 +25,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.dataart.android.devicehive.Notification;
-import com.dataart.btle_android.PermissionsHelper.LocationEnabledListener;
 import com.dataart.btle_android.btle_gateway.BluetoothLeService;
 import com.dataart.btle_android.devicehive.BTLEDeviceHive;
 import com.dataart.btle_android.devicehive.BTLEDevicePreferences;
+import com.dataart.btle_android.helpers.PermissionsHelper;
+import com.dataart.btle_android.helpers.PermissionsHelper.LocationEnabledListener;
 
 import timber.log.Timber;
 
