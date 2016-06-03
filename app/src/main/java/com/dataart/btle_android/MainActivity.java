@@ -16,7 +16,6 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
@@ -35,8 +34,6 @@ import timber.log.Timber;
 
 
 public class MainActivity extends Activity implements BTLEDeviceHive.NotificationListener {
-
-    private static final String TAG = MainActivity.class.getName();
 
     private static final int REQUEST_ENABLE_BT = 1;
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
@@ -71,14 +68,11 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
             hintText.setVisibility(View.GONE);
         }
     };
-    private final TextView.OnEditorActionListener changeListener = new TextView.OnEditorActionListener() {
-        @Override
-        public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
-            if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT) {
-                onDataChanged();
-            }
-            return false;
+    private final TextView.OnEditorActionListener changeListener = (textView, actionId, keyEvent) -> {
+        if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT) {
+            onDataChanged();
         }
+        return false;
     };
     private final TextWatcher changeWatcher = new TextWatcher() {
         @Override
@@ -95,12 +89,7 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
         }
     };
 
-    private LocationEnabledListener locationEnabledListener = new LocationEnabledListener() {
-        @Override
-        public void onLocationEnabled() {
-            startService();
-        }
-    };
+    private LocationEnabledListener locationEnabledListener = () -> startService();
 
     private PermissionsHelper permissionsHelper;
     private final View.OnClickListener serviceClickListener = new View.OnClickListener() {
@@ -117,14 +106,11 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
         setContentView(R.layout.activity_settings);
         Timber.plant(new Timber.DebugTree());
 
-//        This extra check warns developers who try to lower SDK version for app
+//        This extra check warns developers who try to lower SDK version for the app
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            alertSdkVersionMismatch(new Runnable() {
-                @Override
-                public void run() {
-                    finish();
-                    System.exit(0);
-                }
+            alertSdkVersionMismatch(() -> {
+                finish();
+                System.exit(0);
             });
 
             return;
