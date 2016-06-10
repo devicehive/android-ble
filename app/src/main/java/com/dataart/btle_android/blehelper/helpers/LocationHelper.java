@@ -1,22 +1,23 @@
-package com.dataart.btle_android.helpers;
+package com.dataart.btle_android.blehelper.helpers;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.dataart.btle_android.R;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
@@ -30,18 +31,19 @@ import timber.log.Timber;
  * Android M with Google Play Services requires Location enabled before starting BLE devices discovery
  * This helper implements turning on Location services programmatically
  */
-public class PermissionsHelper implements ResultCallback<LocationSettingsResult>, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
-    private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
-    private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = UPDATE_INTERVAL_IN_MILLISECONDS / 2;
+public class LocationHelper implements ResultCallback<LocationSettingsResult>, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
+    public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
+    public static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
+            UPDATE_INTERVAL_IN_MILLISECONDS / 2;
     private static final int REQUEST_CHECK_SETTINGS = 100;
-    private LocationSettingsRequest mLocationSettingsRequest;
-    private GoogleApiClient mGoogleApiClient;
-    private LocationRequest mLocationRequest;
+    protected LocationSettingsRequest mLocationSettingsRequest;
+    protected GoogleApiClient mGoogleApiClient;
+    protected LocationRequest mLocationRequest;
     private LocationEnabledListener listener;
     private Activity activity;
     private boolean waitForResume = false;
 
-    public PermissionsHelper(LocationEnabledListener listener, Activity activity) {
+    public LocationHelper(LocationEnabledListener listener, Activity activity) {
         this.listener = listener;
         this.activity = activity;
         buildGoogleApiClient();
@@ -77,11 +79,15 @@ public class PermissionsHelper implements ResultCallback<LocationSettingsResult>
     /**
      * Location request is necessary for defining which exactly permissions must be enabled
      */
-    private void createLocationRequest() {
+    protected void createLocationRequest() {
         mLocationRequest = new LocationRequest();
         mLocationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS);
         mLocationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+    }
+
+    private void doJob() {
+        listener.onLocationEnabled();
     }
 
     @Override
@@ -89,35 +95,41 @@ public class PermissionsHelper implements ResultCallback<LocationSettingsResult>
         final Status status = locationSettingsResult.getStatus();
         switch (status.getStatusCode()) {
             case LocationSettingsStatusCodes.SUCCESS:
-                log(R.string.location_satisfied);
-                listener.onLocationEnabled();
+                Timber.i("All location settings are satisfied.");
+                doJob();
                 break;
             case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
-                log(R.string.location_unsatisfied);
+                Timber.i("Location settings are not satisfied. Show the user a dialog to" +
+                        "upgrade location settings ");
 
                 try {
-                    // Show the dialog by calling startResolutionForResult(), and check the result in onActivityResult().
+                    // Show the dialog by calling startResolutionForResult(), and check the result
+                    // in onActivityResult().
                     status.startResolutionForResult(activity, REQUEST_CHECK_SETTINGS);
                 } catch (IntentSender.SendIntentException e) {
-                    log(R.string.intent_not_started);
+                    Timber.i("PendingIntent unable to execute request.");
                 }
                 break;
             case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
-                log(R.string.location_cant_be_fixed);
+                Timber.i("Location settings are inadequate, and cannot be fixed here. Dialog " +
+                        "not created.");
                 break;
         }
     }
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
+
     }
 
     @Override
     public void onConnectionSuspended(int i) {
+
     }
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -126,11 +138,11 @@ public class PermissionsHelper implements ResultCallback<LocationSettingsResult>
             case REQUEST_CHECK_SETTINGS:
                 switch (resultCode) {
                     case Activity.RESULT_OK:
-                        log(R.string.location_changes_applied);
-                        listener.onLocationEnabled();
+                        Timber.i("User agreed to make required location settings changes.");
+                        doJob();
                         break;
                     case Activity.RESULT_CANCELED:
-                        log(R.string.loccation_changes_not_applied);
+                        Timber.i("User chose not to make required location settings changes.");
                         break;
                 }
                 break;
@@ -157,13 +169,12 @@ public class PermissionsHelper implements ResultCallback<LocationSettingsResult>
 
     public void checkLocationEnabled() {
         if (isLocationEnabled()) {
-            listener.onLocationEnabled();
+            doJob();
             return;
         }
 
 //        If location isn't enabled - check whether we can call Google Play Services or user to manually
 //        switch Location
-
         final int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(activity.getApplicationContext());
         if (status == ConnectionResult.SUCCESS) {
             PendingResult<LocationSettingsResult> result =
@@ -186,16 +197,14 @@ public class PermissionsHelper implements ResultCallback<LocationSettingsResult>
         }
     }
 
-    private String getString(int id) {
-        return activity.getString(id);
-    }
+    @Override
+    public void onLocationChanged(Location location) {
 
-    private void log(int id) {
-        Timber.i(getString(id));
     }
 
     public interface LocationEnabledListener {
         void onLocationEnabled();
     }
+
 }
 
