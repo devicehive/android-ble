@@ -1,4 +1,4 @@
-package com.dataart.btle_android.blehelper.helpers;
+package com.dataart.btle_android.btle_helper;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
