@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
  * Scanner for Android Jelly Bean
  */
 
+@SuppressWarnings("deprecation")
 public class BleScannerJ extends BleScanner {
 
     private BluetoothAdapter.LeScanCallback callback = (device, rssi, scanRecord) -> addDevice(device, rssi);
@@ -20,7 +21,6 @@ public class BleScannerJ extends BleScanner {
         super(listener, bluetoothAdapter);
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public void scan(boolean enable) {
         if (bluetoothAdapter != null) {
@@ -39,5 +39,15 @@ public class BleScannerJ extends BleScanner {
                 listener.onCompleted(devices);
             }
         }
+    }
+
+    @Override
+    public void startScan() {
+        bluetoothAdapter.startLeScan(callback);
+    }
+
+    @Override
+    public void stopScan() {
+        bluetoothAdapter.stopLeScan(callback);
     }
 }

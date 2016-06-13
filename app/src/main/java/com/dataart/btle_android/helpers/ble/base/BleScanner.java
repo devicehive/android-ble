@@ -27,6 +27,10 @@ public abstract class BleScanner {
 
     public abstract void scan(boolean enable);
 
+    public abstract void startScan();
+
+    public abstract void stopScan();
+
     protected void addDevice(BluetoothDevice device, int rssi) {
         devices.put(device, rssi);
     }

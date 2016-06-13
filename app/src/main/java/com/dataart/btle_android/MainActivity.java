@@ -33,6 +33,8 @@ import timber.log.Timber;
 
 public class MainActivity extends Activity implements BTLEDeviceHive.NotificationListener {
 
+//    private BleScanner bleScanner;
+
 //    private static final int REQUEST_ENABLE_BT = 1;
 //    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
 //
@@ -94,6 +96,7 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
             onDataChanged();
         }
     };
+    private boolean enable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,7 +114,22 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
             return;
         }
 
-        bleInitializer = BleHelpersFactory.getInitializer(this, bluetoothAdapter -> startService());
+        bleInitializer = BleHelpersFactory.getInitializer(this, bluetoothAdapter -> {
+//            bleScanner = BleHelpersFactory.getScanner(devices -> {
+//
+//                String s = String.format(Locale.getDefault(), "scan completed", devices.keySet().size());
+//                Timber.d(s);
+//                for (BluetoothDevice device : devices.keySet()) {
+//                    s = s + "\n" + device.getAddress() + " (" + device.getType() + ")\n";
+//                    Timber.d(s);
+//                }
+//
+//            }, bluetoothAdapter);
+//
+//            bleScanner.scan(enable);
+//            enable = !enable;
+            startService();
+        });
 
         init();
     }

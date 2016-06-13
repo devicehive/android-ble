@@ -19,7 +19,7 @@ import static android.os.Build.VERSION_CODES;
  */
 
 @Data
-public class BTLEScanner {
+public class BTLEScannerOld {
 
 
     private final BluetoothAdapter bluetoothAdapter;
@@ -27,7 +27,7 @@ public class BTLEScanner {
     private final android.bluetooth.le.ScanCallback scanCallback;
     private final BluetoothLeScanner leScanner;
 
-    public BTLEScanner(BluetoothAdapter bluetoothAdapter, Callback callback) {
+    public BTLEScannerOld(BluetoothAdapter bluetoothAdapter, Callback callback) {
         this.bluetoothAdapter = bluetoothAdapter;
         this.leScanCallback = callback::onScan;
 

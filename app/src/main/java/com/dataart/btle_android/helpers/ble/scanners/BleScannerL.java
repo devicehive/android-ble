@@ -44,11 +44,15 @@ public class BleScannerL extends BleScannerJ {
         super(listener, bluetoothAdapter);
     }
 
-    public void scan(boolean enable) {
+    private BluetoothLeScanner getScanner() {
         if (scanner == null && bluetoothAdapter != null) {
             scanner = bluetoothAdapter.getBluetoothLeScanner();
         }
-        if (scanner != null) {
+        return scanner;
+    }
+
+    public void scan(boolean enable) {
+        if (getScanner() != null) {
             if (enable) {
                 scanning = true;
                 scanner.startScan(callback);
@@ -69,5 +73,16 @@ public class BleScannerL extends BleScannerJ {
             }
         }
     }
+
+    @Override
+    public void startScan() {
+        getScanner().startScan(callback);
+    }
+
+    @Override
+    public void stopScan() {
+        getScanner().stopScan(callback);
+    }
+
 
 }
