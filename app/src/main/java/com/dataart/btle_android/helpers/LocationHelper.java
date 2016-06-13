@@ -1,4 +1,4 @@
-package com.dataart.btle_android.btle_helper;
+package com.dataart.btle_android.helpers;
 
 import android.app.Activity;
 import android.content.Context;
@@ -11,6 +11,7 @@ import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.dataart.btle_android.R;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -32,13 +33,13 @@ import timber.log.Timber;
  * This helper implements turning on Location services programmatically
  */
 public class LocationHelper implements ResultCallback<LocationSettingsResult>, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
-    public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
-    public static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
+    private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
+    private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
             UPDATE_INTERVAL_IN_MILLISECONDS / 2;
     private static final int REQUEST_CHECK_SETTINGS = 100;
-    protected LocationSettingsRequest mLocationSettingsRequest;
-    protected GoogleApiClient mGoogleApiClient;
-    protected LocationRequest mLocationRequest;
+    private LocationSettingsRequest mLocationSettingsRequest;
+    private GoogleApiClient mGoogleApiClient;
+    private LocationRequest mLocationRequest;
     private LocationEnabledListener listener;
     private Activity activity;
     private boolean waitForResume = false;
@@ -51,11 +52,11 @@ public class LocationHelper implements ResultCallback<LocationSettingsResult>, G
         buildLocationSettingsRequest();
     }
 
-    public void start() {
+    public void onStart() {
         mGoogleApiClient.connect();
     }
 
-    public void stop() {
+    public void onStop() {
         mGoogleApiClient.disconnect();
     }
 
@@ -95,24 +96,22 @@ public class LocationHelper implements ResultCallback<LocationSettingsResult>, G
         final Status status = locationSettingsResult.getStatus();
         switch (status.getStatusCode()) {
             case LocationSettingsStatusCodes.SUCCESS:
-                Timber.i("All location settings are satisfied.");
+                Timber.i(activity.getString(R.string.location_settings_ok));
                 doJob();
                 break;
             case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
-                Timber.i("Location settings are not satisfied. Show the user a dialog to" +
-                        "upgrade location settings ");
+                Timber.e(activity.getString(R.string.location_fail));
 
                 try {
                     // Show the dialog by calling startResolutionForResult(), and check the result
                     // in onActivityResult().
                     status.startResolutionForResult(activity, REQUEST_CHECK_SETTINGS);
                 } catch (IntentSender.SendIntentException e) {
-                    Timber.i("PendingIntent unable to execute request.");
+                    Timber.e(activity.getString(R.string.pi_fail));
                 }
                 break;
             case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
-                Timber.i("Location settings are inadequate, and cannot be fixed here. Dialog " +
-                        "not created.");
+                Timber.e(activity.getString(R.string.loc_settings_inadequate));
                 break;
         }
     }
@@ -138,11 +137,11 @@ public class LocationHelper implements ResultCallback<LocationSettingsResult>, G
             case REQUEST_CHECK_SETTINGS:
                 switch (resultCode) {
                     case Activity.RESULT_OK:
-                        Timber.i("User agreed to make required location settings changes.");
+                        Timber.i(activity.getString(R.string.location_ok));
                         doJob();
                         break;
                     case Activity.RESULT_CANCELED:
-                        Timber.i("User chose not to make required location settings changes.");
+                        Timber.e(activity.getString(R.string.location_cancelled));
                         break;
                 }
                 break;
@@ -191,7 +190,7 @@ public class LocationHelper implements ResultCallback<LocationSettingsResult>, G
         }
     }
 
-    public void resume() {
+    public void onResume() {
         if (waitForResume) {
             checkLocationEnabled();
         }

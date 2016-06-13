@@ -1,28 +1,26 @@
-package com.dataart.btle_android.btle_helper;
+package com.dataart.btle_android.helpers.ble.scanners;
 
 import android.annotation.TargetApi;
-import android.app.Activity;
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.le.BluetoothLeScanner;
-import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
 import android.os.Build;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import lombok.Data;
-
 /**
- * Created by Constantine Mars on 12/6/15.
+ * Created by Constantine Mars on 6/13/16.
+ * <p>
+ * Scanner for Android L and above
  */
-@TargetApi(Build.VERSION_CODES.LOLLIPOP)
-@Data
-public class BleHelperLollipop extends BleHelper {
 
+@TargetApi(Build.VERSION_CODES.LOLLIPOP)
+public class BleScannerL extends BleScannerJ {
     private BluetoothLeScanner scanner;
     private boolean stopped = false;
-    private ScanCallback callback = new ScanCallback() {
+    private android.bluetooth.le.ScanCallback callback = new android.bluetooth.le.ScanCallback() {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
             BluetoothDevice device = result.getDevice();
@@ -42,14 +40,13 @@ public class BleHelperLollipop extends BleHelper {
         }
     };
 
-    public BleHelperLollipop(Activity activity, ScanListener listener) {
-        super(activity, listener);
-        init();
+    public BleScannerL(ScanCallback listener, BluetoothAdapter bluetoothAdapter) {
+        super(listener, bluetoothAdapter);
     }
 
     public void scan(boolean enable) {
-        if (scanner == null && adapter != null) {
-            scanner = adapter.getBluetoothLeScanner();
+        if (scanner == null && bluetoothAdapter != null) {
+            scanner = bluetoothAdapter.getBluetoothLeScanner();
         }
         if (scanner != null) {
             if (enable) {
@@ -72,6 +69,5 @@ public class BleHelperLollipop extends BleHelper {
             }
         }
     }
-
 
 }

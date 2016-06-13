@@ -5,11 +5,9 @@ import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -25,38 +23,35 @@ import android.widget.Toast;
 
 import com.dataart.android.devicehive.Notification;
 import com.dataart.btle_android.btle_gateway.BluetoothLeService;
-import com.dataart.btle_android.btle_helper.BleHelperMarshmallow;
-import com.dataart.btle_android.btle_helper.LocationHelper;
-import com.dataart.btle_android.btle_helper.PermissionsHelper;
 import com.dataart.btle_android.devicehive.BTLEDeviceHive;
 import com.dataart.btle_android.devicehive.BTLEDevicePreferences;
+import com.dataart.btle_android.helpers.BleHelpersFactory;
+import com.dataart.btle_android.helpers.ble.base.BleInitializer;
 
 import timber.log.Timber;
 
 
 public class MainActivity extends Activity implements BTLEDeviceHive.NotificationListener {
 
-    private static final int REQUEST_ENABLE_BT = 1;
-    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+//    private static final int REQUEST_ENABLE_BT = 1;
+//    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+//
+//        @Override
+//        public void onReceive(Context context, Intent intent) {
+//            final String action = intent.getAction();
+//            if (BluetoothLeService.ACTION_BT_PERMISSION_REQUEST.equals(action)) {
+//                requestEnableBluetooth();
+//            }
+//        }
+//    };
+//    boolean enable = true;
 
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            final String action = intent.getAction();
-            if (BluetoothLeService.ACTION_BT_PERMISSION_REQUEST.equals(action)) {
-                requestEnableBluetooth();
-            }
-        }
-    };
-    boolean enable = true;
-    private BleHelperMarshmallow bleHelper;
-    private LocationHelper locationHelper;
-    private final View.OnClickListener serviceClickListener = new View.OnClickListener() {
+    private BleInitializer bleInitializer;
 
-        @Override
-        public void onClick(View v) {
-            locationHelper.checkLocationEnabled();
-        }
+    private final View.OnClickListener serviceClickListener = v -> {
+        bleInitializer.start();
     };
+
     private BluetoothManager mBluetoothManager;
     private BluetoothAdapter mBluetoothAdapter;
     private EditText serverUrlEditText;
@@ -116,24 +111,11 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
             return;
         }
 
-        bleHelper = new BleHelperMarshmallow(this, devices -> runOnUiThread(() -> {
-            String s = String.format("Scan completed. Discovered %d devices\n", bleHelper.getDevices().keySet().size());
-            Timber.d(s);
-            enable = true;
-        })
-        );
-        locationHelper = new LocationHelper(() -> {
-            startService();
-        }, this);
+        bleInitializer = BleHelpersFactory.getInitializer(this, bluetoothAdapter -> startService());
 
         init();
     }
 
-    private void doScan() {
-        serviceButton.setText(R.string.button_stop);
-        bleHelper.scan(enable);
-        enable = !enable;
-    }
 
     private void init() {
         if (getActionBar() != null) {
@@ -177,7 +159,7 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
             onServiceRunning();
         }
 
-        registerReceiver(mReceiver, new IntentFilter(BluetoothLeService.ACTION_BT_PERMISSION_REQUEST));
+//        registerReceiver(mReceiver, new IntentFilter(BluetoothLeService.ACTION_BT_PERMISSION_REQUEST));
     }
 
     private boolean isBluetoothLeSupported() {
@@ -200,43 +182,51 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
         return true;
     }
 
-    private void requestEnableBluetooth() {
-        final Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-        startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-    }
+//    private void requestEnableBluetooth() {
+//        final Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+//        startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+//    }
 
     @Override
     protected void onResume() {
         super.onResume();
-        locationHelper.resume();
+        bleInitializer.onResume();
 
         // Ensures Bluetooth is enabled on the device.  If Bluetooth is not currently enabled,
         // fire an intent to display a dialog asking the user to grant permission to enable it.
-        if (!mBluetoothAdapter.isEnabled()) {
-            requestEnableBluetooth();
-        }
+//        if (!mBluetoothAdapter.isEnabled()) {
+//            requestEnableBluetooth();
+//        }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        // User chose not to enable Bluetooth.
-        if (requestCode == REQUEST_ENABLE_BT && resultCode == Activity.RESULT_CANCELED) {
-            if (isServiceStarted) {
-                BluetoothLeService.stop(this);
-            }
-            finish();
-            return;
-        }
+        bleInitializer.onActivityResult(requestCode, resultCode, data);
 
-        locationHelper.onActivityResult(requestCode, resultCode, data);
-        bleHelper.onActivityResult(requestCode, resultCode, data);
+        // User chose not to enable Bluetooth.
+//        if (requestCode == REQUEST_ENABLE_BT && resultCode == Activity.RESULT_CANCELED) {
+//            if (isServiceStarted) {
+//                BluetoothLeService.stop(this);
+//            }
+//            finish();
+//            return;
+//        }
+//
+//        locationHelper.onActivityResult(requestCode, resultCode, data);
+//        bleHelper.onActivityResult(requestCode, resultCode, data);
 
         super.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        PermissionsHelper.onRequestPermissionsResult(requestCode, permissions, grantResults, s -> Timber.d("success"), e -> Timber.e("error"));
+//        PermissionsHelper.onRequestPermissionsResult(requestCode, permissions, grantResults, s ->
+//                {
+//                    checkLocation();
+//                    Timber.d("Location permission request succeeded - permissions granted");
+//                }, e -> Timber.e("Location permission request failed - no permissions")
+//        );
+        bleInitializer.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
@@ -244,11 +234,11 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
     @Override
     protected void onDestroy() {
 
-        try {
-            unregisterReceiver(mReceiver);
-        } catch (IllegalArgumentException ex) {
-            Timber.e(ex.getMessage());
-        }
+//        try {
+//            unregisterReceiver(mReceiver);
+//        } catch (IllegalArgumentException ex) {
+//            Timber.e(ex.getMessage());
+//        }
         super.onDestroy();
     }
 
@@ -344,12 +334,12 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
     @Override
     protected void onStart() {
         super.onStart();
-        locationHelper.start();
+        bleInitializer.onStart();
     }
 
     @Override
     protected void onStop() {
-        locationHelper.stop();
+        bleInitializer.onStop();
         super.onStop();
     }
 
