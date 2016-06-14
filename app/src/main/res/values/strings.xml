@@ -84,16 +84,16 @@
     <string name="sdk_version_warning">Bluetooth LE is supported starting with SDK 18 (Android Jelly Bean MR2).\nPlease, update your Android version or try on another device</string>
 
     <string name="bt_enabled">Bluetooth enabled</string>
-    <string name="bt_enabling_started">Bluetooth is disabled. Enabling...</string>
+    <string name="bt_enabling_started">Bluetooth is disabled. Enabling…</string>
     <string name="bt_not_supported">Bluetooth is not supported</string>
-    <string name="needs_permissions">This app needs some permissions</string>
-    <string name="no_permissions_title">Functionality is limited</string>
-    <string name="no_permissions_message">Since location access has not been granted, this app will not be able to discover BLE devices when in the background.</string>
-    <string name="permissions_explanation">Application needs Bluetooth Admin and Location permissions to scan for BLE devices</string>
-    <string name="location_settings_ok">All location settings are satisfied.</string>
-    <string name="location_fail">Location settings are not satisfied. Show the user a dialog to upgrade location settings.</string>
+    <string name="needs_permissions">Application needs some permissions</string>
+    <string name="no_permissions_title">Functionality limited</string>
+    <string name="no_permissions_message">Because location access has not been granted, application is not able to discover BLE devices</string>
+    <string name="permissions_explanation">Application needs Location and Bluetooth Admin permissions to turn on Location and Bluetooth for discovering BLE devices</string>
+    <string name="location_settings_ok">Location settings are satisfied.</string>
+    <string name="location_fail">Location settings are not satisfied. You need upgrade location settings.</string>
     <string name="pi_fail">PendingIntent unable to execute request.</string>
-    <string name="loc_settings_inadequate">Location settings are inadequate, and cannot be fixed here. Dialog not created.</string>
-    <string name="location_ok">User agreed to make required location settings changes.</string>
-    <string name="location_cancelled">User chose not to make required location settings changes.</string>
+    <string name="loc_settings_inadequate">Location settings failed due to unknown error</string>
+    <string name="location_ok">Location settings accepted</string>
+    <string name="location_cancelled">Location setting declined</string>
 </resources>
