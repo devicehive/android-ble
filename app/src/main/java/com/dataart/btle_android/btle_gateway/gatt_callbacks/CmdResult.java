@@ -1,4 +1,4 @@
-package com.dataart.btle_android.btle_gateway.gatt.callbacks;
+package com.dataart.btle_android.btle_gateway.gatt_callbacks;
 
 import android.content.Context;
 
@@ -16,18 +16,13 @@ public class CmdResult {
     protected String serviceUUID;
     protected String characteristicUUID;
     protected String device;
+    protected Context context;
 
     public CmdResult(String serviceUUID, String characteristicUUID, String device, Context context) {
         this.serviceUUID = serviceUUID;
         this.characteristicUUID = characteristicUUID;
         this.device = device;
         this.context = context;
-    }
-
-    protected Context context;
-
-    private  String jsonFullStatus(int statusStringId) {
-        return jsonFullStatus(context.getString(statusStringId));
     }
 
     private static String jsonStatusOk() {
@@ -48,6 +43,30 @@ public class CmdResult {
 
     private static String jsonStatus(String status){
         return new Gson().toJson(new StatusJson.Status(status));
+    }
+
+    public static CommandResult success() {
+        return new CommandResult(CommandResult.STATUS_COMLETED, jsonStatusOk());
+    }
+
+    public static CommandResult successWithObject(Object object) {
+        return new CommandResult(CommandResult.STATUS_COMLETED, jsonStatusWithObject(object));
+    }
+
+    public static CommandResult failWithStatus(String status) {
+        return new CommandResult(CommandResult.STATUS_FAILED, jsonStatus(status));
+    }
+
+    public static CommandResult failWithStatus(int strResId) {
+        return new CommandResult(CommandResult.STATUS_FAILED, jsonStatus(strResId));
+    }
+
+    public static CommandResult failTimeoutReached() {
+        return new CommandResult(CommandResult.STATUS_FAILED, jsonStatusTimeoutReached());
+    }
+
+    private String jsonFullStatus(int statusStringId) {
+        return jsonFullStatus(context.getString(statusStringId));
     }
 
     private String jsonFullStatus(String status) {
@@ -73,28 +92,8 @@ public class CmdResult {
         return jsonFullStatusWithVal(BTLEApplication.getApplication().getString(statusResId), val);
     }
 
-    public static CommandResult success() {
-        return new CommandResult(CommandResult.STATUS_COMLETED, jsonStatusOk());
-    }
-
-    public static CommandResult successWithObject(Object object) {
-        return new CommandResult(CommandResult.STATUS_COMLETED, jsonStatusWithObject(object));
-    }
-
-    public static CommandResult failWithStatus(String status) {
-        return new CommandResult(CommandResult.STATUS_FAILED, jsonStatus(status));
-    }
-
     protected CommandResult withStatusAndVal(int statusResId, String val) {
         return new CommandResult(CommandResult.STATUS_FAILED, jsonFullStatusWithVal(BTLEApplication.getApplication().getString(statusResId), val));
-    }
-
-    public static CommandResult failWithStatus(int strResId) {
-        return new CommandResult(CommandResult.STATUS_FAILED, jsonStatus(strResId));
-    }
-
-    public static CommandResult failTimeoutReached() {
-        return new CommandResult(CommandResult.STATUS_FAILED, jsonStatusTimeoutReached());
     }
 
     protected CommandResult sucessFull() {

@@ -8,11 +8,12 @@ import com.dataart.android.devicehive.Command;
 import com.dataart.android.devicehive.Notification;
 import com.dataart.android.devicehive.device.CommandResult;
 import com.dataart.android.devicehive.device.future.CmdResFuture;
-import com.dataart.btle_android.R;
 import com.dataart.android.devicehive.device.future.SimpleCallableFuture;
-import com.dataart.btle_android.btle_gateway.gatt.callbacks.CmdResult;
-import com.dataart.btle_android.btle_gateway.gatt.callbacks.InteractiveGattCallback;
+import com.dataart.btle_android.R;
+import com.dataart.btle_android.btle_gateway.gateway_helpers.ValidationHelper;
+import com.dataart.btle_android.btle_gateway.gatt_callbacks.CmdResult;
 import com.dataart.btle_android.devicehive.BTLEDeviceHive;
+import com.google.common.base.Optional;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
@@ -30,6 +31,8 @@ public class BTLEGateway {
     }
 
     public SimpleCallableFuture<CommandResult> doCommand(final Context context, final BTLEDeviceHive dh, final Command command) {
+        ValidationHelper validationHelper = new ValidationHelper(context);
+
         try {
             Timber.d("doCommand");
             final String name = command.getCommand();
@@ -41,6 +44,8 @@ public class BTLEGateway {
             final String address = (params != null) ? (String) params.get("device") : null;
             final String serviceUUID = (params != null) ? (String) params.get("serviceUUID") : null;
             final String characteristicUUID = (params != null) ? (String) params.get("characteristicUUID") : null;
+
+            Optional<CmdResFuture> validationError = Optional.absent();
 
             Timber.d("switch");
             switch (leCommand) {
@@ -55,31 +60,48 @@ public class BTLEGateway {
                     return scanAndReturnResults(dh);
 
                 case GATT_CONNECT:
-                    Timber.d("connecting to " + address);
-                    return bluetoothServerGateway.gattConnect(address, new InteractiveGattCallback.DisconnectListener() {
+                    validationError = validationHelper.validateAddress(leCommand.getCommand(), address);
+                    if (validationError.isPresent()) {
+                        return validationError.get();
+                    }
 
-                        @Override
-                        public void onDisconnect() {
-                            final String json = new Gson().toJson(String.format(context.getString(R.string.is_disconnected), address));
-                            sendNotification(dh, leCommand, json);
-                        }
+                    Timber.d("Connecting to " + address);
+                    return bluetoothServerGateway.gattConnect(address, () -> {
+                        final String json = new Gson().toJson(String.format(context.getString(R.string.is_disconnected), address));
+                        sendNotification(dh, leCommand, json);
                     });
 
                 case GATT_DISCONNECT:
-                    Timber.d("disconnecting from" + address);
+                    validationError = validationHelper.validateAddress(leCommand.getCommand(), address);
+                    if (validationError.isPresent()) {
+                        return validationError.get();
+                    }
+
+                    Timber.d("Disconnecting from" + address);
                     return bluetoothServerGateway.gattDisconnect(address);
 
                 case GATT_PRIMARY:
+                    validationError = validationHelper.validateAddress(leCommand.getCommand(), address);
+                    if (validationError.isPresent()) {
+                        return validationError.get();
+                    }
+
                     return gattPrimary(address, dh, leCommand);
 
                 case GATT_CHARACTERISTICS:
+                    validationError = validationHelper.validateCharacteristics(leCommand.getCommand(), address, serviceUUID);
+                    if (validationError.isPresent()) {
+                        return validationError.get();
+                    }
+
                     return gattCharacteristics(address, dh, leCommand);
 
                 case GATT_READ: {
-                    CmdResFuture future = validateArgs(address, serviceUUID, characteristicUUID);
-                    if (future != null) {
-                        return future;
+                    validationError = validationHelper.validateRead(leCommand.getCommand(), address, serviceUUID, characteristicUUID);
+                    if (validationError.isPresent()) {
+                        return validationError.get();
                     }
+
                     return bluetoothServerGateway.gattRead(address, serviceUUID, characteristicUUID, new GattCharacteristicCallBack() {
                         @Override
                         public void onRead(byte[] value) {
@@ -93,9 +115,10 @@ public class BTLEGateway {
 
                 case GATT_WRITE: {
                     final String sValue = (String) (params != null ? params.get("value") : null);
-                    CmdResFuture future = validateArgs(address, serviceUUID, characteristicUUID, sValue);
-                    if (future != null) {
-                        return future;
+
+                    validationError = validationHelper.validateWrite(leCommand.getCommand(), address, serviceUUID, characteristicUUID, sValue);
+                    if (validationError.isPresent()) {
+                        return validationError.get();
                     }
 
                     final byte[] value = Utils.parseHexBinary(sValue);
@@ -109,6 +132,11 @@ public class BTLEGateway {
                     });
                 }
                 case GATT_NOTIFICATION:
+                    validationError = validationHelper.validateNotifications(leCommand.getCommand(), address, serviceUUID);
+                    if (validationError.isPresent()) {
+                        return validationError.get();
+                    }
+
                     return bluetoothServerGateway.gattNotifications(context, address, serviceUUID, characteristicUUID, true, new GattCharacteristicCallBack() {
                         @Override
                         public void onRead(byte[] value) {
@@ -119,6 +147,11 @@ public class BTLEGateway {
                     });
 
                 case GATT_NOTIFICATION_STOP:
+                    validationError = validationHelper.validateNotifications(leCommand.getCommand(), address, serviceUUID);
+                    if (validationError.isPresent()) {
+                        return validationError.get();
+                    }
+
                     return bluetoothServerGateway.gattNotifications(context, address, serviceUUID, characteristicUUID, false, new GattCharacteristicCallBack() {
 
                         @Override
@@ -134,7 +167,7 @@ public class BTLEGateway {
             }
         } catch (Exception e) {
             Timber.e("error:"+e.toString());
-//            Log.e("TAG", "Error during handling" + e.toString());
+
             final Notification notification = new Notification("Error", e.toString());
             dh.sendNotification(notification);
             return new SimpleCallableFuture<>(CmdResult.failWithStatus("Error: \"" + e.toString() + "\""));
@@ -144,41 +177,12 @@ public class BTLEGateway {
         return new SimpleCallableFuture<>(CmdResult.success());
     }
 
-    private CmdResFuture validateArgs(String address, String serviceUUID, String characteristicUUID, String value) {
-        CmdResFuture future=validateArgs(address, serviceUUID, characteristicUUID);
-        if(future!=null){
-            return future;
-        }
-        if(value==null){
-            return new CmdResFuture(CmdResult.failWithStatus(R.string.fail_val));
-        }
-        return null;
-    }
-
-    private CmdResFuture validateArgs(String address, String serviceUUID, String characteristicUUID){
-        if(address==null){
-            return new CmdResFuture(CmdResult.failWithStatus(R.string.fail_address));
-        }
-        if(serviceUUID==null){
-            return new CmdResFuture(CmdResult.failWithStatus(R.string.fail_service));
-        }
-        if(characteristicUUID==null){
-            return new CmdResFuture(CmdResult.failWithStatus(R.string.fail_characteristic));
-        }
-        return null;
-    }
-
     private SimpleCallableFuture<CommandResult> scanAndReturnResults(final BTLEDeviceHive dh) {
         final SimpleCallableFuture<CommandResult> future = new SimpleCallableFuture<>();
 
         bluetoothServerGateway.scanStart();
         Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                sendStopResult(dh, future);
-            }
-        }, BluetoothServer.COMMAND_SCAN_DELAY);
+        handler.postDelayed(() -> sendStopResult(dh, future), BluetoothServer.COMMAND_SCAN_DELAY);
 
         return future;
     }
@@ -208,7 +212,7 @@ public class BTLEGateway {
         dh.sendNotification(notification);
     }
 
-    private SimpleCallableFuture<CommandResult> gattPrimary(String address, final BTLEDeviceHive dh, final LeCommand leCommand) {
+    private SimpleCallableFuture<CommandResult> gattPrimary(String address, @SuppressWarnings("UnusedParameters") final BTLEDeviceHive dh, @SuppressWarnings("UnusedParameters") final LeCommand leCommand) {
         final CmdResFuture future = new CmdResFuture();
         bluetoothServerGateway.gattPrimary(address, new GattCharacteristicCallBack() {
             @Override
@@ -219,7 +223,7 @@ public class BTLEGateway {
         return future;
     }
 
-    private SimpleCallableFuture<CommandResult> gattCharacteristics(String address, final BTLEDeviceHive dh, final LeCommand leCommand) {
+    private SimpleCallableFuture<CommandResult> gattCharacteristics(String address, @SuppressWarnings("UnusedParameters") final BTLEDeviceHive dh, @SuppressWarnings("UnusedParameters") final LeCommand leCommand) {
         final CmdResFuture future = new CmdResFuture();
         bluetoothServerGateway.gattCharacteristics(address, new GattCharacteristicCallBack() {
             @Override

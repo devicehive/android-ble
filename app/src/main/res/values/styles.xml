@@ -23,7 +23,7 @@
     <style name="ListItemDivider">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">2px</item>
-        <item name="android:background">@android:drawable/divider_horizontal_bright</item>
+        <!--<item name="android:background">@android:drawable/divider_horizontal_bright</item>-->
     </style>
 
     <style name="SingleLineEditText">

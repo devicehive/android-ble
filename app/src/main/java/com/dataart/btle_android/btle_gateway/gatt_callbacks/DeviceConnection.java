@@ -1,7 +1,6 @@
-package com.dataart.btle_android.btle_gateway.gatt.callbacks;
+package com.dataart.btle_android.btle_gateway.gatt_callbacks;
 
 import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCallback;
 
 /**
  * Created by Constantine Mars on 3/27/15.

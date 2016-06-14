@@ -1,4 +1,4 @@
-package com.dataart.btle_android.btle_gateway.gatt.callbacks;
+package com.dataart.btle_android.btle_gateway.gatt_callbacks;
 
 import com.dataart.btle_android.BTLEApplication;
 import com.dataart.btle_android.R;

@@ -18,9 +18,9 @@ import com.dataart.android.devicehive.device.future.CmdResFuture;
 import com.dataart.android.devicehive.device.future.SimpleCallableFuture;
 import com.dataart.btle_android.BTLEApplication;
 import com.dataart.btle_android.R;
-import com.dataart.btle_android.btle_gateway.gatt.callbacks.CmdResult;
-import com.dataart.btle_android.btle_gateway.gatt.callbacks.DeviceConnection;
-import com.dataart.btle_android.btle_gateway.gatt.callbacks.InteractiveGattCallback;
+import com.dataart.btle_android.btle_gateway.gatt_callbacks.CmdResult;
+import com.dataart.btle_android.btle_gateway.gatt_callbacks.DeviceConnection;
+import com.dataart.btle_android.btle_gateway.gatt_callbacks.InteractiveGattCallback;
 import com.dataart.btle_android.helpers.BleHelpersFactory;
 import com.dataart.btle_android.helpers.ble.base.BleScanner;
 
