@@ -6,7 +6,6 @@ import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -33,29 +32,11 @@ import timber.log.Timber;
 
 public class MainActivity extends Activity implements BTLEDeviceHive.NotificationListener {
 
-//    private BleScanner bleScanner;
-
-//    private static final int REQUEST_ENABLE_BT = 1;
-//    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
-//
-//        @Override
-//        public void onReceive(Context context, Intent intent) {
-//            final String action = intent.getAction();
-//            if (BluetoothLeService.ACTION_BT_PERMISSION_REQUEST.equals(action)) {
-//                requestEnableBluetooth();
-//            }
-//        }
-//    };
-//    boolean enable = true;
-
     private BleInitializer bleInitializer;
 
-    private final View.OnClickListener serviceClickListener = v -> {
-        bleInitializer.start();
-    };
+    private final View.OnClickListener serviceClickListener = v -> bleInitializer.start();
 
     private BluetoothManager mBluetoothManager;
-    private BluetoothAdapter mBluetoothAdapter;
     private EditText serverUrlEditText;
     private EditText gatewayIdEditText;
     private EditText accessKeyEditText;
@@ -96,7 +77,6 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
             onDataChanged();
         }
     };
-    private boolean enable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,7 +84,7 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
         setContentView(R.layout.activity_settings);
         Timber.plant(new Timber.DebugTree());
 
-//        This extra check warns developers who try to lower SDK version for the app
+//        Warn if developer tries to lower SDK version
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) {
             alertSdkVersionMismatch(() -> {
                 finish();
@@ -114,22 +94,8 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
             return;
         }
 
-        bleInitializer = BleHelpersFactory.getInitializer(this, bluetoothAdapter -> {
-//            bleScanner = BleHelpersFactory.getScanner(devices -> {
-//
-//                String s = String.format(Locale.getDefault(), "scan completed", devices.keySet().size());
-//                Timber.d(s);
-//                for (BluetoothDevice device : devices.keySet()) {
-//                    s = s + "\n" + device.getAddress() + " (" + device.getType() + ")\n";
-//                    Timber.d(s);
-//                }
-//
-//            }, bluetoothAdapter);
-//
-//            bleScanner.scan(enable);
-//            enable = !enable;
-            startService();
-        });
+//        BleInitializer will start service on initialization success
+        bleInitializer = BleHelpersFactory.getInitializer(this, bluetoothAdapter -> startService());
 
         init();
     }
@@ -176,8 +142,6 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
         if (isLeServiceRunning()) {
             onServiceRunning();
         }
-
-//        registerReceiver(mReceiver, new IntentFilter(BluetoothLeService.ACTION_BT_PERMISSION_REQUEST));
     }
 
     private boolean isBluetoothLeSupported() {
@@ -192,7 +156,7 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
                 return false;
             }
         }
-        mBluetoothAdapter = mBluetoothManager.getAdapter();
+        BluetoothAdapter mBluetoothAdapter = mBluetoothManager.getAdapter();
         if (mBluetoothAdapter == null) {
             Timber.e(getString(R.string.bt_unable_get_btm));
             return false;
@@ -200,64 +164,22 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
         return true;
     }
 
-//    private void requestEnableBluetooth() {
-//        final Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-//        startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-//    }
-
     @Override
     protected void onResume() {
         super.onResume();
         bleInitializer.onResume();
-
-        // Ensures Bluetooth is enabled on the device.  If Bluetooth is not currently enabled,
-        // fire an intent to display a dialog asking the user to grant permission to enable it.
-//        if (!mBluetoothAdapter.isEnabled()) {
-//            requestEnableBluetooth();
-//        }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         bleInitializer.onActivityResult(requestCode, resultCode, data);
-
-        // User chose not to enable Bluetooth.
-//        if (requestCode == REQUEST_ENABLE_BT && resultCode == Activity.RESULT_CANCELED) {
-//            if (isServiceStarted) {
-//                BluetoothLeService.stop(this);
-//            }
-//            finish();
-//            return;
-//        }
-//
-//        locationHelper.onActivityResult(requestCode, resultCode, data);
-//        bleHelper.onActivityResult(requestCode, resultCode, data);
-
         super.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-//        PermissionsHelper.onRequestPermissionsResult(requestCode, permissions, grantResults, s ->
-//                {
-//                    checkLocation();
-//                    Timber.d("Location permission request succeeded - permissions granted");
-//                }, e -> Timber.e("Location permission request failed - no permissions")
-//        );
         bleInitializer.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-    }
-
-    @Override
-    protected void onDestroy() {
-
-//        try {
-//            unregisterReceiver(mReceiver);
-//        } catch (IllegalArgumentException ex) {
-//            Timber.e(ex.getMessage());
-//        }
-        super.onDestroy();
     }
 
     private boolean isLeServiceRunning() {
@@ -365,11 +287,7 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
         new AlertDialog.Builder(this)
                 .setTitle(R.string.sdk_version_warning_title)
                 .setMessage(R.string.sdk_version_warning)
-                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        runnable.run();
-                    }
-                })
+                .setPositiveButton(android.R.string.ok, (dialog, which) -> runnable.run())
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .show();
     }

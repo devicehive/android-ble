@@ -1,6 +1,6 @@
 package com.dataart.btle_android;
 
-import android.app.Application;
+import android.support.multidex.MultiDexApplication;
 
 import com.dataart.btle_android.devicehive.BTLEDeviceHive;
 
@@ -8,7 +8,7 @@ import com.dataart.btle_android.devicehive.BTLEDeviceHive;
  * Created by alrybakov
  */
 
-public class BTLEApplication extends Application {
+public class BTLEApplication extends MultiDexApplication {
 
     private static BTLEApplication application;
 
