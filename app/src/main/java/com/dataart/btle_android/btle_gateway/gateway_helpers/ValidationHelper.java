@@ -17,9 +17,9 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class ValidationHelper {
-    public static final String VALUE_REGEX = "([a-fA-F0-9]{2}){1,}";
-    public static final String ADDRESS_REGEX = "(([a-fA-F0-9]{2}:){5})([a-fA-F0-9]{2})";
-    public static final String SERVICE_CHARACTERISTIC_UUID_REGEX = "([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})|([a-fA-F0-9]{4})";
+    private static final String VALUE_REGEX = "([a-fA-F0-9]{2}){1,}";
+    private static final String ADDRESS_REGEX = "(([a-fA-F0-9]{2}:){5})([a-fA-F0-9]{2})";
+    private static final String SERVICE_CHARACTERISTIC_UUID_REGEX = "([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})|([a-fA-F0-9]{4})";
     private final Context context;
 
     public Optional<CmdResFuture> validateAddress(final String command, final String address) {
