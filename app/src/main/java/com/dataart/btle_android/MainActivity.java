@@ -287,10 +287,13 @@ public class MainActivity extends AppCompatActivity implements BTLEDeviceHive.No
 
         if (TextUtils.isEmpty(serverUrl)) {
             serverUrlEditText.setError(getString(R.string.error_message_empty_server_url));
+            serverUrlEditText.requestFocus();
         } else if (TextUtils.isEmpty(gatewayId)) {
             gatewayIdEditText.setError(getString(R.string.error_message_empty_gateway_id));
+            gatewayIdEditText.requestFocus();
         } else if (TextUtils.isEmpty(accessKey)) {
             accessKeyEditText.setError(getString(R.string.error_message_empty_accesskey));
+            accessKeyEditText.requestFocus();
         } else {
             return true;
         }
