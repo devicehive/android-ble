@@ -16,6 +16,7 @@
     <string name="button_start">Start service</string>
     <string name="button_stop">Stop service</string>
 
+    <string name="default_server_url">http://playground.devicehive.com/api/rest</string>
     <string name="default_gateway_id">devicehive_ble_andoid</string>
     <string name="default_accesskey">8Gff/CCqkLYkuYHwa2oXf2GCmpyaLsuOlVYkttL93LQ=</string>
 

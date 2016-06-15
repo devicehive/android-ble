@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -177,7 +178,7 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         bleInitializer.onRequestPermissionsResult(requestCode, permissions, grantResults);
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
@@ -235,13 +236,26 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
     }
 
     private void resetValues() {
-        serverUrlEditText.setText("http://playground.devicehive.com/api/rest");
-//        prefs.getServerUrl());
-        gatewayIdEditText.setText(TextUtils.isEmpty(prefs.getGatewayId()) ?
-                getString(R.string.default_gateway_id) : prefs.getGatewayId());
-        accessKeyEditText.setText("EpdvN2cWKWD5zn4M7Zv3B19zgzszbhCfeOb5OIr+XoE=");
-//                TextUtils.isEmpty(prefs.getAccessKey()) ?
-//                "" : prefs.getAccessKey());
+        String serverUrl = prefs.getServerUrl();
+        serverUrlEditText.setText(
+                TextUtils.isEmpty(serverUrl)
+                        ? getString(R.string.default_server_url)
+                        : serverUrl
+        );
+
+        String gatewayId = prefs.getGatewayId();
+        gatewayIdEditText.setText(
+                TextUtils.isEmpty(gatewayId)
+                        ? getString(R.string.default_gateway_id)
+                        : gatewayId
+        );
+
+        String accessKey = prefs.getAccessKey();
+        accessKeyEditText.setText(
+                TextUtils.isEmpty(accessKey)
+                        ? ""
+                        : accessKey
+        );
     }
 
     private void saveValues() {
