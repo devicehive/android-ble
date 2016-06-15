@@ -20,7 +20,6 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.dataart.android.devicehive.Notification;
 import com.dataart.btle_android.btle_gateway.BluetoothLeService;
@@ -106,19 +105,23 @@ public class MainActivity extends AppCompatActivity implements BTLEDeviceHive.No
         init();
     }
 
+    private void fatalDialog(int message) {
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.unsupported)
+                .setMessage(message)
+                .setPositiveButton(android.R.string.ok, (dialog, which) -> finish())
+                .create().show();
+    }
 
     private void init() {
-        if (getActionBar() != null) {
-            getActionBar().setTitle(R.string.app_name);
-        }
 
         if (!isBluetoothLeSupported()) {
-            Toast.makeText(this, R.string.error_message_btle_not_supported, Toast.LENGTH_SHORT).show();
-            finish();
+            fatalDialog(R.string.error_message_btle_not_supported);
+            return;
         }
         if (!isBluetoothSupported()) {
-            Toast.makeText(this, R.string.error_message_bt_not_supported, Toast.LENGTH_SHORT).show();
-            finish();
+            fatalDialog(R.string.error_message_bt_not_supported);
+            return;
         }
 
         prefs = new BTLEDevicePreferences();

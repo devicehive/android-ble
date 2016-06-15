@@ -20,8 +20,8 @@
     <string name="default_gateway_id">devicehive_ble_andoid</string>
     <string name="default_accesskey">8Gff/CCqkLYkuYHwa2oXf2GCmpyaLsuOlVYkttL93LQ=</string>
 
-    <string name="error_message_btle_not_supported">Bluetooth LE is not supported</string>
-    <string name="error_message_bt_not_supported">Bluetooth not supported</string>
+    <string name="error_message_btle_not_supported">Bluetooth LE is not supported.\nApplication will close itself</string>
+    <string name="error_message_bt_not_supported">Bluetooth not supported.\nApplication will close itself</string>
     <string name="error_message_empty_server_url">Server URL is required</string>
     <string name="error_message_empty_gateway_id">Gateway ID is required</string>
     <string name="error_message_empty_username">Username is required</string>
@@ -100,4 +100,5 @@
     <string name="cmd_requires_service_uuid">%1$s requires service UUID to be specified. For example: {\"serviceUUID\":\"aa00\"}</string>
     <string name="cmd_requires_characteristic_uuid">%1$s requires characteristic UUID to be specified. For example: {\"characteristicUUID\":\"aa01\"}</string>
     <string name="cmd_requires_value">%1$s requires value to be specified</string>
+    <string name="unsupported">Unsupported device</string>
 </resources>
