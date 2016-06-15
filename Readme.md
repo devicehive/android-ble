@@ -1,7 +1,7 @@
 **DeviceHive Android Gateway for BLE devices**
 --------------------------------
 
-DeviceHive Android Gateway for Bluetooth Low Energy devices makes it possible to connect multiple Bluetooth Low Energy devices to DeviceHive IoT clouds through single Android device. **Now compatible with Android N**  
+DeviceHive Android Gateway for Bluetooth Low Energy devices makes it possible to connect multiple Bluetooth Low Energy devices to DeviceHive IoT clouds through single Android device. **Now compatible with Android N**.  
 Just imagine multiple sensors, or buttons, or indicators, connected to your smart home through single Android phone, tablet or other device! All your need - just start Gateway, connect to your device and send a command (or subscribe for sensor data notifications).
 
 **Commands**
