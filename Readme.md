@@ -73,7 +73,10 @@ Enable notifications:
 
 Viola! As soon as you subscribe for notifications, they will update Dashboard displays in realtime.  
   
-When you need unsubscribe, use **gatt/notifications/stop** command with the same json as for subscription.
+When you need unsubscribe, use **gatt/notifications/stop** command with the same json as for subscription.  
+
+We are happy to announce that **Dashboard** is now available directly from the [**DeviceHive Playground**](http://playground.devicehive.com/dashboard/), so you may use it right there, without local installation, and if you start Dashboard from the Playground, it will start with pre-filled authentication information, so all you need is just create or load your freeboard and use it.  
+  
 
 **Media materials**
 ---------------
@@ -88,4 +91,4 @@ If something seems still unclear - please, seek for answer in this [Presentation
 
 DeviceHive is developed by DataArt Apps and distributed under Open Source MIT license. This basically means you can do whatever you want with the software as long as the copyright notice is included. This also means you don't have to contribute the end product or modified sources back to Open Source, but if you feel like sharing, you are highly encouraged to do so!
 
-© Copyright 2015 DataArt Apps · All Rights Reserved
+© Copyright 2016 DataArt Apps · All Rights Reserved
