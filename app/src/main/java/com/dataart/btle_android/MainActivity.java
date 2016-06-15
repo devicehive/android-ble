@@ -36,8 +36,6 @@ public class MainActivity extends AppCompatActivity implements BTLEDeviceHive.No
 
     private BleInitializer bleInitializer;
 
-    private final View.OnClickListener serviceClickListener = v -> bleInitializer.start();
-
     private BluetoothManager mBluetoothManager;
     private EditText serverUrlEditText;
     private EditText gatewayIdEditText;
@@ -133,9 +131,15 @@ public class MainActivity extends AppCompatActivity implements BTLEDeviceHive.No
         resetValues();
 
         serviceButton = (Button) findViewById(R.id.service_button);
-        serviceButton.setOnClickListener(serviceClickListener);
+        //noinspection ConstantConditions
+        serviceButton.setOnClickListener(v -> {
+            if (validateValues()) {
+                bleInitializer.start();
+            }
+        });
 
         restartServiceButton = (Button) findViewById(R.id.save_button);
+        //noinspection ConstantConditions
         restartServiceButton.setOnClickListener(restartClickListener);
 
         serverUrlEditText.setOnEditorActionListener(changeListener);
@@ -201,10 +205,6 @@ public class MainActivity extends AppCompatActivity implements BTLEDeviceHive.No
     }
 
     private void startService() {
-        if (!validateValues()) {
-            return;
-        }
-
         if (!isServiceStarted) {
             saveValues();
             onServiceRunning();
