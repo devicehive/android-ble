@@ -1,6 +1,5 @@
 package com.dataart.btle_android;
 
-import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
@@ -11,6 +10,8 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -31,7 +32,7 @@ import com.dataart.btle_android.helpers.ble.base.BleInitializer;
 import timber.log.Timber;
 
 
-public class MainActivity extends Activity implements BTLEDeviceHive.NotificationListener {
+public class MainActivity extends AppCompatActivity implements BTLEDeviceHive.NotificationListener {
 
     private BleInitializer bleInitializer;
 
@@ -83,6 +84,12 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
+        Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        setSupportActionBar(myToolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle(R.string.app_name);
+        }
+
         Timber.plant(new Timber.DebugTree());
 
 //        Warn if developer tries to lower SDK version
@@ -194,6 +201,10 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
     }
 
     private void startService() {
+        if (!validateValues()) {
+            return;
+        }
+
         if (!isServiceStarted) {
             saveValues();
             onServiceRunning();
@@ -258,10 +269,19 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
         );
     }
 
-    private void saveValues() {
+    private void resetErrors() {
+        serverUrlEditText.setError(null);
+        gatewayIdEditText.setError(null);
+        accessKeyEditText.setError(null);
+    }
+
+    private boolean validateValues() {
+        resetErrors();
+
         final String serverUrl = serverUrlEditText.getText().toString();
         final String gatewayId = gatewayIdEditText.getText().toString();
         final String accessKey = accessKeyEditText.getText().toString();
+
         if (TextUtils.isEmpty(serverUrl)) {
             serverUrlEditText.setError(getString(R.string.error_message_empty_server_url));
         } else if (TextUtils.isEmpty(gatewayId)) {
@@ -269,10 +289,21 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
         } else if (TextUtils.isEmpty(accessKey)) {
             accessKeyEditText.setError(getString(R.string.error_message_empty_accesskey));
         } else {
-            prefs.setAccessKeySync(accessKey);
-            prefs.setServerUrlSync(serverUrl);
-            prefs.setGatewayIdSync(gatewayId);
+            return true;
         }
+
+        return false;
+    }
+
+    private void saveValues() {
+        final String serverUrl = serverUrlEditText.getText().toString();
+        final String gatewayId = gatewayIdEditText.getText().toString();
+        final String accessKey = accessKeyEditText.getText().toString();
+
+        prefs.setAccessKeySync(accessKey);
+        prefs.setServerUrlSync(serverUrl);
+        prefs.setGatewayIdSync(gatewayId);
+
     }
 
     @Override

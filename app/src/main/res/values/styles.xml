@@ -1,32 +1,31 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-        <item name="windowNoTitle">true</item>
-        <item name="windowActionBar">false</item>
-        <item name="android:colorBackground">#fff</item>
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">#000</item>
     </style>
 
     <style name="ListItem">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">?android:attr/listPreferredItemHeight</item>
-        <item name="android:background">@android:drawable/list_selector_background</item>
+
         <item name="android:gravity">center_vertical</item>
         <item name="android:orientation">vertical</item>
-        <item name="android:paddingLeft">6dp</item>
-        <item name="android:paddingRight">6dp</item>
+        <item name="android:paddingLeft">@dimen/padding</item>
+        <item name="android:paddingRight">@dimen/padding</item>
+    </style>
+
+    <style name="ViewWithPadding">
+        <item name="android:paddingLeft">@dimen/padding</item>
+        <item name="android:paddingRight">@dimen/padding</item>
     </style>
 
     <style name="ListItemDivider">
         <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">2px</item>
-        <!--<item name="android:background">@android:drawable/divider_horizontal_bright</item>-->
+        <item name="android:layout_height">2dp</item>
     </style>
 
-    <style name="SingleLineEditText">
+    <style name="SingleLineEditText" parent="@android:style/Widget.EditText">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:inputType">text</item>
