@@ -1,28 +1,34 @@
-package com.dataart.btle_android.btle_gateway.gatt.callbacks;
-
-import android.os.Parcel;
-import android.os.Parcelable;
+package com.dataart.btle_android.btle_gateway.gatt_callbacks;
 
 import com.dataart.btle_android.BTLEApplication;
 import com.dataart.btle_android.R;
-
-import org.apache.commons.codec.binary.Hex;
 
 /**
  * Created by Constantine Mars on 4/3/15.
  *
  * Wraps data for json conversion
  */
-public abstract class StatusJson {
-    public static class Status {
+abstract class StatusJson {
+    static String bytes2String(byte[] value) {
+        String s = "";
+        for (byte b : value) {
+            if (!s.isEmpty()) {
+                s += ", ";
+            }
+            s += String.format("0x%02X", b);
+        }
+        return s;
+    }
+
+    static class Status {
         private String status;
 
-        public Status(String status) {
+        Status(String status) {
             this.status = status;
         }
 
-        public static Status statusOk() {
-            return new Status(BTLEApplication.getApplication().getString(R.string.status_ok));
+        static Status statusOk() {
+            return new Status(BTLEApplication.getApplication().getString(android.R.string.ok));
         }
 
         public static Status statusOkWithVal(String val) {
@@ -30,14 +36,14 @@ public abstract class StatusJson {
         }
 
         public static Status statusFail() {
-            return new Status(BTLEApplication.getApplication().getString(R.string.status_ok));
+            return new Status(BTLEApplication.getApplication().getString(android.R.string.ok));
         }
 
         public static Status statusFailWithVal(String val) {
             return new Status(val);
         }
 
-        public static Status statusTimeoutReached() {
+        static Status statusTimeoutReached() {
             return new Status(BTLEApplication.getApplication().getString(R.string.status_timeout));
         }
 
@@ -46,40 +52,31 @@ public abstract class StatusJson {
         }
     }
 
-    public static class StatusWithObject {
+    static class StatusWithObject {
         private Object result;
 
-        public StatusWithObject(Object result) {
+        StatusWithObject(Object result) {
             this.result = result;
         }
 
-        public static StatusWithObject statusWithObject(Object object){
+        static StatusWithObject statusWithObject(Object object) {
             return new StatusWithObject(object);
         }
     }
 
-    public static class FullStatusWithVal extends FullStatus {
+    static class FullStatusWithVal extends FullStatus {
         private String value;
 
-        public FullStatusWithVal(String status, String device, String serviceUUID, String characteristicUUID, String value) {
+        FullStatusWithVal(String status, String device, String serviceUUID, String characteristicUUID, String value) {
             super(status, device, serviceUUID, characteristicUUID);
             this.value = value;
         }
     }
 
-    public static class FullStatus {
+    static class FullStatus {
         private String status;
         private String device;
         private String serviceUUID;
-
-        public String getDevice() {
-            return device;
-        }
-
-        public String getStatus() {
-            return status;
-        }
-
         private String characteristicUUID;
 
         public FullStatus(String status, String device, String serviceUUID, String characteristicUUID) {
@@ -87,6 +84,14 @@ public abstract class StatusJson {
             this.device = device;
             this.serviceUUID = serviceUUID;
             this.characteristicUUID = characteristicUUID;
+        }
+
+        public String getDevice() {
+            return device;
+        }
+
+        public String getStatus() {
+            return status;
         }
     }
 
@@ -97,16 +102,5 @@ public abstract class StatusJson {
             super(status, device, serviceUUID, characteristicUUID);
             this.value = value;
         }
-    }
-
-    public static String bytes2String(byte[] value){
-        String s = "";
-        for(byte b:value){
-            if(!s.isEmpty()){
-                s+=", ";
-            }
-            s+=String.format("0x%02X",b);
-        }
-        return s;
     }
 }

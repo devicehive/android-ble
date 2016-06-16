@@ -1,4 +1,4 @@
-package com.dataart.btle_android.btle_gateway.gatt.callbacks;
+package com.dataart.btle_android.btle_gateway.gatt_callbacks;
 
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
@@ -403,11 +403,11 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
 //            before execute call, we need convert uuids to long format because Android BLE Api understands only last
 //            converstion can't be done in constructor because at that moment services might be not discovered
             if ((serviceUUID = getFullServiceUuid(serviceUUID)) == null) {
-                future.call(CmdResult.failWithStatus(context.getString(R.string.status_service_uuid_nf)));
+                future.call(failWithStatus(context.getString(R.string.status_service_uuid_nf)));
                 return;
             }
             if ((characteristicUUID = getFullCharacteristicUuid(characteristicUUID)) == null) {
-                future.call(CmdResult.failWithStatus(context.getString(R.string.status_char_uuid_nf)));
+                future.call(failWithStatus(context.getString(R.string.status_char_uuid_nf)));
                 return;
             }
 //            call
@@ -415,7 +415,7 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
             try {
                 service = gatt.getService(UUID.fromString(serviceUUID));
             } catch (Exception e) {
-                future.call(CmdResult.failWithStatus("gatt.getService(uuid) crashed: " + e.getMessage()));
+                future.call(failWithStatus("gatt.getService(uuid) crashed: " + e.getMessage()));
                 return;
             }
 

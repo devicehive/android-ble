@@ -1,72 +1,127 @@
 package com.dataart.btle_android;
 
-import android.app.Activity;
 import android.app.ActivityManager;
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.util.Log;
-import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.dataart.android.devicehive.Notification;
 import com.dataart.btle_android.btle_gateway.BluetoothLeService;
 import com.dataart.btle_android.devicehive.BTLEDeviceHive;
 import com.dataart.btle_android.devicehive.BTLEDevicePreferences;
+import com.dataart.btle_android.helpers.BleHelpersFactory;
+import com.dataart.btle_android.helpers.ble.base.BleInitializer;
 
 import timber.log.Timber;
 
 
-public class MainActivity extends Activity implements BTLEDeviceHive.NotificationListener {
+public class MainActivity extends AppCompatActivity implements BTLEDeviceHive.NotificationListener {
 
-    private static final String TAG = MainActivity.class.getName();
-
-    private static final int REQUEST_ENABLE_BT = 1;
+    private BleInitializer bleInitializer;
 
     private BluetoothManager mBluetoothManager;
-    private BluetoothAdapter mBluetoothAdapter;
-
     private EditText serverUrlEditText;
     private EditText gatewayIdEditText;
     private EditText accessKeyEditText;
     private TextView hintText;
     private Button serviceButton;
     private Button restartServiceButton;
-
     private BTLEDevicePreferences prefs;
-
     private boolean isServiceStarted;
+    private final View.OnClickListener restartClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            saveValues();
+            BluetoothLeService.stop(MainActivity.this);
+            BluetoothLeService.start(MainActivity.this);
+            restartServiceButton.setVisibility(View.GONE);
+            serviceButton.setVisibility(View.VISIBLE);
+            onServiceRunning();
+            hintText.setVisibility(View.GONE);
+        }
+    };
+    private final TextView.OnEditorActionListener changeListener = (textView, actionId, keyEvent) -> {
+        if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT) {
+            onDataChanged();
+        }
+        return false;
+    };
+    private final TextWatcher changeWatcher = new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+        }
+
+        @Override
+        public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+        }
+
+        @Override
+        public void afterTextChanged(Editable editable) {
+            onDataChanged();
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
+        Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(myToolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle(R.string.app_name);
+        }
+
         Timber.plant(new Timber.DebugTree());
 
-        if (getActionBar() != null) {
-            getActionBar().setTitle(R.string.app_name);
+//        Warn if developer tries to lower SDK version
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            alertSdkVersionMismatch(() -> {
+                finish();
+                System.exit(0);
+            });
+
+            return;
         }
 
+//        BleInitializer will start service on initialization success
+        bleInitializer = BleHelpersFactory.getInitializer(this, bluetoothAdapter -> startService());
+
+        init();
+    }
+
+    private void fatalDialog(int message) {
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.unsupported)
+                .setMessage(message)
+                .setPositiveButton(android.R.string.ok, (dialog, which) -> finish())
+                .create().show();
+    }
+
+    private void init() {
+
         if (!isBluetoothLeSupported()) {
-            Toast.makeText(this, R.string.error_message_btle_not_supported, Toast.LENGTH_SHORT).show();
-            finish();
+            fatalDialog(R.string.error_message_btle_not_supported);
+            return;
         }
         if (!isBluetoothSupported()) {
-            Toast.makeText(this, R.string.error_message_bt_not_supported, Toast.LENGTH_SHORT).show();
-            finish();
+            fatalDialog(R.string.error_message_bt_not_supported);
+            return;
         }
 
         prefs = new BTLEDevicePreferences();
@@ -79,9 +134,15 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
         resetValues();
 
         serviceButton = (Button) findViewById(R.id.service_button);
-        serviceButton.setOnClickListener(serviceClickListener);
+        //noinspection ConstantConditions
+        serviceButton.setOnClickListener(v -> {
+            if (validateValues()) {
+                bleInitializer.start();
+            }
+        });
 
         restartServiceButton = (Button) findViewById(R.id.save_button);
+        //noinspection ConstantConditions
         restartServiceButton.setOnClickListener(restartClickListener);
 
         serverUrlEditText.setOnEditorActionListener(changeListener);
@@ -96,76 +157,44 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
         if (isLeServiceRunning()) {
             onServiceRunning();
         }
-
-        registerReceiver(mReceiver, new IntentFilter(BluetoothLeService.ACTION_BT_PERMISSION_REQUEST));
     }
-
-    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            final String action = intent.getAction();
-            if (BluetoothLeService.ACTION_BT_PERMISSION_REQUEST.equals(action)) {
-                requestEnableBluetooth();
-            }
-        }
-    };
 
     private boolean isBluetoothLeSupported() {
         return getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE);
     }
 
-    public boolean isBluetoothSupported() {
+    private boolean isBluetoothSupported() {
         if (mBluetoothManager == null) {
             mBluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
             if (mBluetoothManager == null) {
-                Log.e(TAG, "Unable to initialize BluetoothManager");
+                Timber.e(getString(R.string.bt_unable_init));
                 return false;
             }
         }
-        mBluetoothAdapter = mBluetoothManager.getAdapter();
+        BluetoothAdapter mBluetoothAdapter = mBluetoothManager.getAdapter();
         if (mBluetoothAdapter == null) {
-            Log.e(TAG, "Unable to obtain a BluetoothAdapter");
+            Timber.e(getString(R.string.bt_unable_get_btm));
             return false;
         }
         return true;
     }
 
-    private void requestEnableBluetooth() {
-        final Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-        startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-    }
-
     @Override
     protected void onResume() {
         super.onResume();
-
-        // Ensures Bluetooth is enabled on the device.  If Bluetooth is not currently enabled,
-        // fire an intent to display a dialog asking the user to grant permission to enable it.
-        if (!mBluetoothAdapter.isEnabled()) {
-            requestEnableBluetooth();
-        }
+        bleInitializer.onResume();
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        // User chose not to enable Bluetooth.
-        if (requestCode == REQUEST_ENABLE_BT && resultCode == Activity.RESULT_CANCELED) {
-            if (isServiceStarted) {
-                BluetoothLeService.stop(this);
-            }
-            finish();
-            return;
-        }
+        bleInitializer.onActivityResult(requestCode, resultCode, data);
         super.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
-    protected void onDestroy() {
-        if (mReceiver != null) {
-            unregisterReceiver(mReceiver);
-        }
-        super.onDestroy();
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        bleInitializer.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     private boolean isLeServiceRunning() {
@@ -178,20 +207,16 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
         return false;
     }
 
-    private final View.OnClickListener serviceClickListener = new View.OnClickListener() {
-
-        @Override
-        public void onClick(View v) {
-            if (!isServiceStarted) {
-                saveValues();
-                onServiceRunning();
-                BluetoothLeService.start(MainActivity.this);
-            } else {
-                onServiceStopped();
-                BluetoothLeService.stop(MainActivity.this);
-            }
+    private void startService() {
+        if (!isServiceStarted) {
+            saveValues();
+            onServiceRunning();
+            BluetoothLeService.start(MainActivity.this);
+        } else {
+            onServiceStopped();
+            BluetoothLeService.stop(MainActivity.this);
         }
-    };
+    }
 
     private void onServiceRunning() {
         isServiceStarted = true;
@@ -202,19 +227,6 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
         isServiceStarted = false;
         serviceButton.setText(R.string.button_start);
     }
-
-    private final View.OnClickListener restartClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View view) {
-            saveValues();
-            BluetoothLeService.stop(MainActivity.this);
-            BluetoothLeService.start(MainActivity.this);
-            restartServiceButton.setVisibility(View.GONE);
-            serviceButton.setVisibility(View.VISIBLE);
-            onServiceRunning();
-            hintText.setVisibility(View.GONE);
-        }
-    };
 
     private boolean isRestartRequired() {
         final String newUrl = serverUrlEditText.getText().toString();
@@ -238,54 +250,67 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
     }
 
     private void resetValues() {
-        serverUrlEditText.setText(prefs.getServerUrl());
-        gatewayIdEditText.setText(TextUtils.isEmpty(prefs.getGatewayId()) ?
-                getString(R.string.default_gateway_id) : prefs.getGatewayId());
-        accessKeyEditText.setText(TextUtils.isEmpty(prefs.getAccessKey()) ?
-                "" : prefs.getAccessKey());
+        String serverUrl = prefs.getServerUrl();
+        serverUrlEditText.setText(
+                TextUtils.isEmpty(serverUrl)
+                        ? getString(R.string.default_server_url)
+                        : serverUrl
+        );
+
+        String gatewayId = prefs.getGatewayId();
+        gatewayIdEditText.setText(
+                TextUtils.isEmpty(gatewayId)
+                        ? getString(R.string.default_gateway_id)
+                        : gatewayId
+        );
+
+        String accessKey = prefs.getAccessKey();
+        accessKeyEditText.setText(
+                TextUtils.isEmpty(accessKey)
+                        ? ""
+                        : accessKey
+        );
+    }
+
+    private void resetErrors() {
+        serverUrlEditText.setError(null);
+        gatewayIdEditText.setError(null);
+        accessKeyEditText.setError(null);
+    }
+
+    private boolean validateValues() {
+        resetErrors();
+
+        final String serverUrl = serverUrlEditText.getText().toString();
+        final String gatewayId = gatewayIdEditText.getText().toString();
+        final String accessKey = accessKeyEditText.getText().toString();
+
+        if (TextUtils.isEmpty(serverUrl)) {
+            serverUrlEditText.setError(getString(R.string.error_message_empty_server_url));
+            serverUrlEditText.requestFocus();
+        } else if (TextUtils.isEmpty(gatewayId)) {
+            gatewayIdEditText.setError(getString(R.string.error_message_empty_gateway_id));
+            gatewayIdEditText.requestFocus();
+        } else if (TextUtils.isEmpty(accessKey)) {
+            accessKeyEditText.setError(getString(R.string.error_message_empty_accesskey));
+            accessKeyEditText.requestFocus();
+        } else {
+            return true;
+        }
+
+        return false;
     }
 
     private void saveValues() {
         final String serverUrl = serverUrlEditText.getText().toString();
         final String gatewayId = gatewayIdEditText.getText().toString();
         final String accessKey = accessKeyEditText.getText().toString();
-        if (TextUtils.isEmpty(serverUrl)) {
-            serverUrlEditText.setError(getString(R.string.error_message_empty_server_url));
-        } else if (TextUtils.isEmpty(gatewayId)) {
-            gatewayIdEditText.setError(getString(R.string.error_message_empty_gateway_id));
-        } else if (TextUtils.isEmpty(accessKey)) {
-            accessKeyEditText.setError(getString(R.string.error_message_empty_accesskey));
-        } else {
-            prefs.setAccessKeySync(accessKey);
-            prefs.setServerUrlSync(serverUrl);
-            prefs.setGatewayIdSync(gatewayId);
-        }
+
+        prefs.setAccessKeySync(accessKey);
+        prefs.setServerUrlSync(serverUrl);
+        prefs.setGatewayIdSync(gatewayId);
+
     }
-
-    private final TextView.OnEditorActionListener changeListener = new TextView.OnEditorActionListener() {
-        @Override
-        public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
-            if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT) {
-                onDataChanged();
-            }
-            return false;
-        }
-    };
-
-    private final TextWatcher changeWatcher = new TextWatcher() {
-        @Override
-        public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
-        }
-
-        @Override
-        public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
-        }
-
-        @Override
-        public void afterTextChanged(Editable editable) {
-            onDataChanged();
-        }
-    };
 
     @Override
     public void onDeviceSentNotification(Notification notification) {
@@ -297,4 +322,24 @@ public class MainActivity extends Activity implements BTLEDeviceHive.Notificatio
 
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        bleInitializer.onStart();
+    }
+
+    @Override
+    protected void onStop() {
+        bleInitializer.onStop();
+        super.onStop();
+    }
+
+    private void alertSdkVersionMismatch(final Runnable runnable) {
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.sdk_version_warning_title)
+                .setMessage(R.string.sdk_version_warning)
+                .setPositiveButton(android.R.string.ok, (dialog, which) -> runnable.run())
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
+    }
 }

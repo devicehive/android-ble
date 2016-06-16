@@ -12,6 +12,7 @@ import com.dataart.android.devicehive.Notification;
 import com.dataart.android.devicehive.device.CommandResult;
 import com.dataart.android.devicehive.device.Device;
 import com.dataart.android.devicehive.device.future.SimpleCallableFuture;
+import com.dataart.btle_android.BuildConfig;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -48,7 +49,7 @@ public class BTLEDeviceHive extends Device {
 
     private static DeviceData getTestDeviceData() {
         final Network network = new Network("AndroidBTLE", "");
-        final DeviceClass deviceClass = new DeviceClass("AndroidBTLE Device", "1.0");
+        final DeviceClass deviceClass = new DeviceClass("Android BTLE Device", BuildConfig.VERSION_NAME);
 
         return new DeviceData(
                 new BTLEDevicePreferences().getGatewayId(),

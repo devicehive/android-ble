@@ -16,11 +16,12 @@
     <string name="button_start">Start service</string>
     <string name="button_stop">Stop service</string>
 
+    <string name="default_server_url">http://playground.devicehive.com/api/rest</string>
     <string name="default_gateway_id">devicehive_ble_andoid</string>
     <string name="default_accesskey">8Gff/CCqkLYkuYHwa2oXf2GCmpyaLsuOlVYkttL93LQ=</string>
 
-    <string name="error_message_btle_not_supported">Bluetooth LE is not supported</string>
-    <string name="error_message_bt_not_supported">Bluetooth not supported</string>
+    <string name="error_message_btle_not_supported">Bluetooth LE is not supported.\nApplication will close itself</string>
+    <string name="error_message_bt_not_supported">Bluetooth not supported.\nApplication will close itself</string>
     <string name="error_message_empty_server_url">Server URL is required</string>
     <string name="error_message_empty_gateway_id">Gateway ID is required</string>
     <string name="error_message_empty_username">Username is required</string>
@@ -36,13 +37,12 @@
     <string name="unknown_device">Unknown device</string>
 
     <string name="notification_bt_off">Bluetooth is off. Please turn on Bluetooth to continue working with DeviceHive BLE Gateway</string>
-    <string name="notification_bt_on">BLE Service is working...</string>
+    <string name="notification_bt_on">BLE Service is working…</string>
 
     <string name="status_json_success">success</string>
     <string name="status_json_fail">fail</string>
     <string name="status_json_not_found">not found</string>
 
-    <string name="status_ok">ok</string>
     <string name="status_fail">fail</string>
     <string name="status_waiting">waiting for completion</string>
     <string name="status_fail_write_not_permitted">write not permitted</string>
@@ -66,9 +66,39 @@
     <string name="unknown_command">unknown command</string>
     <string name="status_service_uuid_nf">service uuid not found</string>
     <string name="status_char_uuid_nf">characteristic uuid not found</string>
-
     <string name="fail_address">invalid args. device address required</string>
     <string name="fail_service">invalid args. service UUID required</string>
     <string name="fail_characteristic">invalid args. characteristic UUID required</string>
     <string name="fail_val">invalid args. write operation requires value</string>
+
+    <string name="location_satisfied">All location settings are satisfied</string>
+    <string name="location_unsatisfied">Location settings are not satisfied. Show the user a dialog to upgrade location settings</string>
+    <string name="intent_not_started">PendingIntent unable to execute request</string>
+    <string name="location_cant_be_fixed">Location settings are inadequate, and cannot be fixed here. Dialog not created</string>
+    <string name="location_changes_applied">User agreed to make required location settings changes</string>
+    <string name="loccation_changes_not_applied">User chose not to make required location settings changes</string>
+    <string name="bt_unable_init">Unable to initialize BluetoothManager</string>
+    <string name="bt_unable_get_btm">Unable to obtain a BluetoothAdapter</string>
+
+    <string name="sdk_version_warning_title">Unsupported SDK version</string>
+    <string name="sdk_version_warning">Bluetooth LE is supported starting with SDK 18 (Android Jelly Bean MR2).\nPlease, update your Android version or try on another device</string>
+
+    <string name="bt_enabled">Bluetooth enabled</string>
+    <string name="bt_enabling_started">Bluetooth is disabled. Enabling…</string>
+    <string name="bt_not_supported">Bluetooth is not supported</string>
+    <string name="needs_permissions">Allow permissions</string>
+    <string name="no_permissions_title">Functionality limited</string>
+    <string name="no_permissions_message">Because location access has not been granted, application is not able to discover BLE devices</string>
+    <string name="permissions_explanation">DeviceHive BLE Gateway needs to turn on Bluetooth and Location (since Android M) for discovering BLE devices</string>
+    <string name="location_settings_ok">Location settings are satisfied.</string>
+    <string name="location_fail">Location settings are not satisfied. You need upgrade location settings.</string>
+    <string name="pi_fail">PendingIntent unable to execute request.</string>
+    <string name="loc_settings_inadequate">Location settings failed due to unknown error</string>
+    <string name="location_ok">Location settings accepted</string>
+    <string name="location_cancelled">Location setting declined</string>
+    <string name="cmd_requires_address">%1$s requires address of device to be specified. For example: {\"device\":\"A4:F9:4C:3B:1C:F8\"}</string>
+    <string name="cmd_requires_service_uuid">%1$s requires service UUID to be specified. For example: {\"serviceUUID\":\"aa00\"}</string>
+    <string name="cmd_requires_characteristic_uuid">%1$s requires characteristic UUID to be specified. For example: {\"characteristicUUID\":\"aa01\"}</string>
+    <string name="cmd_requires_value">%1$s requires value to be specified</string>
+    <string name="unsupported">Unsupported device</string>
 </resources>
