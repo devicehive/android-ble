@@ -85,6 +85,16 @@ Watch this [Official DeviceHive Video](https://youtu.be/4i-_m0A6uxk) which shows
 
 If something seems still unclear - please, seek for answer in this [Presentation with live use cases](http://prezi.com/m-u42rgdqaan/?utm_campaign=share&utm_medium=copy&rc=ex0share), explaining usage of DeviceHive Android Gateway for BLE devices with Texas Instruments CC2650 SensorTag from the previous video.
  
+  
+
+**Supported Android Versions**
+---------------
+
+DeviceHive Android Gateway for BLE devices supports Android versions starting from **4.3 Jelly Bean MR2 (API 18)** up to **Android N (API 24)**.  
+On all Android versions Gateway requires **Bluetooth Admin permission** to turn on Bluetooth adapter.  
+Starting with **Android M (API 23)** due to changes in BLE devices discovery internals, Gateway requires **Location permission** and turns on Location automatically as soon as you allow this permission. When Gateway becomes inactive, it stops interactions with Location services, so doesn't impact battery life anymore. If you want to eliminate possible impact of other applications, that may access your Locations services in background, please turn off Location manually.  
+
+  
 
 **DeviceHive license**
 ------------------
