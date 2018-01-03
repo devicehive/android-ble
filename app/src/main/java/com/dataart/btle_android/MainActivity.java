@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements BTLEDeviceHive.No
     private BluetoothManager mBluetoothManager;
     private EditText serverUrlEditText;
     private EditText gatewayIdEditText;
-    private EditText accessKeyEditText;
+    private EditText refreshTokenEditText;
     private TextView hintText;
     private Button serviceButton;
     private Button restartServiceButton;
@@ -118,7 +118,7 @@ public class MainActivity extends AppCompatActivity implements BTLEDeviceHive.No
 
         serverUrlEditText = findViewById(R.id.server_url_edit);
         gatewayIdEditText = findViewById(R.id.settings_gateway_id);
-        accessKeyEditText = findViewById(R.id.accesskey_edit);
+        refreshTokenEditText = findViewById(R.id.refresh_token_edit);
         hintText = findViewById(R.id.hintText);
 
         resetValues();
@@ -141,8 +141,8 @@ public class MainActivity extends AppCompatActivity implements BTLEDeviceHive.No
         gatewayIdEditText.setOnEditorActionListener(changeListener);
         gatewayIdEditText.addTextChangedListener(changeWatcher);
 
-        accessKeyEditText.setOnEditorActionListener(changeListener);
-        accessKeyEditText.addTextChangedListener(changeWatcher);
+        refreshTokenEditText.setOnEditorActionListener(changeListener);
+        refreshTokenEditText.addTextChangedListener(changeWatcher);
 
         if (isLeServiceRunning()) {
             onServiceRunning();
@@ -221,11 +221,11 @@ public class MainActivity extends AppCompatActivity implements BTLEDeviceHive.No
     private boolean isRestartRequired() {
         String newUrl = serverUrlEditText.getText().toString();
         String newGatewayId = gatewayIdEditText.getText().toString();
-        String newAccessKey = accessKeyEditText.getText().toString();
+        String newRefreshToken = refreshTokenEditText.getText().toString();
 
         return !(Objects.equals(prefs.getServerUrl(), newUrl) &&
                 Objects.equals(prefs.getGatewayId(), newGatewayId) &&
-                Objects.equals(prefs.getRefreshToken(), newAccessKey));
+                Objects.equals(prefs.getRefreshToken(), newRefreshToken));
     }
 
     private void onDataChanged() {
@@ -255,18 +255,18 @@ public class MainActivity extends AppCompatActivity implements BTLEDeviceHive.No
                         : gatewayId
         );
 
-        String accessKey = prefs.getRefreshToken();
-        accessKeyEditText.setText(
-                TextUtils.isEmpty(accessKey)
+        String refreshToken = prefs.getRefreshToken();
+        refreshTokenEditText.setText(
+                TextUtils.isEmpty(refreshToken)
                         ? ""
-                        : accessKey
+                        : refreshToken
         );
     }
 
     private void resetErrors() {
         serverUrlEditText.setError(null);
         gatewayIdEditText.setError(null);
-        accessKeyEditText.setError(null);
+        refreshTokenEditText.setError(null);
     }
 
     private boolean validateValues() {
@@ -274,7 +274,7 @@ public class MainActivity extends AppCompatActivity implements BTLEDeviceHive.No
 
         final String serverUrl = serverUrlEditText.getText().toString();
         final String gatewayId = gatewayIdEditText.getText().toString();
-        final String accessKey = accessKeyEditText.getText().toString();
+        final String refreshToken = refreshTokenEditText.getText().toString();
 
         if (TextUtils.isEmpty(serverUrl)) {
             serverUrlEditText.setError(getString(R.string.error_message_empty_server_url));
@@ -282,9 +282,9 @@ public class MainActivity extends AppCompatActivity implements BTLEDeviceHive.No
         } else if (TextUtils.isEmpty(gatewayId)) {
             gatewayIdEditText.setError(getString(R.string.error_message_empty_gateway_id));
             gatewayIdEditText.requestFocus();
-        } else if (TextUtils.isEmpty(accessKey)) {
-            accessKeyEditText.setError(getString(R.string.error_message_empty_accesskey));
-            accessKeyEditText.requestFocus();
+        } else if (TextUtils.isEmpty(refreshToken)) {
+            refreshTokenEditText.setError(getString(R.string.error_message_empty_refresh_token));
+            refreshTokenEditText.requestFocus();
         } else {
             return true;
         }
@@ -295,9 +295,9 @@ public class MainActivity extends AppCompatActivity implements BTLEDeviceHive.No
     private void saveValues() {
         String serverUrl = serverUrlEditText.getText().toString().trim();
         String gatewayId = gatewayIdEditText.getText().toString().trim();
-        String accessKey = accessKeyEditText.getText().toString().trim();
+        String refreshToken = refreshTokenEditText.getText().toString().trim();
 
-        prefs.setRefreshTokenSync(accessKey);
+        prefs.setRefreshTokenSync(refreshToken);
         prefs.setServerUrlSync(serverUrl);
         prefs.setGatewayIdSync(gatewayId);
 

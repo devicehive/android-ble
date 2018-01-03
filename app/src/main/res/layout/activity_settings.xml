@@ -78,11 +78,11 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/settings_accesskey"
+                    android:text="@string/settings_refresh_token"
                     android:textAppearance="@android:style/TextAppearance.Medium" />
 
                 <EditText
-                    android:id="@+id/accesskey_edit"
+                    android:id="@+id/refresh_token_edit"
                     style="@style/SingleLineEditText"
                     android:imeOptions="actionNext" />
             </LinearLayout>

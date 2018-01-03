@@ -9,7 +9,7 @@
     <string name="settings_gateway_id">Gateway ID</string>
     <string name="settings_username">Username</string>
     <string name="settings_password">Password</string>
-    <string name="settings_accesskey">Access Key</string>
+    <string name="settings_refresh_token">Refresh Token</string>
     <string name="settings_restart_hint">You have to restart the service in order to apply new parameters</string>
 
     <string name="button_restart">Restart</string>
@@ -25,7 +25,7 @@
     <string name="error_message_empty_gateway_id">Gateway ID is required</string>
     <string name="error_message_empty_username">Username is required</string>
     <string name="error_message_empty_password">Password is required</string>
-    <string name="error_message_empty_accesskey">Access key is required</string>
+    <string name="error_message_empty_refresh_token">Refresh token is required</string>
 
     <string name="info_message_save_settings">Settings were saved</string>
 

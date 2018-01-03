@@ -65,9 +65,9 @@ public class BTLEDevicePreferences {
     }
 
     @SuppressLint("ApplySharedPref")
-    public void setRefreshTokenSync(String accessKey) {
+    public void setRefreshTokenSync(String refreshToken) {
         final SharedPreferences.Editor editor = preferences.edit();
-        editor.putString(KEY_REFRESH_TOKEN, accessKey);
+        editor.putString(KEY_REFRESH_TOKEN, refreshToken);
         editor.commit();
     }
 }
