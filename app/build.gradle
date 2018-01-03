@@ -24,15 +24,34 @@ android {
     }
     useLibrary 'org.apache.http.legacy'
 }
-
+ext {
+    devicehive = "3.0.11"
+    commons = "1.11"
+    rxandroid = "2.0.1"
+    rxjava = "2.1.7"
+    guava = "23.6-android"
+    gson = "2.8.2"
+    timber = "4.6.0"
+    support = "26.1.0"
+}
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:appcompat-v7:26.1.0'
-    compile 'com.android.support:design:26.1.0'
-    compile 'com.google.code.gson:gson:2.8.0'
-    compile 'com.jakewharton.timber:timber:4.5.1'
-    compile 'commons-codec:commons-codec:1.5'
-    compile 'io.reactivex:rxandroid:1.1.0'
-    compile 'com.google.guava:guava:21.0'
-    compile 'com.github.devicehive:devicehive-java:3.0.11'
+
+    compile "com.android.support:appcompat-v7:${support}"
+    compile "com.android.support:design:${support}"
+
+    compile "com.google.code.gson:gson:${gson}"
+
+    compile "com.jakewharton.timber:timber:${timber}"
+
+    compile "commons-codec:commons-codec:${commons}"
+
+    compile "io.reactivex.rxjava2:rxandroid:${rxandroid}"
+    // Because RxAndroid releases are few and far between, it is recommended you also
+    // explicitly depend on RxJava's latest version for bug fixes and new features.
+    compile "io.reactivex.rxjava2:rxjava:${rxjava}"
+
+    compile "com.google.guava:guava:${guava}"
+
+    compile "com.github.devicehive:devicehive-java:${devicehive}"
 }
