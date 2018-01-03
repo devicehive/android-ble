@@ -4,8 +4,6 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.ParcelUuid;
 
-import com.dataart.android.devicehive.Command;
-import com.dataart.android.devicehive.Notification;
 import com.dataart.android.devicehive.device.CommandResult;
 import com.dataart.android.devicehive.device.future.CmdResFuture;
 import com.dataart.android.devicehive.device.future.SimpleCallableFuture;
@@ -13,9 +11,12 @@ import com.dataart.btle_android.R;
 import com.dataart.btle_android.btle_gateway.gateway_helpers.ValidationHelper;
 import com.dataart.btle_android.btle_gateway.gatt_callbacks.CmdResult;
 import com.dataart.btle_android.devicehive.BTLEDeviceHive;
+import com.github.devicehive.client.service.DeviceCommand;
 import com.google.common.base.Optional;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,22 +31,23 @@ public class BTLEGateway {
         this.bluetoothServerGateway = bluetoothServer;
     }
 
-    public SimpleCallableFuture<CommandResult> doCommand(final Context context, final BTLEDeviceHive dh, final Command command) {
+    public SimpleCallableFuture<CommandResult> doCommand(final Context context, final BTLEDeviceHive dh, final DeviceCommand command) {
         ValidationHelper validationHelper = new ValidationHelper(context);
 
         try {
             Timber.d("doCommand");
-            final String name = command.getCommand();
+            final String name = command.getCommandName();
             final LeCommand leCommand = LeCommand.fromName(name);
 
-            @SuppressWarnings("unchecked")
-            final HashMap<String, Object> params = (HashMap<String, Object>) command.getParameters();
+            Type type = new TypeToken<HashMap<String, String>>() {
+            }.getType();
+            HashMap<String, String> params = new Gson().fromJson(command.getParameters().getJsonString(), type);
 
             final String address = (params != null) ? (String) params.get("device") : null;
             final String serviceUUID = (params != null) ? (String) params.get("serviceUUID") : null;
             final String characteristicUUID = (params != null) ? (String) params.get("characteristicUUID") : null;
 
-            Optional<CmdResFuture> validationError = Optional.absent();
+            Optional<CmdResFuture> validationError;
 
             Timber.d("switch");
             switch (leCommand) {
@@ -163,13 +165,15 @@ public class BTLEGateway {
                     });
                 case UNKNOWN:
                 default:
-                     return new CmdResFuture(CmdResult.failWithStatus(R.string.unknown_command));
+                    return new CmdResFuture(CmdResult.failWithStatus(R.string.unknown_command));
             }
         } catch (Exception e) {
-            Timber.e("error:"+e.toString());
+            Timber.e("error:" + e.toString());
 
-            final Notification notification = new Notification("Error", e.toString());
-            dh.sendNotification(notification);
+//TODO To what device should we send notification
+//            final Notification notification = new Notification("Error", e.toString());
+//            dh.sendNotification(notification);
+
             return new SimpleCallableFuture<>(CmdResult.failWithStatus("Error: \"" + e.toString() + "\""));
         }
 
@@ -188,8 +192,8 @@ public class BTLEGateway {
     }
 
     private void sendNotification(final BTLEDeviceHive dh, final LeCommand leCommand, final String json) {
-        final Notification notification = new Notification(leCommand.getCommand(), json);
-        dh.sendNotification(notification);
+//        final Notification notification = new Notification(leCommand.getCommand(), json);
+//        dh.sendNotification(notification);
     }
 
     private void sendStopResult(BTLEDeviceHive dh) {
@@ -204,12 +208,14 @@ public class BTLEGateway {
         result.put("result", json);
 
 //        notify calling code about result
-        if (future!=null) {
+        if (future != null) {
             future.call(new CommandResult(CommandResult.STATUS_COMLETED, json));
         }
 
-        final Notification notification = new Notification("discoveredDevices", result);
-        dh.sendNotification(notification);
+//        final Notification notification = new Notification("discoveredDevices", result);
+
+
+//        dh.sendNotification(notification);
     }
 
     private SimpleCallableFuture<CommandResult> gattPrimary(String address, @SuppressWarnings("UnusedParameters") final BTLEDeviceHive dh, @SuppressWarnings("UnusedParameters") final LeCommand leCommand) {
@@ -217,7 +223,7 @@ public class BTLEGateway {
         bluetoothServerGateway.gattPrimary(address, new GattCharacteristicCallBack() {
             @Override
             public void onServices(List<ParcelUuid> uuidList) {
-                future.call( CmdResult.successWithObject(uuidList));
+                future.call(CmdResult.successWithObject(uuidList));
             }
         }, future);
         return future;
@@ -228,7 +234,7 @@ public class BTLEGateway {
         bluetoothServerGateway.gattCharacteristics(address, new GattCharacteristicCallBack() {
             @Override
             public void onCharacteristics(ArrayList<BTLECharacteristic> characteristics) {
-                future.call( CmdResult.successWithObject(characteristics));
+                future.call(CmdResult.successWithObject(characteristics));
             }
         }, future);
         return future;

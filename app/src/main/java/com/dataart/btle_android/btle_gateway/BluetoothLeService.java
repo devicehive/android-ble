@@ -15,14 +15,13 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.dataart.android.devicehive.Command;
 import com.dataart.android.devicehive.device.CommandResult;
-import com.dataart.android.devicehive.network.DeviceHiveApiService;
+import com.dataart.android.devicehive.device.future.SimpleCallableFuture;
 import com.dataart.btle_android.MainActivity;
 import com.dataart.btle_android.R;
-import com.dataart.android.devicehive.device.future.SimpleCallableFuture;
 import com.dataart.btle_android.devicehive.BTLEDeviceHive;
 import com.dataart.btle_android.devicehive.BTLEDevicePreferences;
+import com.github.devicehive.client.service.DeviceCommand;
 
 import timber.log.Timber;
 
@@ -67,7 +66,7 @@ public class BluetoothLeService extends Service {
             send(ACTION_BT_PERMISSION_REQUEST);
         }
         mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        mDeviceHive = BTLEDeviceHive.newInstance(this);
+        mDeviceHive = BTLEDeviceHive.newInstance();
         mBluetoothServer = new BluetoothServer(getApplicationContext());
         mGateway = new BTLEGateway(mBluetoothServer);
         registerReceiver(getBtStateReceiver(), new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
@@ -80,14 +79,17 @@ public class BluetoothLeService extends Service {
             mBluetoothServer.scanStart();
         }
 
-        final BTLEDevicePreferences prefs = new BTLEDevicePreferences();
-        mDeviceHive.setApiEnpointUrl(prefs.getServerUrl());
+        final BTLEDevicePreferences prefs = BTLEDevicePreferences.getInstance();
+//        mDeviceHive.setApiEnpointUrl(prefs.getServerUrl());
 
         mDeviceHive.setCommandListener(commandListener);
-        if (!mDeviceHive.isRegistered()) {
-            mDeviceHive.registerDevice();
-        }
-        mDeviceHive.startProcessingCommands();
+
+        //TODO Get Device and start processing commands
+//        if (!mDeviceHive.isRegistered()) {
+//            mDeviceHive.registerDevice();
+//        }
+//        mDeviceHive.startProcessingCommands();
+
         setNotification();
         return START_NOT_STICKY;
     }
@@ -96,8 +98,12 @@ public class BluetoothLeService extends Service {
     public void onDestroy() {
         Timber.d("Service.onDestroy");
         mDeviceHive.removeCommandListener();
-        mDeviceHive.stopProcessingCommands();
-        stopService(new Intent(this, DeviceHiveApiService.class));
+
+        //TODO Stop processing commands on the device
+//        mDeviceHive.stopProcessingCommands();
+
+        //TODO WHAT IS THAT?
+//        stopService(new Intent(this, DeviceHiveApiService.class));
         if (mReceiver != null) {
             unregisterReceiver(mReceiver);
         }
@@ -108,7 +114,7 @@ public class BluetoothLeService extends Service {
 
     private final BTLEDeviceHive.CommandListener commandListener = new BTLEDeviceHive.CommandListener() {
         @Override
-        public SimpleCallableFuture<CommandResult> onDeviceReceivedCommand(Command command) {
+        public SimpleCallableFuture<CommandResult> onDeviceReceivedCommand(DeviceCommand command) {
             Log.d(TAG, "Device received Command in BluetoothLeService");
             return mGateway.doCommand(getApplicationContext(), mDeviceHive, command);
         }
@@ -163,8 +169,7 @@ public class BluetoothLeService extends Service {
         stackBuilder.addParentStack(MainActivity.class);
         stackBuilder.addNextIntent(resultIntent);
         final PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        mBuilder = new NotificationCompat.Builder(this)
+        mBuilder = new NotificationCompat.Builder(this, "channel_id_1")
                 .setContentText(getString(R.string.notification_bt_on))
                 .setContentTitle(getString(R.string.device_hive))
                 .setSmallIcon(R.drawable.ic_le_service)

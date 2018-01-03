@@ -7,20 +7,21 @@ import com.dataart.btle_android.R;
 import com.dataart.btle_android.btle_gateway.gatt_callbacks.CmdResult;
 import com.google.common.base.Optional;
 
-import lombok.RequiredArgsConstructor;
-
 /**
  * Created by Constantine Mars on 6/14/16.
  * <p>
  * Validation utils
  */
 
-@RequiredArgsConstructor
 public class ValidationHelper {
     private static final String VALUE_REGEX = "([a-fA-F0-9]{2}){1,}";
     private static final String ADDRESS_REGEX = "(([a-fA-F0-9]{2}:){5})([a-fA-F0-9]{2})";
     private static final String SERVICE_CHARACTERISTIC_UUID_REGEX = "([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})|([a-fA-F0-9]{4})";
     private final Context context;
+
+    public ValidationHelper(Context context) {
+        this.context = context;
+    }
 
     public Optional<CmdResFuture> validateAddress(final String command, final String address) {
         return validate(command, R.string.cmd_requires_address, address, ADDRESS_REGEX);

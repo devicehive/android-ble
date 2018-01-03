@@ -1,13 +1,12 @@
 package com.dataart.android.devicehive.device;
 
-import java.io.Serializable;
+import android.os.Parcel;
+import android.os.Parcelable;
 
-import com.dataart.android.devicehive.ObjectWrapper;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import android.os.Parcel;
-import android.os.Parcelable;
+import java.io.Serializable;
 
 import timber.log.Timber;
 

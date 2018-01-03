@@ -1,10 +1,8 @@
 package com.dataart.btle_android.devicehive;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
-
-import com.dataart.btle_android.BTLEApplication;
 
 public class BTLEDevicePreferences {
 
@@ -16,19 +14,29 @@ public class BTLEDevicePreferences {
     private final static String KEY_GATEWAY_ID = NAMESPACE
             .concat(".KEY_GATEWAY_ID");
 
-    private final static String KEY_ACCESSKEY= NAMESPACE
-            .concat(".KEY_ACCESSKEY");
+    private final static String KEY_REFRESH_TOKEN = NAMESPACE
+            .concat(".KEY_REFRESH_TOKEN");
 
-    private final Context context;
 
-    private final SharedPreferences preferences;
+    private SharedPreferences preferences;
 
-    public BTLEDevicePreferences() {
-
-        this.context = BTLEApplication.getApplication();
+    private BTLEDevicePreferences() {
+    }
+    public void init(Context context) {
         this.preferences = context.getSharedPreferences(
                 context.getPackageName() + "_devicehiveprefs",
                 Context.MODE_PRIVATE);
+    }
+    public static BTLEDevicePreferences getInstance() {
+        return BTLEDevicePreferences.InstanceHolder.INSTANCE;
+    }
+
+    private static class InstanceHolder {
+        static final BTLEDevicePreferences INSTANCE = new BTLEDevicePreferences();
+    }
+
+    public void clearPreferences() {
+        preferences.edit().clear().apply();
     }
 
     public String getServerUrl() {
@@ -39,36 +47,27 @@ public class BTLEDevicePreferences {
         return preferences.getString(KEY_GATEWAY_ID, null);
     }
 
+    @SuppressLint("ApplySharedPref")
     public void setServerUrlSync(String serverUrl) {
         final SharedPreferences.Editor editor = preferences.edit();
         editor.putString(KEY_SERVER_URL, serverUrl);
         editor.commit();
     }
-
+    @SuppressLint("ApplySharedPref")
     public void setGatewayIdSync(String gatewayId) {
         final SharedPreferences.Editor editor = preferences.edit();
         editor.putString(KEY_GATEWAY_ID, gatewayId);
         editor.commit();
     }
 
-    public String getAccessKey() {
-        return preferences.getString(KEY_ACCESSKEY, null);
+    public String getRefreshToken() {
+        return preferences.getString(KEY_REFRESH_TOKEN, null);
     }
 
-    public void setAccessKeySync(String accessKey) {
+    @SuppressLint("ApplySharedPref")
+    public void setRefreshTokenSync(String accessKey) {
         final SharedPreferences.Editor editor = preferences.edit();
-        editor.putString(KEY_ACCESSKEY, accessKey);
+        editor.putString(KEY_REFRESH_TOKEN, accessKey);
         editor.commit();
-    }
-
-    public void setCredentialsAsync(final String accessKey) {
-        new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground(Void... params) {
-                setAccessKeySync(accessKey);
-                return null;
-            }
-
-        }.execute();
     }
 }

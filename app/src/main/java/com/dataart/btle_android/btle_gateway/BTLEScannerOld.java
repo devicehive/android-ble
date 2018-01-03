@@ -8,8 +8,6 @@ import android.bluetooth.le.ScanResult;
 
 import java.util.List;
 
-import lombok.Data;
-
 import static android.os.Build.VERSION;
 import static android.os.Build.VERSION_CODES;
 
@@ -18,7 +16,6 @@ import static android.os.Build.VERSION_CODES;
  * Abstracted BTLE scanning manager that encapsulates both approaches for android before L and starting with L
  */
 
-@Data
 public class BTLEScannerOld {
 
 

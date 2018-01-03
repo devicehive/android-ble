@@ -8,8 +8,6 @@ import android.content.Intent;
 
 import com.dataart.btle_android.R;
 
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
 import timber.log.Timber;
 
 /**
@@ -17,14 +15,19 @@ import timber.log.Timber;
  * <p>
  * Base BLE init helper logic, common for all Android versions, starting with JellyBean MR2
  */
-@Data
-@RequiredArgsConstructor
 public abstract class BleInitializer {
     private static final int REQUEST_ENABLE_BT = 3001;
 
     protected final Activity activity;
     protected final InitCompletionCallback initCompletionCallback;
     protected BluetoothAdapter bluetoothAdapter;
+
+    public BleInitializer(Activity activity, InitCompletionCallback initCompletionCallback) {
+        this.activity = activity;
+        this.initCompletionCallback = initCompletionCallback;
+    }
+
+
     /**
      * Enabling Bluetooth should be always the last step of initialization,
      * after which initCompletionCallback will be called

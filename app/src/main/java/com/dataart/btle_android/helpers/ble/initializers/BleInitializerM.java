@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.os.Build;
 
 import com.dataart.btle_android.R;
-import com.dataart.btle_android.helpers.LocationHelper;
 import com.dataart.btle_android.helpers.PermissionsHelper;
 import com.dataart.btle_android.helpers.ble.base.BleInitializer;
 
@@ -27,11 +26,11 @@ public class BleInitializerM extends BleInitializerL {
     };
     private Action1<String[]> onError;
     private Action1<String> onSuccess;
-    private LocationHelper locationHelper;
+//    private LocationHelper locationHelper;
 
     public BleInitializerM(Activity activity, BleInitializer.InitCompletionCallback initCompletionCallback) {
         super(activity, initCompletionCallback);
-        locationHelper = new LocationHelper(this::callSuperStart, activity);
+//        locationHelper = new LocationHelper(this::callSuperStart, activity);
 
         onError = permissions -> {
             final AlertDialog.Builder builder = new AlertDialog.Builder(activity);
@@ -59,7 +58,7 @@ public class BleInitializerM extends BleInitializerL {
      * 2. Enable location (switch location on if it's still not on)
      */
     private void enableLocation() {
-        locationHelper.checkLocationEnabled();
+//        locationHelper.checkLocationEnabled();
     }
 
     /**
@@ -93,24 +92,24 @@ public class BleInitializerM extends BleInitializerL {
     @Override
     public void onStart() {
         super.onStart();
-        locationHelper.onStart();
+//        locationHelper.onStart();
     }
 
     @Override
     public void onStop() {
-        locationHelper.onStop();
+//        locationHelper.onStop();
         super.onStop();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        locationHelper.onResume();
+//        locationHelper.onResume();
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        locationHelper.onActivityResult(requestCode, resultCode, data);
+//        locationHelper.onActivityResult(requestCode, resultCode, data);
         super.onActivityResult(requestCode, resultCode, data);
     }
 }

@@ -7,7 +7,6 @@ import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -21,12 +20,14 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.dataart.android.devicehive.Notification;
 import com.dataart.btle_android.btle_gateway.BluetoothLeService;
 import com.dataart.btle_android.devicehive.BTLEDeviceHive;
 import com.dataart.btle_android.devicehive.BTLEDevicePreferences;
 import com.dataart.btle_android.helpers.BleHelpersFactory;
 import com.dataart.btle_android.helpers.ble.base.BleInitializer;
+import com.github.devicehive.client.model.DeviceNotification;
+
+import java.util.Objects;
 
 import timber.log.Timber;
 
@@ -89,19 +90,8 @@ public class MainActivity extends AppCompatActivity implements BTLEDeviceHive.No
 
         Timber.plant(new Timber.DebugTree());
 
-//        Warn if developer tries to lower SDK version
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            alertSdkVersionMismatch(() -> {
-                finish();
-                System.exit(0);
-            });
-
-            return;
-        }
-
 //        BleInitializer will start service on initialization success
         bleInitializer = BleHelpersFactory.getInitializer(this, bluetoothAdapter -> startService());
-
         init();
     }
 
@@ -124,16 +114,16 @@ public class MainActivity extends AppCompatActivity implements BTLEDeviceHive.No
             return;
         }
 
-        prefs = new BTLEDevicePreferences();
+        prefs = BTLEDevicePreferences.getInstance();
 
-        serverUrlEditText = (EditText) findViewById(R.id.server_url_edit);
-        gatewayIdEditText = (EditText) findViewById(R.id.settings_gateway_id);
-        accessKeyEditText = (EditText) findViewById(R.id.accesskey_edit);
-        hintText = (TextView) findViewById(R.id.hintText);
+        serverUrlEditText = findViewById(R.id.server_url_edit);
+        gatewayIdEditText = findViewById(R.id.settings_gateway_id);
+        accessKeyEditText = findViewById(R.id.accesskey_edit);
+        hintText = findViewById(R.id.hintText);
 
         resetValues();
 
-        serviceButton = (Button) findViewById(R.id.service_button);
+        serviceButton = findViewById(R.id.service_button);
         //noinspection ConstantConditions
         serviceButton.setOnClickListener(v -> {
             if (validateValues()) {
@@ -141,7 +131,7 @@ public class MainActivity extends AppCompatActivity implements BTLEDeviceHive.No
             }
         });
 
-        restartServiceButton = (Button) findViewById(R.id.save_button);
+        restartServiceButton = findViewById(R.id.save_button);
         //noinspection ConstantConditions
         restartServiceButton.setOnClickListener(restartClickListener);
 
@@ -200,7 +190,7 @@ public class MainActivity extends AppCompatActivity implements BTLEDeviceHive.No
     private boolean isLeServiceRunning() {
         final ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (BluetoothLeService.class.getName().equals(service.service.getClassName())) {
+            if (Objects.equals(BluetoothLeService.class.getName(), service.service.getClassName())) {
                 return true;
             }
         }
@@ -229,12 +219,13 @@ public class MainActivity extends AppCompatActivity implements BTLEDeviceHive.No
     }
 
     private boolean isRestartRequired() {
-        final String newUrl = serverUrlEditText.getText().toString();
-        final String newGatewayId = gatewayIdEditText.getText().toString();
-        final String newAccessKey = accessKeyEditText.getText().toString();
-        return !(prefs.getServerUrl().equals(newUrl) &&
-                prefs.getGatewayId().equals(newGatewayId) &&
-                prefs.getAccessKey().equals(newAccessKey));
+        String newUrl = serverUrlEditText.getText().toString();
+        String newGatewayId = gatewayIdEditText.getText().toString();
+        String newAccessKey = accessKeyEditText.getText().toString();
+
+        return !(Objects.equals(prefs.getServerUrl(), newUrl) &&
+                Objects.equals(prefs.getGatewayId(), newGatewayId) &&
+                Objects.equals(prefs.getRefreshToken(), newAccessKey));
     }
 
     private void onDataChanged() {
@@ -264,7 +255,7 @@ public class MainActivity extends AppCompatActivity implements BTLEDeviceHive.No
                         : gatewayId
         );
 
-        String accessKey = prefs.getAccessKey();
+        String accessKey = prefs.getRefreshToken();
         accessKeyEditText.setText(
                 TextUtils.isEmpty(accessKey)
                         ? ""
@@ -302,23 +293,23 @@ public class MainActivity extends AppCompatActivity implements BTLEDeviceHive.No
     }
 
     private void saveValues() {
-        final String serverUrl = serverUrlEditText.getText().toString();
-        final String gatewayId = gatewayIdEditText.getText().toString();
-        final String accessKey = accessKeyEditText.getText().toString();
+        String serverUrl = serverUrlEditText.getText().toString().trim();
+        String gatewayId = gatewayIdEditText.getText().toString().trim();
+        String accessKey = accessKeyEditText.getText().toString().trim();
 
-        prefs.setAccessKeySync(accessKey);
+        prefs.setRefreshTokenSync(accessKey);
         prefs.setServerUrlSync(serverUrl);
         prefs.setGatewayIdSync(gatewayId);
 
     }
 
     @Override
-    public void onDeviceSentNotification(Notification notification) {
+    public void onDeviceSentNotification(DeviceNotification notification) {
 
     }
 
     @Override
-    public void onDeviceFailedToSendNotification(Notification notification) {
+    public void onDeviceFailedToSendNotification(DeviceNotification notification) {
 
     }
 
@@ -332,14 +323,5 @@ public class MainActivity extends AppCompatActivity implements BTLEDeviceHive.No
     protected void onStop() {
         bleInitializer.onStop();
         super.onStop();
-    }
-
-    private void alertSdkVersionMismatch(final Runnable runnable) {
-        new AlertDialog.Builder(this)
-                .setTitle(R.string.sdk_version_warning_title)
-                .setMessage(R.string.sdk_version_warning)
-                .setPositiveButton(android.R.string.ok, (dialog, which) -> runnable.run())
-                .setIcon(android.R.drawable.ic_dialog_alert)
-                .show();
     }
 }
