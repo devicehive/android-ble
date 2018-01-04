@@ -13,7 +13,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <!--Location access is necessary for BLE devices discovery under Android M-->
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <!--<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />-->
 
     <application
         android:name=".BTLEApplication"
@@ -31,10 +31,6 @@
         </activity>
 
         <service android:name=".btle_gateway.BluetoothLeService" android:enabled="true"/>
-
-        <service
-            android:name="com.dataart.android.devicehive.network.DeviceHiveApiService"
-            android:exported="false" />
 
     </application>
 

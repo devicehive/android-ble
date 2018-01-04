@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 26
-    buildToolsVersion "26.0.3"
+    compileSdkVersion 27
+    buildToolsVersion "27.0.3"
 
     defaultConfig {
         applicationId "com.dataart.btle_android"
         minSdkVersion 19
-        targetSdkVersion 26
+        targetSdkVersion 27
         versionCode 2
         versionName "2.0"
 
@@ -32,7 +32,7 @@ ext {
     guava = "23.6-android"
     gson = "2.8.2"
     timber = "4.6.0"
-    support = "26.1.0"
+    support = "27.0.2"
 }
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])

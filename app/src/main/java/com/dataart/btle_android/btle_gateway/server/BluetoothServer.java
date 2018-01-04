@@ -1,4 +1,4 @@
-package com.dataart.btle_android.btle_gateway;
+package com.dataart.btle_android.btle_gateway.server;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -11,13 +11,14 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.ParcelUuid;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.dataart.android.devicehive.device.CommandResult;
 import com.dataart.android.devicehive.device.future.CmdResFuture;
 import com.dataart.android.devicehive.device.future.SimpleCallableFuture;
-import com.dataart.btle_android.BTLEApplication;
 import com.dataart.btle_android.R;
+import com.dataart.btle_android.btle_gateway.BTLECharacteristic;
+import com.dataart.btle_android.btle_gateway.BTLEDevice;
+import com.dataart.btle_android.btle_gateway.GattCharacteristicCallBack;
 import com.dataart.btle_android.btle_gateway.gatt_callbacks.CmdResult;
 import com.dataart.btle_android.btle_gateway.gatt_callbacks.DeviceConnection;
 import com.dataart.btle_android.btle_gateway.gatt_callbacks.InteractiveGattCallback;
@@ -31,6 +32,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import timber.log.Timber;
 
@@ -40,8 +42,6 @@ import timber.log.Timber;
 public class BluetoothServer extends BluetoothGattCallback {
 
     public static final int COMMAND_SCAN_DELAY = 10 * 1000; // 10 sec
-
-    public static final String TAG = "BTLE Device Hive";
 
     private Context context;
     private BluetoothAdapter bluetoothAdapter = null;
@@ -58,7 +58,7 @@ public class BluetoothServer extends BluetoothGattCallback {
         this.context = context;
     }
 
-    private BluetoothAdapter getBluetoothAdapter() {
+    BluetoothAdapter getBluetoothAdapter() {
         if (bluetoothAdapter == null) {
             BluetoothManager bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
             bluetoothAdapter = bluetoothManager.getAdapter();
@@ -87,7 +87,7 @@ public class BluetoothServer extends BluetoothGattCallback {
 //            Skip if already found
         //noinspection SuspiciousMethodCalls
         for (LeScanResult leScanResult : deviceList) {
-            if (leScanResult.getDevice().getAddress().equals(device.getAddress())) {
+            if (Objects.equals(leScanResult.getDevice().getAddress(), device.getAddress())) {
                 return leScanResult;
             }
         }
@@ -113,7 +113,8 @@ public class BluetoothServer extends BluetoothGattCallback {
         final Handler handler = new Handler();
         handler.postDelayed(() -> {
 
-//              "Never startScan on a loop, and set a time limit on your startScan. " - https://developer.android.com/guide/topics/connectivity/bluetooth-le.html#find
+            //  https://developer.android.com/guide/topics/connectivity/bluetooth-le.html#find
+            //  "Never startScan on a loop, and set a time limit on your startScan. "
             scanner.stopScan();
             Timber.d("BLE startScan stopped on timeout " + BluetoothServer.COMMAND_SCAN_DELAY / 1000 + " sec");
 
@@ -129,15 +130,15 @@ public class BluetoothServer extends BluetoothGattCallback {
     }
 
     public void scanStop() {
-        Log.d(TAG, "Stop BLE Scan");
+        Timber.d("Stop BLE Scan");
         scanner.stopScan();
     }
 
     protected void addDevice(final LeScanResult device) {
         deviceList.add(device);
-        Log.d(TAG, "BTdeviceName " + device.getDevice().getName());
-        Log.d(TAG, "BTdeviceAdress " + device.getDevice().getAddress());
-        Log.d(TAG, "scanRecord " + Arrays.toString(device.getScanRecord()));
+        Timber.d("BTdeviceName " + device.getDevice().getName());
+        Timber.d("BTdeviceAdress " + device.getDevice().getAddress());
+        Timber.d("scanRecord " + Arrays.toString(device.getScanRecord()));
     }
 
     private LeScanResult getResultByUDID(final String mac) {
@@ -173,13 +174,13 @@ public class BluetoothServer extends BluetoothGattCallback {
             @Override
             public void fail(String message) {
                 Timber.d("fail - scanning for device");
-                new ScanCallbacks(address, operation).start();
+                new ScanCallbacks(BluetoothServer.this, address, operation).start();
             }
         }, true);
     }
 
     //    Will seek among connected devices
-    private void applyForConnection(String address, ConnectionOperation operation) {
+    void applyForConnection(String address, ConnectionOperation operation) {
         DeviceConnection connection = activeConnections.get(address);
         if (connection != null) {
             operation.call(connection);
@@ -226,15 +227,15 @@ public class BluetoothServer extends BluetoothGattCallback {
         });
     }
 
-    private DeviceConnection connectAndSave(String address, BluetoothDevice device) {
+    DeviceConnection connectAndSave(String address, BluetoothDevice device) {
         return connectAndSave(address, device, null, null);
     }
 
-    private DeviceConnection connectAndSave(String address, BluetoothDevice device, InteractiveGattCallback.OnConnectedListener connectedListener) {
+    DeviceConnection connectAndSave(String address, BluetoothDevice device, InteractiveGattCallback.OnConnectedListener connectedListener) {
         return connectAndSave(address, device, null, null, connectedListener);
     }
 
-    private DeviceConnection connectAndSave(String address, BluetoothDevice device, InteractiveGattCallback.DisconnectListener disconnectListener, SimpleCallableFuture<CommandResult> future) {
+    DeviceConnection connectAndSave(String address, BluetoothDevice device, InteractiveGattCallback.DisconnectListener disconnectListener, SimpleCallableFuture<CommandResult> future) {
         return connectAndSave(address, device, disconnectListener, future, null);
     }
 
@@ -435,120 +436,4 @@ public class BluetoothServer extends BluetoothGattCallback {
 
         return future;
     }
-
-    private interface DeviceOperation {
-        void call(BluetoothDevice device);
-
-        void fail(String message);
-    }
-
-    private interface ConnectionOperation {
-        void call(DeviceConnection connection);
-
-        void fail(String message);
-    }
-
-    public interface DiscoveredDeviceListener {
-        void onDiscoveredDevice(BluetoothDevice device);
-    }
-
-    private class ScanCallbacks {
-        private String address;
-        private ConnectionOperation operation;
-        private BleScanner.ScanCallback localCallback;
-        private BleScanner scanner;
-
-        public ScanCallbacks(final String address, final ConnectionOperation operation) {
-            this.address = address;
-            this.operation = operation;
-
-            this.localCallback = new BleScanner.ScanCallback() {
-                private boolean found = false;
-
-                @Override
-                public void onDeviceFound(BluetoothDevice device, int rssi, byte[] scanRecord) {
-                    if (!found && device.getAddress().equals(address)) {
-                        found = true;
-                        stop();
-                        onDeviceFound(device, rssi, scanRecord);
-
-                        connectAndSave(address, device, () -> {
-                            Timber.d("on connected - calling operation");
-                            applyForConnection(address, operation);
-                        });
-                    }
-                }
-            };
-        }
-
-        public void start() {
-            Timber.d("no device or connection - scanning for device");
-//              startScan for device, add it to discovered devices, connect and call operation
-
-            scanner = BleHelpersFactory.getScanner(localCallback, getBluetoothAdapter());
-            scanner.startScan();
-
-            final Handler handler = new Handler();
-            handler.postDelayed(() -> {
-//              "Never startScan on a loop, and set a time limit on your startScan. " - https://developer.android.com/guide/topics/connectivity/bluetooth-le.html#find
-                Timber.d("on timeout");
-                stop();
-                operation.fail(BTLEApplication.getApplication().getString(R.string.status_notfound_timeout));
-            }, BluetoothServer.COMMAND_SCAN_DELAY);
-        }
-
-        public void stop() {
-            Timber.d("stop");
-            scanner.stopScan();
-        }
-
-    }
-
-    private class LeScanResult {
-
-        private BluetoothDevice mDevice;
-        private int mRssi;
-        private byte[] mScanRecord;
-
-        public LeScanResult(BluetoothDevice device, int rssi, byte[] scanRecord) {
-            mDevice = device;
-            mRssi = rssi;
-            mScanRecord = scanRecord;
-        }
-
-        public BluetoothDevice getDevice() {
-            return mDevice;
-        }
-
-        public int getRssi() {
-            return mRssi;
-        }
-
-        public byte[] getScanRecord() {
-            return mScanRecord;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (o == this) {
-                return true;
-            }
-
-            if (o instanceof BluetoothDevice) {
-                return this.mDevice.getAddress().equals(((BluetoothDevice) o).getAddress());
-            }
-
-//            devices equals by address
-            if (o instanceof LeScanResult) {
-                //noinspection SimplifiableIfStatement
-                if (this.mDevice == null || ((LeScanResult) o).mDevice == null)
-                    return false;
-
-                return this.mDevice.getAddress().equals(((LeScanResult) o).mDevice.getAddress());
-            }
-
-            return false;
-        }
-    }
-
 }

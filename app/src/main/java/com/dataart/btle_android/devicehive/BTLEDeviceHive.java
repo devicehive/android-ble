@@ -1,7 +1,6 @@
 package com.dataart.btle_android.devicehive;
 
 import android.os.Build;
-import android.util.Log;
 
 import com.dataart.android.devicehive.device.CommandResult;
 import com.dataart.android.devicehive.device.future.SimpleCallableFuture;
@@ -12,9 +11,10 @@ import com.github.devicehive.client.service.DeviceHive;
 import java.util.LinkedList;
 import java.util.List;
 
+import timber.log.Timber;
+
 public class BTLEDeviceHive {
 
-    private static final String TAG = "AndroidBTLE";
     private DeviceHive deviceHive;
     private BTLEDevicePreferences prefs;
 
@@ -57,11 +57,11 @@ public class BTLEDeviceHive {
     }
 
     public void onBeforeRunCommand(DeviceCommand command) {
-        Log.d(TAG, "onBeforeRunCommand: " + command.getCommandName());
+        Timber.d("onBeforeRunCommand: " + command.getCommandName());
     }
 
     public SimpleCallableFuture<CommandResult> runCommand(DeviceCommand command) {
-        Log.d(TAG, "Executing command on test device: " + command.getCommandName());
+        Timber.d("Executing command on test device: " + command.getCommandName());
         return notifyListenersCommandReceived(command);
     }
 
@@ -86,39 +86,39 @@ public class BTLEDeviceHive {
     }
 
     protected void onStartRegistration() {
-        Log.d(TAG, "onStartRegistration");
+        Timber.d("onStartRegistration");
     }
 
     protected void onFinishRegistration() {
-        Log.d(TAG, "onFinishRegistration");
+        Timber.d("onFinishRegistration");
 //        isRegistered = true;
         notifyListenersDeviceRegistered();
     }
 
     protected void onFailRegistration() {
-        Log.d(TAG, "onFailRegistration");
+        Timber.d("onFailRegistration");
         notifyListenersDeviceFailedToRegister();
     }
 
     protected void onStartProcessingCommands() {
-        Log.d(TAG, "onStartProcessingCommands");
+        Timber.d("onStartProcessingCommands");
     }
 
     protected void onStopProcessingCommands() {
-        Log.d(TAG, "onStopProcessingCommands");
+        Timber.d("onStopProcessingCommands");
     }
 
     protected void onStartSendingNotification(DeviceNotification notification) {
-        Log.d(TAG, "onStartSendingNotification : " + notification.getNotification());
+        Timber.d("onStartSendingNotification : " + notification.getNotification());
     }
 
     protected void onFinishSendingNotification(DeviceNotification notification) {
-        Log.d(TAG, "onFinishSendingNotification : " + notification.getNotification());
+        Timber.d("onFinishSendingNotification : " + notification.getNotification());
         notifyListenersDeviceSentNotification(notification);
     }
 
     protected void onFailSendingNotification(DeviceNotification notification) {
-        Log.d(TAG, "onFailSendingNotification : " + notification.getNotification());
+        Timber.d("onFailSendingNotification : " + notification.getNotification());
         notifyListenersDeviceFailedToSendNotification(notification);
     }
 

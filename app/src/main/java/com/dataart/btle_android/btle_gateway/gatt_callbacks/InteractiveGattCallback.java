@@ -12,7 +12,7 @@ import android.os.Handler;
 import com.dataart.android.devicehive.device.CommandResult;
 import com.dataart.android.devicehive.device.future.SimpleCallableFuture;
 import com.dataart.btle_android.R;
-import com.dataart.btle_android.btle_gateway.BluetoothServer;
+import com.dataart.btle_android.btle_gateway.server.BluetoothServer;
 import com.dataart.btle_android.btle_gateway.GattCharacteristicCallBack;
 
 import org.apache.commons.codec.binary.Hex;

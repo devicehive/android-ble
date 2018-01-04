@@ -4,6 +4,8 @@ import android.app.Application;
 
 import com.dataart.btle_android.devicehive.BTLEDevicePreferences;
 
+import timber.log.Timber;
+
 /**
  * Created by alrybakov
  */
@@ -22,6 +24,9 @@ public class BTLEApplication extends Application {
         super.onCreate();
         application = this;
         BTLEDevicePreferences.getInstance().init(this);
+        if (BuildConfig.DEBUG){
+            Timber.plant(new Timber.DebugTree());
+        }
     }
 
 }

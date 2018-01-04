@@ -12,13 +12,13 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.dataart.android.devicehive.device.CommandResult;
 import com.dataart.android.devicehive.device.future.SimpleCallableFuture;
 import com.dataart.btle_android.MainActivity;
 import com.dataart.btle_android.R;
+import com.dataart.btle_android.btle_gateway.server.BluetoothServer;
 import com.dataart.btle_android.devicehive.BTLEDeviceHive;
 import com.dataart.btle_android.devicehive.BTLEDevicePreferences;
 import com.github.devicehive.client.service.DeviceCommand;
@@ -39,7 +39,9 @@ public class BluetoothLeService extends Service {
 
     private NotificationManager mNotificationManager;
     private NotificationCompat.Builder mBuilder;
+
     private BroadcastReceiver mReceiver;
+
     private BluetoothAdapter mBluetoothAdapter;
     private BluetoothServer mBluetoothServer;
     private BTLEDeviceHive mDeviceHive;
@@ -80,7 +82,6 @@ public class BluetoothLeService extends Service {
         }
 
         final BTLEDevicePreferences prefs = BTLEDevicePreferences.getInstance();
-//        mDeviceHive.setApiEnpointUrl(prefs.getServerUrl());
 
         mDeviceHive.setCommandListener(commandListener);
 
@@ -109,13 +110,13 @@ public class BluetoothLeService extends Service {
         }
         mNotificationManager.cancel(LE_NOTIFICATION_ID);
         super.onDestroy();
-        Log.d(TAG, "BluetoothLeService was destroyed");
+        Timber.d("BluetoothLeService was destroyed");
     }
 
     private final BTLEDeviceHive.CommandListener commandListener = new BTLEDeviceHive.CommandListener() {
         @Override
         public SimpleCallableFuture<CommandResult> onDeviceReceivedCommand(DeviceCommand command) {
-            Log.d(TAG, "Device received Command in BluetoothLeService");
+            Timber.d("Device received Command in BluetoothLeService");
             return mGateway.doCommand(getApplicationContext(), mDeviceHive, command);
         }
     };

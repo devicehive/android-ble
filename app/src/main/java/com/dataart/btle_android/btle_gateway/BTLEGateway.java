@@ -10,6 +10,7 @@ import com.dataart.android.devicehive.device.future.SimpleCallableFuture;
 import com.dataart.btle_android.R;
 import com.dataart.btle_android.btle_gateway.gateway_helpers.ValidationHelper;
 import com.dataart.btle_android.btle_gateway.gatt_callbacks.CmdResult;
+import com.dataart.btle_android.btle_gateway.server.BluetoothServer;
 import com.dataart.btle_android.devicehive.BTLEDeviceHive;
 import com.github.devicehive.client.service.DeviceCommand;
 import com.google.common.base.Optional;
