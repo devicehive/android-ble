@@ -1,9 +1,9 @@
-package com.dataart.btle_android.btle_gateway;
+package com.dataart.btle_android.btle_gateway.gateway_helpers;
 
 /**
  * Created by alrybakov
  */
-public class Utils {
+public class HexHelper {
 
     static public byte[] parseHexBinary(String s) {
         final int len = s.length();

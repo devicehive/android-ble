@@ -21,8 +21,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.dataart.btle_android.btle_gateway.BluetoothLeService;
-import com.dataart.btle_android.devicehive.BTLEDeviceHive;
 import com.dataart.btle_android.devicehive.BTLEDevicePreferences;
+import com.dataart.btle_android.devicehive.btledh.NotificationListener;
 import com.dataart.btle_android.helpers.BleHelpersFactory;
 import com.dataart.btle_android.helpers.ble.base.BleInitializer;
 import com.github.devicehive.client.model.DeviceNotification;
@@ -32,7 +32,7 @@ import java.util.Objects;
 import timber.log.Timber;
 
 
-public class MainActivity extends AppCompatActivity implements BTLEDeviceHive.NotificationListener {
+public class MainActivity extends AppCompatActivity implements NotificationListener {
 
     private BleInitializer bleInitializer;
 
@@ -87,9 +87,6 @@ public class MainActivity extends AppCompatActivity implements BTLEDeviceHive.No
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle(R.string.app_name);
         }
-
-        Timber.plant(new Timber.DebugTree());
-
 //        BleInitializer will start service on initialization success
         bleInitializer = BleHelpersFactory.getInitializer(this, bluetoothAdapter -> startService());
         init();
@@ -126,6 +123,7 @@ public class MainActivity extends AppCompatActivity implements BTLEDeviceHive.No
         serviceButton = findViewById(R.id.service_button);
         //noinspection ConstantConditions
         serviceButton.setOnClickListener(v -> {
+            Timber.d(validateValues()+"");
             if (validateValues()) {
                 bleInitializer.start();
             }
@@ -198,11 +196,14 @@ public class MainActivity extends AppCompatActivity implements BTLEDeviceHive.No
     }
 
     private void startService() {
+        Timber.d("HERE " + isServiceStarted);
         if (!isServiceStarted) {
+            Timber.d("Started");
             saveValues();
             onServiceRunning();
             BluetoothLeService.start(MainActivity.this);
         } else {
+            Timber.d("Not Started");
             onServiceStopped();
             BluetoothLeService.stop(MainActivity.this);
         }

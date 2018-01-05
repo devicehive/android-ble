@@ -8,10 +8,13 @@ import com.dataart.android.devicehive.device.CommandResult;
 import com.dataart.android.devicehive.device.future.CmdResFuture;
 import com.dataart.android.devicehive.device.future.SimpleCallableFuture;
 import com.dataart.btle_android.R;
+import com.dataart.btle_android.btle_gateway.gateway_helpers.HexHelper;
 import com.dataart.btle_android.btle_gateway.gateway_helpers.ValidationHelper;
 import com.dataart.btle_android.btle_gateway.gatt_callbacks.CmdResult;
+import com.dataart.btle_android.btle_gateway.model.BTLECharacteristic;
+import com.dataart.btle_android.btle_gateway.model.BTLEDevice;
 import com.dataart.btle_android.btle_gateway.server.BluetoothServer;
-import com.dataart.btle_android.devicehive.BTLEDeviceHive;
+import com.dataart.btle_android.devicehive.btledh.BTLEDeviceHive;
 import com.github.devicehive.client.service.DeviceCommand;
 import com.google.common.base.Optional;
 import com.google.gson.Gson;
@@ -26,6 +29,8 @@ import timber.log.Timber;
 
 public class BTLEGateway {
 
+    public static final String DEVICE = "device";
+    public static final String SERVICE_UUID = "serviceUUID";
     private BluetoothServer bluetoothServerGateway;
 
     public BTLEGateway(BluetoothServer bluetoothServer) {
@@ -44,9 +49,9 @@ public class BTLEGateway {
             }.getType();
             HashMap<String, String> params = new Gson().fromJson(command.getParameters().getJsonString(), type);
 
-            final String address = (params != null) ? (String) params.get("device") : null;
-            final String serviceUUID = (params != null) ? (String) params.get("serviceUUID") : null;
-            final String characteristicUUID = (params != null) ? (String) params.get("characteristicUUID") : null;
+            final String address = (params != null) ? params.get(DEVICE) : null;
+            final String serviceUUID = (params != null) ? params.get(SERVICE_UUID) : null;
+            final String characteristicUUID = (params != null) ? params.get("characteristicUUID") : null;
 
             Optional<CmdResFuture> validationError;
 
@@ -109,7 +114,7 @@ public class BTLEGateway {
                         @Override
                         public void onRead(byte[] value) {
 //                            no notifications needed
-//                            final String sValue = Utils.printHexBinary(value);
+//                            final String sValue = HexHelper.printHexBinary(value);
 //                            final String json = new Gson().toJson(sValue);
 //                            sendNotification(dh, leCommand, json);
                         }
@@ -124,7 +129,7 @@ public class BTLEGateway {
                         return validationError.get();
                     }
 
-                    final byte[] value = Utils.parseHexBinary(sValue);
+                    final byte[] value = HexHelper.parseHexBinary(sValue);
                     return bluetoothServerGateway.gattWrite(address, serviceUUID, characteristicUUID, value, new GattCharacteristicCallBack() {
                         @Override
                         public void onWrite(int state) {
@@ -143,7 +148,7 @@ public class BTLEGateway {
                     return bluetoothServerGateway.gattNotifications(context, address, serviceUUID, characteristicUUID, true, new GattCharacteristicCallBack() {
                         @Override
                         public void onRead(byte[] value) {
-                            final String sValue = Utils.printHexBinary(value);
+                            final String sValue = HexHelper.printHexBinary(value);
                             final String json = new Gson().toJson(sValue);
                             sendNotification(dh, leCommand, json);
                         }
@@ -159,7 +164,7 @@ public class BTLEGateway {
 
                         @Override
                         public void onRead(byte[] value) {
-                            final String sValue = Utils.printHexBinary(value);
+                            final String sValue = HexHelper.printHexBinary(value);
                             final String json = new Gson().toJson(sValue);
                             sendNotification(dh, leCommand, json);
                         }

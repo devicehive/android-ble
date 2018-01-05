@@ -1,4 +1,4 @@
-package com.dataart.btle_android.btle_gateway;
+package com.dataart.btle_android.btle_gateway.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;

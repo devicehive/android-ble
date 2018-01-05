@@ -11,7 +11,9 @@ import com.dataart.btle_android.R;
 import java.util.ArrayList;
 import java.util.List;
 
-import rx.functions.Action1;
+import io.reactivex.Observable;
+import io.reactivex.functions.Consumer;
+
 
 /**
  * Created by Constantine Mars on 12/15/15.
@@ -22,7 +24,8 @@ public class PermissionsHelper {
 
     public static boolean checkPermissions(Activity activity, String[] permissions, String message) {
         List<String> permissionsToCheck = new ArrayList<>();
-        rx.Observable.from(permissions)
+
+        Observable.fromArray(permissions)
                 .filter(permission -> activity.checkSelfPermission(permission) != PackageManager.PERMISSION_GRANTED)
                 .forEach(permissionsToCheck::add);
 
@@ -44,7 +47,7 @@ public class PermissionsHelper {
     }
 
     public static void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults,
-                                                  Action1<String> onSuccess, Action1<String[]> onError) {
+                                                  Consumer<String> onSuccess, Consumer<String[]> onError) {
         switch (requestCode) {
             case PERMISSION_REQUEST: {
                 List<String> permissionsNotGranted = new ArrayList<>();
@@ -54,11 +57,16 @@ public class PermissionsHelper {
                         permissionsNotGranted.add(permission);
                     }
                 }
+                try {
+                    if (permissionsNotGranted.size() > 0) {
 
-                if (permissionsNotGranted.size() > 0) {
-                    onError.call(permissionsNotGranted.toArray(new String[permissionsNotGranted.size()]));
-                } else {
-                    onSuccess.call("All required permissions granted");
+                        onError.accept(permissionsNotGranted.toArray(new String[permissionsNotGranted.size()]));
+
+                    } else {
+                        onSuccess.accept("All required permissions granted");
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         }

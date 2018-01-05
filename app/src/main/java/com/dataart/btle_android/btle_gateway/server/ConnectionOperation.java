@@ -1,6 +1,6 @@
 package com.dataart.btle_android.btle_gateway.server;
 
-import com.dataart.btle_android.btle_gateway.gatt_callbacks.DeviceConnection;
+import com.dataart.btle_android.btle_gateway.model.DeviceConnection;
 
 interface ConnectionOperation {
     void call(DeviceConnection connection);

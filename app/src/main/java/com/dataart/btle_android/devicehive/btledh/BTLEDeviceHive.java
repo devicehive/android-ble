@@ -1,9 +1,11 @@
-package com.dataart.btle_android.devicehive;
+package com.dataart.btle_android.devicehive.btledh;
 
 import android.os.Build;
 
 import com.dataart.android.devicehive.device.CommandResult;
 import com.dataart.android.devicehive.device.future.SimpleCallableFuture;
+import com.dataart.btle_android.devicehive.BTLEDevicePreferences;
+import com.dataart.btle_android.devicehive.DeviceHiveConfig;
 import com.github.devicehive.client.model.DeviceNotification;
 import com.github.devicehive.client.service.DeviceCommand;
 import com.github.devicehive.client.service.DeviceHive;
@@ -21,22 +23,6 @@ public class BTLEDeviceHive {
     private List<RegistrationListener> registrationListeners = new LinkedList<>();
     private CommandListener commandListener;
     private List<NotificationListener> notificationListeners = new LinkedList<>();
-
-    public interface RegistrationListener {
-        void onDeviceRegistered();
-
-        void onDeviceFailedToRegister();
-    }
-
-    public interface CommandListener {
-        SimpleCallableFuture<CommandResult> onDeviceReceivedCommand(DeviceCommand command);
-    }
-
-    public interface NotificationListener {
-        void onDeviceSentNotification(DeviceNotification notification);
-
-        void onDeviceFailedToSendNotification(DeviceNotification notification);
-    }
 
     public BTLEDeviceHive() {
         prefs = BTLEDevicePreferences.getInstance();
