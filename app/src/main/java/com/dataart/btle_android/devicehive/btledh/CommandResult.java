@@ -1,4 +1,4 @@
-package com.dataart.android.devicehive.device;
+package com.dataart.btle_android.devicehive.btledh;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -18,7 +18,7 @@ public class CommandResult implements Parcelable {
 	/**
 	 * Command status "Completed" value.
 	 */
-	public static final String STATUS_COMLETED = "Completed";
+	public static final String STATUS_COMPLETED = "Completed";
 
 	/**
 	 * Command status "Failed" value.

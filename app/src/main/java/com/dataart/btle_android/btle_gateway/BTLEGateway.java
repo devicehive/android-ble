@@ -4,9 +4,9 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.ParcelUuid;
 
-import com.dataart.android.devicehive.device.CommandResult;
-import com.dataart.android.devicehive.device.future.CmdResFuture;
-import com.dataart.android.devicehive.device.future.SimpleCallableFuture;
+import com.dataart.btle_android.devicehive.btledh.CommandResult;
+import com.dataart.btle_android.devicehive.btledh.CmdResFuture;
+import com.dataart.btle_android.devicehive.btledh.SimpleCallableFuture;
 import com.dataart.btle_android.R;
 import com.dataart.btle_android.btle_gateway.gateway_helpers.HexHelper;
 import com.dataart.btle_android.btle_gateway.gateway_helpers.ValidationHelper;
@@ -47,7 +47,7 @@ public class BTLEGateway {
 
             Type type = new TypeToken<HashMap<String, String>>() {
             }.getType();
-            HashMap<String, String> params = new Gson().fromJson(command.getParameters().getJsonString(), type);
+            HashMap<String, String> params = new Gson().fromJson(command.getParameters().toString(), type);
 
             final String address = (params != null) ? params.get(DEVICE) : null;
             final String serviceUUID = (params != null) ? params.get(SERVICE_UUID) : null;
@@ -60,10 +60,12 @@ public class BTLEGateway {
                 case SCAN_START:
                     bluetoothServerGateway.scanStart();
                     break;
+
                 case SCAN_STOP:
                     bluetoothServerGateway.scanStop();
                     sendStopResult(dh);
                     break;
+
                 case SCAN:
                     return scanAndReturnResults(dh);
 
@@ -139,6 +141,7 @@ public class BTLEGateway {
                         }
                     });
                 }
+
                 case GATT_NOTIFICATION:
                     validationError = validationHelper.validateNotifications(leCommand.getCommand(), address, serviceUUID);
                     if (validationError.isPresent()) {
@@ -169,6 +172,7 @@ public class BTLEGateway {
                             sendNotification(dh, leCommand, json);
                         }
                     });
+
                 case UNKNOWN:
                 default:
                     return new CmdResFuture(CmdResult.failWithStatus(R.string.unknown_command));
@@ -215,7 +219,7 @@ public class BTLEGateway {
 
 //        notify calling code about result
         if (future != null) {
-            future.call(new CommandResult(CommandResult.STATUS_COMLETED, json));
+            future.call(new CommandResult(CommandResult.STATUS_COMPLETED, json));
         }
 
 //        final Notification notification = new Notification("discoveredDevices", result);

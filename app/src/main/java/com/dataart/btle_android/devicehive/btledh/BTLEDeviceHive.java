@@ -2,27 +2,27 @@ package com.dataart.btle_android.devicehive.btledh;
 
 import android.os.Build;
 
-import com.dataart.android.devicehive.device.CommandResult;
-import com.dataart.android.devicehive.device.future.SimpleCallableFuture;
 import com.dataart.btle_android.devicehive.BTLEDevicePreferences;
 import com.dataart.btle_android.devicehive.DeviceHiveConfig;
-import com.github.devicehive.client.model.DeviceNotification;
+import com.github.devicehive.client.model.CommandFilter;
+import com.github.devicehive.client.model.DHResponse;
+import com.github.devicehive.client.model.DeviceCommandsCallback;
+import com.github.devicehive.client.model.FailureData;
+import com.github.devicehive.client.service.Device;
 import com.github.devicehive.client.service.DeviceCommand;
 import com.github.devicehive.client.service.DeviceHive;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
-import java.util.LinkedList;
 import java.util.List;
-
-import timber.log.Timber;
+import java.util.concurrent.ExecutionException;
 
 public class BTLEDeviceHive {
 
     private DeviceHive deviceHive;
     private BTLEDevicePreferences prefs;
 
-    private List<RegistrationListener> registrationListeners = new LinkedList<>();
     private CommandListener commandListener;
-    private List<NotificationListener> notificationListeners = new LinkedList<>();
 
     public BTLEDeviceHive() {
         prefs = BTLEDevicePreferences.getInstance();
@@ -42,27 +42,6 @@ public class BTLEDeviceHive {
         return model.startsWith(manufacturer) ? model : manufacturer + " " + model;
     }
 
-    public void onBeforeRunCommand(DeviceCommand command) {
-        Timber.d("onBeforeRunCommand: " + command.getCommandName());
-    }
-
-    public SimpleCallableFuture<CommandResult> runCommand(DeviceCommand command) {
-        Timber.d("Executing command on test device: " + command.getCommandName());
-        return notifyListenersCommandReceived(command);
-    }
-
-    public boolean shouldRunCommandAsynchronously(DeviceCommand command) {
-        return true;
-    }
-
-    public void addDeviceListener(RegistrationListener listener) {
-        registrationListeners.add(listener);
-    }
-
-    public void removeDeviceListener(RegistrationListener listener) {
-        registrationListeners.remove(listener);
-    }
-
     public void setCommandListener(CommandListener listener) {
         this.commandListener = listener;
     }
@@ -71,72 +50,9 @@ public class BTLEDeviceHive {
         commandListener = null;
     }
 
-    protected void onStartRegistration() {
-        Timber.d("onStartRegistration");
-    }
-
-    protected void onFinishRegistration() {
-        Timber.d("onFinishRegistration");
-//        isRegistered = true;
-        notifyListenersDeviceRegistered();
-    }
-
-    protected void onFailRegistration() {
-        Timber.d("onFailRegistration");
-        notifyListenersDeviceFailedToRegister();
-    }
-
-    protected void onStartProcessingCommands() {
-        Timber.d("onStartProcessingCommands");
-    }
-
-    protected void onStopProcessingCommands() {
-        Timber.d("onStopProcessingCommands");
-    }
-
-    protected void onStartSendingNotification(DeviceNotification notification) {
-        Timber.d("onStartSendingNotification : " + notification.getNotification());
-    }
-
-    protected void onFinishSendingNotification(DeviceNotification notification) {
-        Timber.d("onFinishSendingNotification : " + notification.getNotification());
-        notifyListenersDeviceSentNotification(notification);
-    }
-
-    protected void onFailSendingNotification(DeviceNotification notification) {
-        Timber.d("onFailSendingNotification : " + notification.getNotification());
-        notifyListenersDeviceFailedToSendNotification(notification);
-    }
-
     private SimpleCallableFuture<CommandResult> notifyListenersCommandReceived(DeviceCommand command) {
         return commandListener.onDeviceReceivedCommand(command);
     }
-
-    private void notifyListenersDeviceRegistered() {
-        for (RegistrationListener listener : registrationListeners) {
-            listener.onDeviceRegistered();
-        }
-    }
-
-    private void notifyListenersDeviceFailedToRegister() {
-        for (RegistrationListener listener : registrationListeners) {
-            listener.onDeviceFailedToRegister();
-        }
-    }
-
-    private void notifyListenersDeviceSentNotification(DeviceNotification notification) {
-        for (NotificationListener listener : notificationListeners) {
-            listener.onDeviceSentNotification(notification);
-        }
-    }
-
-    private void notifyListenersDeviceFailedToSendNotification(
-            DeviceNotification notification) {
-        for (NotificationListener listener : notificationListeners) {
-            listener.onDeviceFailedToSendNotification(notification);
-        }
-    }
-
 
     public static BTLEDeviceHive newInstance() {
         BTLEDevicePreferences prefs = BTLEDevicePreferences.getInstance();
@@ -152,6 +68,43 @@ public class BTLEDeviceHive {
             prefs.setServerUrlSync(serverUrl);
         }
         return device;
+    }
+
+    public void registerDevice() {
+        Thread thread = new Thread(new Runnable(){
+            public void run() {
+                try {
+                    DHResponse<Device> devicehiveResponse = deviceHive.getDevice(prefs.getGatewayId());
+                    Device device = devicehiveResponse.getData();
+                    device.subscribeCommands(new CommandFilter(), new DeviceCommandsCallback() {
+                        public void onSuccess(List<DeviceCommand> commands) {
+                            for(DeviceCommand command: commands) {
+                                JsonParser parser = new JsonParser();
+                                SimpleCallableFuture<CommandResult> feature = notifyListenersCommandReceived(command);
+                                CommandResult res = null;
+                                try {
+                                    res = feature.get();  // block until get result
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                    command.setStatus("InterruptedException");
+                                } catch (ExecutionException e) {
+                                    e.printStackTrace();
+                                    command.setStatus("ExecutionException");
+                                }
+                                command.setResult(parser.parse(res.getResult().toString()).getAsJsonObject());
+                                command.setStatus(res.getStatus());
+                                command.updateCommand();
+                            }
+                        }
+                        public void onFail(FailureData failureData) {
+                        }
+                });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        thread.start();
     }
 
 }

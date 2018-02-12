@@ -14,8 +14,8 @@ import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.widget.Toast;
 
-import com.dataart.android.devicehive.device.CommandResult;
-import com.dataart.android.devicehive.device.future.SimpleCallableFuture;
+import com.dataart.btle_android.devicehive.btledh.CommandResult;
+import com.dataart.btle_android.devicehive.btledh.SimpleCallableFuture;
 import com.dataart.btle_android.MainActivity;
 import com.dataart.btle_android.R;
 import com.dataart.btle_android.btle_gateway.server.BluetoothServer;
@@ -87,11 +87,7 @@ public class BluetoothLeService extends Service {
 
         mDeviceHive.setCommandListener(commandListener);
 
-        //TODO Get Device and start processing commands
-//        if (!mDeviceHive.isRegistered()) {
-//            mDeviceHive.registerDevice();
-//        }
-//        mDeviceHive.startProcessingCommands();
+        mDeviceHive.registerDevice();
 
         setNotification();
         return START_NOT_STICKY;

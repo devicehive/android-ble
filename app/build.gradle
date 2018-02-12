@@ -26,7 +26,7 @@ android {
     useLibrary 'org.apache.http.legacy'
 }
 ext {
-    devicehive = "3.0.11"
+    devicehive = "3.1.2"
     commons = "1.11"
     rxandroid = "2.0.1"
     rxjava = "2.1.7"

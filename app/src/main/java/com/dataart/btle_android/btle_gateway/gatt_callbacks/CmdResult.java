@@ -2,7 +2,7 @@ package com.dataart.btle_android.btle_gateway.gatt_callbacks;
 
 import android.content.Context;
 
-import com.dataart.android.devicehive.device.CommandResult;
+import com.dataart.btle_android.devicehive.btledh.CommandResult;
 import com.dataart.btle_android.BTLEApplication;
 import com.dataart.btle_android.R;
 import com.google.gson.Gson;
@@ -46,11 +46,11 @@ public class CmdResult {
     }
 
     public static CommandResult success() {
-        return new CommandResult(CommandResult.STATUS_COMLETED, jsonStatusOk());
+        return new CommandResult(CommandResult.STATUS_COMPLETED, jsonStatusOk());
     }
 
     public static CommandResult successWithObject(Object object) {
-        return new CommandResult(CommandResult.STATUS_COMLETED, jsonStatusWithObject(object));
+        return new CommandResult(CommandResult.STATUS_COMPLETED, jsonStatusWithObject(object));
     }
 
     public static CommandResult failWithStatus(String status) {
@@ -97,15 +97,15 @@ public class CmdResult {
     }
 
     protected CommandResult sucessFull() {
-        return new CommandResult(CommandResult.STATUS_COMLETED, jsonFullStatus(R.string.status_json_success));
+        return new CommandResult(CommandResult.STATUS_COMPLETED, jsonFullStatus(R.string.status_json_success));
     }
 
     protected CommandResult successFullWithVal(String val) {
-        return new CommandResult(CommandResult.STATUS_COMLETED, jsonFullStatusWithVal(R.string.status_json_success, val));
+        return new CommandResult(CommandResult.STATUS_COMPLETED, jsonFullStatusWithVal(R.string.status_json_success, val));
     }
 
     public CommandResult successFullWithStatus(String status) {
-        return new CommandResult(CommandResult.STATUS_COMLETED, jsonFullStatus(status));
+        return new CommandResult(CommandResult.STATUS_COMPLETED, jsonFullStatus(status));
     }
 
     protected CommandResult cmdResFullFail() {

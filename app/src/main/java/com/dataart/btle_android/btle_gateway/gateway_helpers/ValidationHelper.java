@@ -2,7 +2,7 @@ package com.dataart.btle_android.btle_gateway.gateway_helpers;
 
 import android.content.Context;
 
-import com.dataart.android.devicehive.device.future.CmdResFuture;
+import com.dataart.btle_android.devicehive.btledh.CmdResFuture;
 import com.dataart.btle_android.R;
 import com.dataart.btle_android.btle_gateway.gatt_callbacks.CmdResult;
 import com.google.common.base.Optional;

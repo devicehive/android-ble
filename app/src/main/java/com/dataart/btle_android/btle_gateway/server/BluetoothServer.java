@@ -12,9 +12,9 @@ import android.os.Handler;
 import android.os.ParcelUuid;
 import android.text.TextUtils;
 
-import com.dataart.android.devicehive.device.CommandResult;
-import com.dataart.android.devicehive.device.future.CmdResFuture;
-import com.dataart.android.devicehive.device.future.SimpleCallableFuture;
+import com.dataart.btle_android.devicehive.btledh.CommandResult;
+import com.dataart.btle_android.devicehive.btledh.CmdResFuture;
+import com.dataart.btle_android.devicehive.btledh.SimpleCallableFuture;
 import com.dataart.btle_android.R;
 import com.dataart.btle_android.btle_gateway.model.BTLECharacteristic;
 import com.dataart.btle_android.btle_gateway.model.BTLEDevice;

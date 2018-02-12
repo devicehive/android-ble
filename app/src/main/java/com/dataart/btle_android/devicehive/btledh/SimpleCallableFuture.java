@@ -1,4 +1,4 @@
-package com.dataart.android.devicehive.device.future;
+package com.dataart.btle_android.devicehive.btledh;
 
 /**
  * Created by Constantine Mars on 4/1/15.

@@ -22,17 +22,16 @@ import android.widget.TextView;
 
 import com.dataart.btle_android.btle_gateway.BluetoothLeService;
 import com.dataart.btle_android.devicehive.BTLEDevicePreferences;
-import com.dataart.btle_android.devicehive.btledh.NotificationListener;
 import com.dataart.btle_android.helpers.BleHelpersFactory;
 import com.dataart.btle_android.helpers.ble.base.BleInitializer;
-import com.github.devicehive.client.model.DeviceNotification;
 
 import java.util.Objects;
+import java.util.UUID;
 
 import timber.log.Timber;
 
 
-public class MainActivity extends AppCompatActivity implements NotificationListener {
+public class MainActivity extends AppCompatActivity {
 
     private BleInitializer bleInitializer;
 
@@ -252,7 +251,8 @@ public class MainActivity extends AppCompatActivity implements NotificationListe
         String gatewayId = prefs.getGatewayId();
         gatewayIdEditText.setText(
                 TextUtils.isEmpty(gatewayId)
-                        ? getString(R.string.default_gateway_id)
+                        ? getString(R.string.default_gateway_id) + "-" +
+                            UUID.randomUUID().toString().substring(0, 4)
                         : gatewayId
         );
 
@@ -301,16 +301,6 @@ public class MainActivity extends AppCompatActivity implements NotificationListe
         prefs.setRefreshTokenSync(refreshToken);
         prefs.setServerUrlSync(serverUrl);
         prefs.setGatewayIdSync(gatewayId);
-
-    }
-
-    @Override
-    public void onDeviceSentNotification(DeviceNotification notification) {
-
-    }
-
-    @Override
-    public void onDeviceFailedToSendNotification(DeviceNotification notification) {
 
     }
 
