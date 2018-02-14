@@ -2,10 +2,7 @@ package com.dataart.btle_android.btle_gateway.gateway_helpers;
 
 import android.content.Context;
 
-import com.dataart.btle_android.devicehive.btledh.CmdResFuture;
 import com.dataart.btle_android.R;
-import com.dataart.btle_android.btle_gateway.gatt_callbacks.CmdResult;
-import com.google.common.base.Optional;
 
 /**
  * Created by Constantine Mars on 6/14/16.
@@ -23,53 +20,70 @@ public class ValidationHelper {
         this.context = context;
     }
 
-    public Optional<CmdResFuture> validateAddress(final String command, final String address) {
+    public String validateAddress(final String command, final String address) {
         return validate(command, R.string.cmd_requires_address, address, ADDRESS_REGEX);
     }
 
-    public Optional<CmdResFuture> validateServiceUUID(final String command, final String serviceUUID) {
+    public String validateServiceUUID(final String command, final String serviceUUID) {
         return validate(command, R.string.cmd_requires_service_uuid, serviceUUID, SERVICE_CHARACTERISTIC_UUID_REGEX);
     }
 
-    public Optional<CmdResFuture> validateCharacteristicUUID(final String command, final String serviceUUID) {
+    public String validateCharacteristicUUID(final String command, final String serviceUUID) {
         return validate(command, R.string.cmd_requires_characteristic_uuid, serviceUUID, SERVICE_CHARACTERISTIC_UUID_REGEX);
     }
 
-    public Optional<CmdResFuture> validateValue(final String command, final String value) {
+    public String validateValue(final String command, final String value) {
         return validate(command, R.string.cmd_requires_value, value, VALUE_REGEX);
     }
 
-    public Optional<CmdResFuture> validate(final String command, int messageResId, final String value, final String regex) {
+    public String validate(final String command, int messageResId, final String value, final String regex) {
         if (value == null || !value.matches(regex)) {
-            return Optional.of(new CmdResFuture(
-                    CmdResult.failWithStatus(context.getString(messageResId, command))
-            ));
+            return context.getString(messageResId, command);
         }
 
-        return Optional.absent();
+        return null;
     }
 
-    public Optional<CmdResFuture> validateCharacteristics(final String command, final String address, final String serviceUUID) {
-        return validateAddress(command, address)
-                .or(validateServiceUUID(command, serviceUUID));
+    public String validateCharacteristics(final String command, final String address, final String serviceUUID) {
+        String v;
+        if ((v = validateAddress(command, address)) != null)
+            return v;
+        else if ((v = validateServiceUUID(command, serviceUUID)) != null)
+            return v;
+        return null;
     }
 
-    public Optional<CmdResFuture> validateNotifications(final String command, final String address, final String serviceUUID) {
-        return validateAddress(command, address)
-                .or(validateServiceUUID(command, serviceUUID));
+    public String validateNotifications(final String command, final String address, final String serviceUUID) {
+        String v;
+        if ((v = validateAddress(command, address)) != null)
+            return v;
+        else if ((v = validateServiceUUID(command, serviceUUID)) != null)
+            return v;
+        return null;
     }
 
-    public Optional<CmdResFuture> validateRead(final String command, final String address, final String serviceUUID, final String characteristicUUID) {
-        return validateAddress(command, address)
-                .or(validateServiceUUID(command, serviceUUID))
-                .or(validateCharacteristicUUID(command, characteristicUUID));
+    public String validateRead(final String command, final String address, final String serviceUUID, final String characteristicUUID) {
+        String v;
+        if((v = validateAddress(command, address)) != null)
+            return v;
+        else if ((v = validateServiceUUID(command, serviceUUID)) != null)
+            return v;
+        else if ((v = validateCharacteristicUUID(command, characteristicUUID)) != null)
+            return v;
+        return null;
     }
 
 
-    public Optional<CmdResFuture> validateWrite(String command, String address, String serviceUUID, String characteristicUUID, String value) {
-        return validateAddress(command, address)
-                .or(validateServiceUUID(command, serviceUUID))
-                .or(validateCharacteristicUUID(command, characteristicUUID))
-                .or(validateValue(command, value));
+    public String validateWrite(String command, String address, String serviceUUID, String characteristicUUID, String value) {
+        String v;
+        if ((v = validateAddress(command, address)) != null)
+            return v;
+        else if ((v = validateServiceUUID(command, serviceUUID)) != null)
+            return v;
+        else if ((v = validateCharacteristicUUID(command, characteristicUUID)) != null)
+            return v;
+        else if ((v = validateValue(command, value)) != null)
+            return v;
+        return null;
     }
 }

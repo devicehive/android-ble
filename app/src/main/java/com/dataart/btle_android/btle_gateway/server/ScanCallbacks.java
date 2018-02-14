@@ -48,13 +48,22 @@ class ScanCallbacks {
         scanner = BleHelpersFactory.getScanner(localCallback, server.getBluetoothAdapter());
         scanner.startScan();
 
-        final Handler handler = new Handler();
-        handler.postDelayed(() -> {
-//              "Never startScan on a loop, and set a time limit on your startScan. " - https://developer.android.com/guide/topics/connectivity/bluetooth-le.html#find
-            Timber.d("on timeout");
-            stop();
-            operation.fail(BTLEApplication.getApplication().getString(R.string.status_notfound_timeout));
-        }, BluetoothServer.COMMAND_SCAN_DELAY);
+        ScanCallbacks sc = this;
+
+        new Thread() {
+            @Override
+            public void run() {
+                try {
+                    sleep(BluetoothServer.COMMAND_SCAN_DELAY);
+                    //              "Never startScan on a loop, and set a time limit on your startScan. " - https://developer.android.com/guide/topics/connectivity/bluetooth-le.html#find
+                    Timber.d("on timeout");
+                    sc.stop();
+                    operation.fail(BTLEApplication.getApplication().getString(R.string.status_notfound_timeout));
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }.start();
     }
 
     public void stop() {

@@ -11,11 +11,8 @@ import com.github.devicehive.client.model.FailureData;
 import com.github.devicehive.client.service.Device;
 import com.github.devicehive.client.service.DeviceCommand;
 import com.github.devicehive.client.service.DeviceHive;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 public class BTLEDeviceHive {
 
@@ -50,8 +47,8 @@ public class BTLEDeviceHive {
         commandListener = null;
     }
 
-    private SimpleCallableFuture<CommandResult> notifyListenersCommandReceived(DeviceCommand command) {
-        return commandListener.onDeviceReceivedCommand(command);
+    private void notifyListenersCommandReceived(DeviceCommand command) {
+        commandListener.onDeviceReceivedCommand(command);
     }
 
     public static BTLEDeviceHive newInstance() {
@@ -79,21 +76,7 @@ public class BTLEDeviceHive {
                     device.subscribeCommands(new CommandFilter(), new DeviceCommandsCallback() {
                         public void onSuccess(List<DeviceCommand> commands) {
                             for(DeviceCommand command: commands) {
-                                JsonParser parser = new JsonParser();
-                                SimpleCallableFuture<CommandResult> feature = notifyListenersCommandReceived(command);
-                                CommandResult res = null;
-                                try {
-                                    res = feature.get();  // block until get result
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                    command.setStatus("InterruptedException");
-                                } catch (ExecutionException e) {
-                                    e.printStackTrace();
-                                    command.setStatus("ExecutionException");
-                                }
-                                command.setResult(parser.parse(res.getResult().toString()).getAsJsonObject());
-                                command.setStatus(res.getStatus());
-                                command.updateCommand();
+                                notifyListenersCommandReceived(command);
                             }
                         }
                         public void onFail(FailureData failureData) {

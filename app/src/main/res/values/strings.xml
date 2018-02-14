@@ -63,6 +63,10 @@
     <string name="value">value: %1$s</string>
     <string name="status">status: %1$d</string>
     <string name="unknown_command">unknown command</string>
+    <string name="failed">Failed</string>
+    <string name="completed">Completed</string>
+    <string name="reason">reason</string>
+    <string name="result">result</string>
     <string name="status_service_uuid_nf">service uuid not found</string>
     <string name="status_char_uuid_nf">characteristic uuid not found</string>
     <string name="fail_address">invalid args. device address required</string>

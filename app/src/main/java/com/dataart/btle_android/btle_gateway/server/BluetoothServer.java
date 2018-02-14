@@ -12,16 +12,12 @@ import android.os.Handler;
 import android.os.ParcelUuid;
 import android.text.TextUtils;
 
-import com.dataart.btle_android.devicehive.btledh.CommandResult;
-import com.dataart.btle_android.devicehive.btledh.CmdResFuture;
-import com.dataart.btle_android.devicehive.btledh.SimpleCallableFuture;
 import com.dataart.btle_android.R;
+import com.dataart.btle_android.btle_gateway.GattCharacteristicCallBack;
+import com.dataart.btle_android.btle_gateway.gatt_callbacks.InteractiveGattCallback;
 import com.dataart.btle_android.btle_gateway.model.BTLECharacteristic;
 import com.dataart.btle_android.btle_gateway.model.BTLEDevice;
-import com.dataart.btle_android.btle_gateway.GattCharacteristicCallBack;
-import com.dataart.btle_android.btle_gateway.gatt_callbacks.CmdResult;
 import com.dataart.btle_android.btle_gateway.model.DeviceConnection;
-import com.dataart.btle_android.btle_gateway.gatt_callbacks.InteractiveGattCallback;
 import com.dataart.btle_android.helpers.BleHelpersFactory;
 import com.dataart.btle_android.helpers.ble.base.BleScanner;
 
@@ -110,15 +106,21 @@ public class BluetoothServer extends BluetoothGattCallback {
 
         scanner.startScan();
 
-        final Handler handler = new Handler();
-        handler.postDelayed(() -> {
+        new Thread() {
+            @Override
+            public void run() {
+                try {
+                    sleep(BluetoothServer.COMMAND_SCAN_DELAY);
+                    //  https://developer.android.com/guide/topics/connectivity/bluetooth-le.html#find
+                    //  "Never startScan on a loop, and set a time limit on your startScan. "
+                    scanner.stopScan();
+                    Timber.d("BLE startScan stopped on timeout " + BluetoothServer.COMMAND_SCAN_DELAY / 1000 + " sec");
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }.start();
 
-            //  https://developer.android.com/guide/topics/connectivity/bluetooth-le.html#find
-            //  "Never startScan on a loop, and set a time limit on your startScan. "
-            scanner.stopScan();
-            Timber.d("BLE startScan stopped on timeout " + BluetoothServer.COMMAND_SCAN_DELAY / 1000 + " sec");
-
-        }, BluetoothServer.COMMAND_SCAN_DELAY);
     }
 
     private BleScanner getScanner() {
@@ -235,55 +237,53 @@ public class BluetoothServer extends BluetoothGattCallback {
         return connectAndSave(address, device, null, null, connectedListener);
     }
 
-    DeviceConnection connectAndSave(String address, BluetoothDevice device, InteractiveGattCallback.DisconnectListener disconnectListener, SimpleCallableFuture<CommandResult> future) {
-        return connectAndSave(address, device, disconnectListener, future, null);
+    DeviceConnection connectAndSave(String address, BluetoothDevice device, InteractiveGattCallback.DisconnectListener disconnectListener, InteractiveGattCallback.StatusListener statusListener) {
+        return connectAndSave(address, device, disconnectListener, statusListener, null);
     }
 
-    private DeviceConnection connectAndSave(String address, BluetoothDevice device, InteractiveGattCallback.DisconnectListener disconnectListener, SimpleCallableFuture<CommandResult> future, InteractiveGattCallback.OnConnectedListener connectedListener) {
-        final InteractiveGattCallback callback = new InteractiveGattCallback(address, future, context, disconnectListener, connectedListener);
+    private DeviceConnection connectAndSave(String address, BluetoothDevice device, InteractiveGattCallback.DisconnectListener disconnectListener, InteractiveGattCallback.StatusListener statusListener, InteractiveGattCallback.OnConnectedListener connectedListener) {
+        final InteractiveGattCallback callback = new InteractiveGattCallback(address, statusListener, context, disconnectListener, connectedListener);
         BluetoothGatt gatt = device.connectGatt(context, false, callback);
         DeviceConnection connection = new DeviceConnection(address, gatt, callback);
         activeConnections.put(address, connection);
         return connection;
     }
 
-    public SimpleCallableFuture<CommandResult> gattConnect(final String address, final InteractiveGattCallback.DisconnectListener disconnectListener) {
-        final SimpleCallableFuture<CommandResult> future = new SimpleCallableFuture<>();
-
+    public void gattConnect(final String address, final InteractiveGattCallback.DisconnectListener disconnectListener, final InteractiveGattCallback.StatusListener statusListener) {
         applyForDevice(address, new DeviceOperation() {
             @Override
             public void call(BluetoothDevice device) {
                 Timber.d("connecting to " + address);
 
 //              We can store mutliple connections - and each should have it's own callback
-                final InteractiveGattCallback callback = connectAndSave(address, device, disconnectListener, future).getCallback();
+                final InteractiveGattCallback callback = connectAndSave(address, device, disconnectListener, statusListener).getCallback();
 
 //              Send connection failed result after timeout
-                final Handler handler = new Handler();
-                handler.postDelayed(new Runnable() {
+                new Thread() {
                     @Override
                     public void run() {
-                        if (!callback.isConnectionStateChanged()) {
-                            future.call(CmdResult.failTimeoutReached());
+                        try {
+                            sleep(BluetoothServer.COMMAND_SCAN_DELAY);
+                            if (!callback.isConnectionStateChanged()) {
+                                statusListener.onStatus(false, context.getString(R.string.status_timeout));
+                            }
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
                         }
                     }
-                }, BluetoothServer.COMMAND_SCAN_DELAY);
+                }.start();
 
                 Timber.d("connection added. connections now: " + activeConnections.size());
             }
 
             @Override
             public void fail(String message) {
-                future.call(CmdResult.failWithStatus(message));
+                statusListener.onStatus(false, message);
             }
         });
-
-        return future;
     }
 
-    public SimpleCallableFuture<CommandResult> gattDisconnect(final String address) {
-        final SimpleCallableFuture<CommandResult> future = new SimpleCallableFuture<>();
-
+    public void gattDisconnect(final String address, final InteractiveGattCallback.StatusListener statusListener) {
         applyForConnection(address, new ConnectionOperation() {
             @Override
             public void call(DeviceConnection connection) {
@@ -291,19 +291,17 @@ public class BluetoothServer extends BluetoothGattCallback {
                 connection.getGatt().disconnect();
                 activeConnections.remove(address);
                 Timber.d("disconnected. connections left: " + activeConnections.size());
-                future.call(CmdResult.success());
+                statusListener.onStatus(true, "");
             }
 
             @Override
             public void fail(String message) {
-                future.call(CmdResult.failWithStatus(message));
+                statusListener.onStatus(false, message);
             }
         });
-
-        return future;
     }
 
-    public void gattCharacteristics(final String address, final GattCharacteristicCallBack gattCharacteristicCallBack, final CmdResFuture future) {
+    public void gattCharacteristics(final String address, final GattCharacteristicCallBack gattCharacteristicCallBack, final InteractiveGattCallback.StatusListener statusListener) {
         final ArrayList<BTLECharacteristic> allCharacteristics = new ArrayList<>();
 
         applyForConnectionOrScan(address, new ConnectionOperation() {
@@ -331,12 +329,12 @@ public class BluetoothServer extends BluetoothGattCallback {
             @Override
             public void fail(String message) {
                 Timber.d("fail");
-                future.call(CmdResult.failWithStatus(message));
+                statusListener.onStatus(false, message);
             }
         });
     }
 
-    public void gattPrimary(final String address, final GattCharacteristicCallBack gattCharacteristicCallBack, final CmdResFuture future) {
+    public void gattPrimary(final String address, final GattCharacteristicCallBack gattCharacteristicCallBack, final InteractiveGattCallback.StatusListener statusListener) {
         final List<ParcelUuid> parcelUuidList = new ArrayList<>();
 
         applyForConnectionOrScan(address, new ConnectionOperation() {
@@ -358,55 +356,48 @@ public class BluetoothServer extends BluetoothGattCallback {
 
             @Override
             public void fail(String message) {
-                future.call(CmdResult.failWithStatus(message));
+                statusListener.onStatus(false, message);
 
                 Timber.d("fail");
             }
         });
     }
 
-    public SimpleCallableFuture<CommandResult> gattRead(final String address, final String serviceUUID, final String characteristicUUID,
-                                                        final GattCharacteristicCallBack gattCharacteristicCallBack) {
-        final SimpleCallableFuture<CommandResult> future = new SimpleCallableFuture<>();
-
+    public void gattRead(final String address, final String serviceUUID, final String characteristicUUID,
+                                                        final GattCharacteristicCallBack gattCharacteristicCallBack,
+                                                        final InteractiveGattCallback.StatusListener statusListener) {
         applyForConnectionOrScan(address, new ConnectionOperation() {
             @Override
             public void call(DeviceConnection connection) {
-                connection.getCallback().readCharacteristic(serviceUUID, characteristicUUID, gattCharacteristicCallBack, future);
+                connection.getCallback().readCharacteristic(serviceUUID, characteristicUUID, gattCharacteristicCallBack, statusListener);
             }
 
             @Override
             public void fail(String message) {
-                future.call(CmdResult.failWithStatus(message));
+                statusListener.onStatus(false, message);
             }
         });
-
-        return future;
     }
 
-    public SimpleCallableFuture<CommandResult> gattWrite(final String address, final String serviceUUID, final String characteristicUUID,
-                                                         final byte[] value, final GattCharacteristicCallBack gattCharacteristicCallBack) {
-        final SimpleCallableFuture<CommandResult> future = new SimpleCallableFuture<>();
-
+    public void gattWrite(final String address, final String serviceUUID, final String characteristicUUID,
+                                                         final byte[] value, final GattCharacteristicCallBack gattCharacteristicCallBack,
+                                                         final InteractiveGattCallback.StatusListener statusListener) {
         applyForConnectionOrScan(address, new ConnectionOperation() {
             @Override
             public void call(DeviceConnection connection) {
-                connection.getCallback().writeCharacteristic(serviceUUID, characteristicUUID, gattCharacteristicCallBack, value, future);
+                connection.getCallback().writeCharacteristic(serviceUUID, characteristicUUID, gattCharacteristicCallBack, value, statusListener);
             }
 
             @Override
             public void fail(String message) {
-                future.call(CmdResult.failWithStatus(message));
+                statusListener.onStatus(false, message);
             }
         });
-
-        return future;
     }
 
-    public SimpleCallableFuture<CommandResult> gattNotifications(final Context context, final String address, final String serviceUUID, final String characteristicUUID,
-                                                                 final boolean isOn, final GattCharacteristicCallBack gattCharachteristicCallBack) {
-
-        final SimpleCallableFuture<CommandResult> future = new SimpleCallableFuture<>();
+    public void gattNotifications(final Context context, final String address, final String serviceUUID, final String characteristicUUID,
+                                                                 final boolean isOn, final GattCharacteristicCallBack gattCharachteristicCallBack,
+                                                                 final InteractiveGattCallback.StatusListener statusListener) {
         applyForConnection(address, new ConnectionOperation() {
             @Override
             public void call(DeviceConnection connection) {
@@ -419,7 +410,7 @@ public class BluetoothServer extends BluetoothGattCallback {
                     cUUID = connection.getCallback().getFullCharacteristicUuid(cUUID);
                 }
 
-                connection.getCallback().setNotificaitonSubscription(new InteractiveGattCallback.NotificaitonSubscription(sUUID, cUUID, address, context, isOn, future) {
+                connection.getCallback().setNotificationSubscription(new InteractiveGattCallback.NotificationSubscription(sUUID, cUUID, address, context, isOn, statusListener) {
                     @Override
                     public void onNotification(byte[] value) {
                         Timber.d("onNotification: 0x" + String.valueOf(Hex.encodeHex(value)));
@@ -433,7 +424,5 @@ public class BluetoothServer extends BluetoothGattCallback {
                 Timber.d(message);
             }
         }, true);
-
-        return future;
     }
 }

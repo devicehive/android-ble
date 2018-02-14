@@ -14,14 +14,12 @@ import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.widget.Toast;
 
-import com.dataart.btle_android.devicehive.btledh.CommandResult;
-import com.dataart.btle_android.devicehive.btledh.SimpleCallableFuture;
 import com.dataart.btle_android.MainActivity;
 import com.dataart.btle_android.R;
 import com.dataart.btle_android.btle_gateway.server.BluetoothServer;
+import com.dataart.btle_android.devicehive.BTLEDevicePreferences;
 import com.dataart.btle_android.devicehive.btledh.BTLEDeviceHive;
 import com.dataart.btle_android.devicehive.btledh.CommandListener;
-import com.dataart.btle_android.devicehive.BTLEDevicePreferences;
 import com.github.devicehive.client.service.DeviceCommand;
 
 import timber.log.Timber;
@@ -113,9 +111,9 @@ public class BluetoothLeService extends Service {
 
     private final CommandListener commandListener = new CommandListener() {
         @Override
-        public SimpleCallableFuture<CommandResult> onDeviceReceivedCommand(DeviceCommand command) {
+        public void onDeviceReceivedCommand(DeviceCommand command) {
             Timber.d("Device received Command in BluetoothLeService");
-            return mGateway.doCommand(getApplicationContext(), mDeviceHive, command);
+            mGateway.doCommand(getApplicationContext(), command);
         }
     };
 
