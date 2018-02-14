@@ -58,8 +58,9 @@ public class BTLEGateway {
     }
 
     private void successWithObject(final Context context, DeviceCommand command, Object object) {
-        JsonElement element = new Gson().toJsonTree(object);
-        command.setResult(element.getAsJsonObject());
+        JsonObject result = new JsonObject();
+        result.add(context.getString(R.string.result), new Gson().toJsonTree(object));
+        command.setResult(result);
         command.setStatus(context.getString(R.string.failed));
         command.updateCommand();
     }
