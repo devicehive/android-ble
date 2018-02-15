@@ -1,7 +1,6 @@
 package com.dataart.btle_android.btle_gateway;
 
 import android.content.Context;
-import android.os.Handler;
 import android.os.ParcelUuid;
 
 import com.dataart.btle_android.R;
@@ -12,6 +11,7 @@ import com.dataart.btle_android.btle_gateway.model.BTLEDevice;
 import com.dataart.btle_android.btle_gateway.server.BluetoothServer;
 import com.github.devicehive.client.service.DeviceCommand;
 import com.github.devicehive.client.service.Device;
+import com.github.devicehive.client.model.Parameter;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
@@ -112,8 +112,8 @@ public class BTLEGateway {
 
                     Timber.d("Connecting to " + address);
                     bluetoothServerGateway.gattConnect(address, () -> {
-                        final String json = new Gson().toJson(String.format(context.getString(R.string.is_disconnected), address));
-                        sendNotification(leCommand, json);
+                        final String data = String.format(context.getString(R.string.is_disconnected), address);
+                        sendNotification(context, leCommand, data);
                     }, (boolean ok, String reason) -> {
                         commandStatusResult(context, command, ok, reason);
                     });
@@ -207,8 +207,7 @@ public class BTLEGateway {
                         @Override
                         public void onRead(byte[] value) {
                             final String sValue = HexHelper.printHexBinary(value);
-                            final String json = new Gson().toJson(sValue);
-                            sendNotification(leCommand, json);
+                            sendNotification(context, leCommand, sValue);
                         }
                     }, (boolean ok, String reason) -> {
                         commandStatusResult(context, command, ok, reason);
@@ -227,8 +226,7 @@ public class BTLEGateway {
                         @Override
                         public void onRead(byte[] value) {
                             final String sValue = HexHelper.printHexBinary(value);
-                            final String json = new Gson().toJson(sValue);
-                            sendNotification(leCommand, json);
+                            sendNotification(context, leCommand, sValue);
                         }
                     }, (boolean ok, String reason) -> {
                         commandStatusResult(context, command, ok, reason);
@@ -266,13 +264,12 @@ public class BTLEGateway {
         }.start();
     }
 
-    private void sendNotification(final LeCommand leCommand, final String json) {
-        Timber.d(json);
+    private void sendNotification(Context context, final LeCommand leCommand, final String data) {
+        Timber.d("Notification: " + data);
         if (dhDevice != null) {
-            //dhDevice.sendNotification(leCommand.getCommand(), json);
-            // TODO !!!!!!
-//        final Notification notification = new Notification(leCommand.getCommand(), json);
-//        dh.sendNotification(notification);
+            ArrayList<Parameter> parameters = new ArrayList<>();
+            parameters.add(new Parameter(context.getString(R.string.data), data));
+            dhDevice.sendNotification(leCommand.getCommand(), parameters);
         }
     }
 
