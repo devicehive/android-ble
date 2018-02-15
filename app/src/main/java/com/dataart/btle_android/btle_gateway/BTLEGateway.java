@@ -61,7 +61,7 @@ public class BTLEGateway {
         JsonObject result = new JsonObject();
         result.add(context.getString(R.string.result), new Gson().toJsonTree(object));
         command.setResult(result);
-        command.setStatus(context.getString(R.string.failed));
+        command.setStatus(context.getString(R.string.completed));
         command.updateCommand();
     }
 
