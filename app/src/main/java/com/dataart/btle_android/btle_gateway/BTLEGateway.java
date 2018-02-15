@@ -52,10 +52,10 @@ public class BTLEGateway {
         } else {
             command.setStatus(context.getString(R.string.failed));
         }
-        if (description!=null) {
+        if (description != null) {
             if (!description.isEmpty()) {
                 JsonObject result = new JsonObject();
-                result.addProperty(context.getString(R.string.reason), description);
+                result.addProperty(context.getString(ok ? R.string.result : R.string.reason), description);
                 command.setResult(result);
             }
         }
