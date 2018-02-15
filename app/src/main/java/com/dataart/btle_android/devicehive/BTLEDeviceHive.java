@@ -30,14 +30,7 @@ public class BTLEDeviceHive {
 
     public BTLEDeviceHive() {
         prefs = BTLEDevicePreferences.getInstance();
-        deviceHive = DeviceHive.getInstance().init(prefs.getServerUrl(), prefs.getRefreshToken());
-    }
-
-    public DeviceHive getDeviceHive() {
-        if (deviceHive == null) {
-            deviceHive.init(prefs.getServerUrl(), prefs.getRefreshToken());
-        }
-        return this.deviceHive;
+        deviceHive = null;
     }
 
     public static String getDeviceName() {
@@ -71,8 +64,6 @@ public class BTLEDeviceHive {
 
         BTLEDeviceHive device = new BTLEDeviceHive();
 
-        device.getDeviceHive().enableDebug(true);
-
         String serverUrl = prefs.getServerUrl();
 
         if (serverUrl == null) {
@@ -86,6 +77,8 @@ public class BTLEDeviceHive {
         Thread thread = new Thread() {
             public void run() {
                 try {
+                    deviceHive = DeviceHive.getInstance().init(prefs.getServerUrl(), prefs.getRefreshToken());
+//                    deviceHive.enableDebug(true);
                     DHResponse<Device> devicehiveResponse = deviceHive.getDevice(prefs.getGatewayId());
                     Device device = devicehiveResponse.getData();
 //                    if(device.getName() != getDeviceName()) {
@@ -108,6 +101,22 @@ public class BTLEDeviceHive {
             }
         };
         thread.start();
+    }
+
+    public void disconnect() {
+        Thread thread = new Thread() {
+            public void run() {
+                deviceListener.onDeviceReceived(null);
+                deviceHive.unsubscribeAllCommands();
+                deviceHive = null;
+            }
+        };
+        thread.start();
+        try {
+            thread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
 }

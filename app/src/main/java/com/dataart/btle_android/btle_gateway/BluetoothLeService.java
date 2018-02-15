@@ -97,11 +97,8 @@ public class BluetoothLeService extends Service {
         Timber.d("Service.onDestroy");
         mDeviceHive.removeCommandListener();
 
-        //TODO Stop processing commands on the device
-//        mDeviceHive.stopProcessingCommands();
+        mDeviceHive.disconnect();
 
-        //TODO WHAT IS THAT?
-//        stopService(new Intent(this, DeviceHiveApiService.class));
         if (mReceiver != null) {
             unregisterReceiver(mReceiver);
         }

@@ -268,10 +268,12 @@ public class BTLEGateway {
 
     private void sendNotification(final LeCommand leCommand, final String json) {
         Timber.d(json);
-        //dhDevice.sendNotification(leCommand.getCommand(), json);
-        // TODO !!!!!!
+        if (dhDevice != null) {
+            //dhDevice.sendNotification(leCommand.getCommand(), json);
+            // TODO !!!!!!
 //        final Notification notification = new Notification(leCommand.getCommand(), json);
 //        dh.sendNotification(notification);
+        }
     }
 
     private void sendStopResult(Context context, DeviceCommand command) {
