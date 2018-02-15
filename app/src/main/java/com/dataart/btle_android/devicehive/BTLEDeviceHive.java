@@ -16,10 +16,19 @@ import java.util.List;
 
 public class BTLEDeviceHive {
 
+    public interface CommandListener {
+        void onDeviceReceivedCommand(DeviceCommand command);
+    }
+
+    public interface DeviceListener {
+        void onDeviceReceived(Device device);
+    }
+
     private DeviceHive deviceHive;
     private BTLEDevicePreferences prefs;
 
     private CommandListener commandListener;
+    private DeviceListener deviceListener;
 
     public BTLEDeviceHive() {
         prefs = BTLEDevicePreferences.getInstance();
@@ -47,6 +56,14 @@ public class BTLEDeviceHive {
         commandListener = null;
     }
 
+    public void setDeviceListener(DeviceListener listener) {
+        this.deviceListener = listener;
+    }
+
+    public void removeDeviceListener() {
+        deviceListener = null;
+    }
+
     private void notifyListenersCommandReceived(DeviceCommand command) {
         commandListener.onDeviceReceivedCommand(command);
     }
@@ -68,11 +85,16 @@ public class BTLEDeviceHive {
     }
 
     public void registerDevice() {
-        Thread thread = new Thread(new Runnable(){
+        Thread thread = new Thread() {
             public void run() {
                 try {
                     DHResponse<Device> devicehiveResponse = deviceHive.getDevice(prefs.getGatewayId());
                     Device device = devicehiveResponse.getData();
+//                    if(device.getName() != getDeviceName()) {
+//                        device.setName(getDeviceName());
+//                        device.save();
+//                    }
+                    deviceListener.onDeviceReceived(device);
                     device.subscribeCommands(new CommandFilter(), new DeviceCommandsCallback() {
                         public void onSuccess(List<DeviceCommand> commands) {
                             for(DeviceCommand command: commands) {
@@ -81,12 +103,12 @@ public class BTLEDeviceHive {
                         }
                         public void onFail(FailureData failureData) {
                         }
-                });
+                    });
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
-        });
+        };
         thread.start();
     }
 
