@@ -11,8 +11,8 @@ import com.dataart.btle_android.btle_gateway.model.BTLECharacteristic;
 import com.dataart.btle_android.btle_gateway.model.BTLEDevice;
 import com.dataart.btle_android.btle_gateway.server.BluetoothServer;
 import com.github.devicehive.client.service.DeviceCommand;
+import com.github.devicehive.client.service.Device;
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 
@@ -28,9 +28,14 @@ public class BTLEGateway {
     public static final String DEVICE = "device";
     public static final String SERVICE_UUID = "serviceUUID";
     private BluetoothServer bluetoothServerGateway;
+    private Device dhDevice = null;
 
     public BTLEGateway(BluetoothServer bluetoothServer) {
         this.bluetoothServerGateway = bluetoothServer;
+    }
+
+    public void setDhDevice(Device device) {
+        this.dhDevice = device;
     }
 
     private void failWithReason(final Context context, DeviceCommand command, String reason) {
@@ -262,6 +267,8 @@ public class BTLEGateway {
     }
 
     private void sendNotification(final LeCommand leCommand, final String json) {
+        Timber.d(json);
+        //dhDevice.sendNotification(leCommand.getCommand(), json);
         // TODO !!!!!!
 //        final Notification notification = new Notification(leCommand.getCommand(), json);
 //        dh.sendNotification(notification);

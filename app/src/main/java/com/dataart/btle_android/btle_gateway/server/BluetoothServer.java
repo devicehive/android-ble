@@ -45,7 +45,6 @@ public class BluetoothServer extends BluetoothGattCallback {
     private Map<String, DeviceConnection> activeConnections = new HashMap<>();
 
     private ArrayList<LeScanResult> deviceList = new ArrayList<>();
-    private DiscoveredDeviceListener discoveredDeviceListener;
 
     private BleScanner scanner;
     private BleScanner.ScanCallback scanCallback = this::onDeviceFound;
@@ -90,9 +89,6 @@ public class BluetoothServer extends BluetoothGattCallback {
 
         LeScanResult leScanResult = new LeScanResult(device, rssi, scanRecord);
         addDevice(leScanResult);
-        if (discoveredDeviceListener != null) {
-            discoveredDeviceListener.onDiscoveredDevice(device);
-        }
 
         return leScanResult;
     }
@@ -104,6 +100,7 @@ public class BluetoothServer extends BluetoothGattCallback {
             scanner = getScanner();
         }
 
+        deviceList.clear();
         scanner.startScan();
 
         new Thread() {

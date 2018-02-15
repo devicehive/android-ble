@@ -18,8 +18,7 @@ import com.dataart.btle_android.MainActivity;
 import com.dataart.btle_android.R;
 import com.dataart.btle_android.btle_gateway.server.BluetoothServer;
 import com.dataart.btle_android.devicehive.BTLEDevicePreferences;
-import com.dataart.btle_android.devicehive.btledh.BTLEDeviceHive;
-import com.dataart.btle_android.devicehive.btledh.CommandListener;
+import com.dataart.btle_android.devicehive.BTLEDeviceHive;
 import com.github.devicehive.client.service.DeviceCommand;
 
 import timber.log.Timber;
@@ -72,6 +71,8 @@ public class BluetoothLeService extends Service {
         mBluetoothServer = new BluetoothServer(getApplicationContext());
         mGateway = new BTLEGateway(mBluetoothServer);
         registerReceiver(getBtStateReceiver(), new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
+
+        mDeviceHive.setDeviceListener(device -> mGateway.setDhDevice(device));
     }
 
     @Override
@@ -109,7 +110,7 @@ public class BluetoothLeService extends Service {
         Timber.d("BluetoothLeService was destroyed");
     }
 
-    private final CommandListener commandListener = new CommandListener() {
+    private final BTLEDeviceHive.CommandListener commandListener = new BTLEDeviceHive.CommandListener() {
         @Override
         public void onDeviceReceivedCommand(DeviceCommand command) {
             Timber.d("Device received Command in BluetoothLeService");

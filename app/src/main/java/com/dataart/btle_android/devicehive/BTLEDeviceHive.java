@@ -1,9 +1,7 @@
-package com.dataart.btle_android.devicehive.btledh;
+package com.dataart.btle_android.devicehive;
 
 import android.os.Build;
 
-import com.dataart.btle_android.devicehive.BTLEDevicePreferences;
-import com.dataart.btle_android.devicehive.DeviceHiveConfig;
 import com.github.devicehive.client.model.CommandFilter;
 import com.github.devicehive.client.model.DHResponse;
 import com.github.devicehive.client.model.DeviceCommandsCallback;
