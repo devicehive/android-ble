@@ -56,12 +56,14 @@ public class MainActivity extends AppCompatActivity {
             hintText.setVisibility(View.GONE);
         }
     };
+
     private final TextView.OnEditorActionListener changeListener = (textView, actionId, keyEvent) -> {
         if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT) {
             onDataChanged();
         }
         return false;
     };
+
     private final TextWatcher changeWatcher = new TextWatcher() {
         @Override
         public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
@@ -100,7 +102,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void init() {
-
         if (!isBluetoothLeSupported()) {
             fatalDialog(R.string.error_message_btle_not_supported);
             return;
@@ -186,6 +187,7 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean isLeServiceRunning() {
         final ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        assert manager != null;
         for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
             if (Objects.equals(BluetoothLeService.class.getName(), service.service.getClassName())) {
                 return true;
@@ -301,7 +303,6 @@ public class MainActivity extends AppCompatActivity {
         prefs.setRefreshTokenSync(refreshToken);
         prefs.setServerUrlSync(serverUrl);
         prefs.setGatewayIdSync(gatewayId);
-
     }
 
     @Override

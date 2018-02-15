@@ -10,14 +10,14 @@ import com.dataart.btle_android.R;
  */
 abstract class StatusJson {
     static String bytes2String(byte[] value) {
-        String s = "";
+        StringBuilder s = new StringBuilder();
         for (byte b : value) {
-            if (!s.isEmpty()) {
-                s += ", ";
+            if (s.length() > 0) {
+                s.append(", ");
             }
-            s += String.format("0x%02X", b);
+            s.append(String.format("0x%02X", b));
         }
-        return s;
+        return s.toString();
     }
 
     static class Status {

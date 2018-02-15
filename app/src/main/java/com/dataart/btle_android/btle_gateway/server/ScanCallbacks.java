@@ -1,7 +1,6 @@
 package com.dataart.btle_android.btle_gateway.server;
 
 import android.bluetooth.BluetoothDevice;
-import android.os.Handler;
 
 import com.dataart.btle_android.BTLEApplication;
 import com.dataart.btle_android.R;
@@ -11,14 +10,12 @@ import com.dataart.btle_android.helpers.ble.base.BleScanner;
 import timber.log.Timber;
 
 class ScanCallbacks {
-    private String address;
     private ConnectionOperation operation;
     private BleScanner.ScanCallback localCallback;
     private BleScanner scanner;
     private BluetoothServer server;
 
     public ScanCallbacks(BluetoothServer server, final String address, final ConnectionOperation operation) {
-        this.address = address;
         this.operation = operation;
         this.server = server;
 
@@ -46,6 +43,7 @@ class ScanCallbacks {
 //              startScan for device, add it to discovered devices, connect and call operation
 
         scanner = BleHelpersFactory.getScanner(localCallback, server.getBluetoothAdapter());
+        assert scanner != null;
         scanner.startScan();
 
         ScanCallbacks sc = this;

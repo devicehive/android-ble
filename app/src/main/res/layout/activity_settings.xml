@@ -100,7 +100,7 @@
                     android:id="@+id/service_button"
                     android:layout_width="160dp"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentStart="true"
                     android:text="@string/button_start" />
 
                 <Button
@@ -121,7 +121,7 @@
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:layout_toEndOf="@+id/service_button"
-                android:drawableLeft="@drawable/ic_information"
+                android:drawableStart="@drawable/ic_information"
                 android:editable="false"
                 android:gravity="center"
                 android:text="@string/settings_restart_hint"

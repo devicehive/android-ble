@@ -151,6 +151,7 @@ public class LocationHelper implements ResultCallback<LocationSettingsResult>, G
 
     private boolean isLocationEnabled() {
         LocationManager lm = (LocationManager) activity.getSystemService(Context.LOCATION_SERVICE);
+        assert lm != null;
         boolean gps_enabled = false;
         boolean network_enabled = false;
 

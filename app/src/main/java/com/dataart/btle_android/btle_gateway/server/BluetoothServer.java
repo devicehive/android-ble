@@ -8,7 +8,6 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
-import android.os.Handler;
 import android.os.ParcelUuid;
 import android.text.TextUtils;
 
@@ -56,6 +55,7 @@ public class BluetoothServer extends BluetoothGattCallback {
     BluetoothAdapter getBluetoothAdapter() {
         if (bluetoothAdapter == null) {
             BluetoothManager bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
+            assert bluetoothManager != null;
             bluetoothAdapter = bluetoothManager.getAdapter();
         }
         return bluetoothAdapter;
@@ -261,7 +261,7 @@ public class BluetoothServer extends BluetoothGattCallback {
                     public void run() {
                         try {
                             sleep(BluetoothServer.COMMAND_SCAN_DELAY);
-                            if (!callback.isConnectionStateChanged()) {
+                            if (callback.isConnectionStateNotChanged()) {
                                 statusListener.onStatus(false, context.getString(R.string.status_timeout));
                             }
                         } catch (InterruptedException e) {
@@ -304,21 +304,18 @@ public class BluetoothServer extends BluetoothGattCallback {
         applyForConnectionOrScan(address, new ConnectionOperation() {
             @Override
             public void call(final DeviceConnection connection) {
-                connection.getCallback().setCharacteristicsDiscoveringCallback(new InteractiveGattCallback.CharacteristicsDiscoveringCallback() {
-                    @Override
-                    public void call(BluetoothGatt gatt) {
-                        synchronized (connection) {
-                            Timber.d("CharacteristicsDiscoveredCallback.call()");
+                connection.getCallback().setCharacteristicsDiscoveringCallback(gatt -> {
+                    synchronized (connection) {
+                        Timber.d("CharacteristicsDiscoveredCallback.call()");
 
-                            for (BluetoothGattService service : gatt.getServices()) {
-                                final List<BluetoothGattCharacteristic> characteristics = service.getCharacteristics();
-                                for (BluetoothGattCharacteristic characteristic : characteristics) {
-                                    BTLECharacteristic btleCharacteristic = new BTLECharacteristic(address, service.getUuid().toString(), characteristic.getUuid().toString());
-                                    allCharacteristics.add(btleCharacteristic);
-                                }
+                        for (BluetoothGattService service : gatt.getServices()) {
+                            final List<BluetoothGattCharacteristic> characteristics = service.getCharacteristics();
+                            for (BluetoothGattCharacteristic characteristic : characteristics) {
+                                BTLECharacteristic btleCharacteristic = new BTLECharacteristic(address, service.getUuid().toString(), characteristic.getUuid().toString());
+                                allCharacteristics.add(btleCharacteristic);
                             }
-                            gattCharacteristicCallBack.onCharacteristics(allCharacteristics);
                         }
+                        gattCharacteristicCallBack.onCharacteristics(allCharacteristics);
                     }
                 });
             }
@@ -337,17 +334,14 @@ public class BluetoothServer extends BluetoothGattCallback {
         applyForConnectionOrScan(address, new ConnectionOperation() {
             @Override
             public void call(DeviceConnection connection) {
-                connection.getCallback().setServicesDiscoveredCallback(new InteractiveGattCallback.ServicesDiscoveredCallback() {
-                    @Override
-                    public void call(BluetoothGatt gatt) {
-                        Timber.d("ServicesDiscoveredCallback.call()");
+                connection.getCallback().setServicesDiscoveredCallback(gatt -> {
+                    Timber.d("ServicesDiscoveredCallback.call()");
 
-                        final List<BluetoothGattService> services = gatt.getServices();
-                        for (BluetoothGattService service : services) {
-                            parcelUuidList.add(new ParcelUuid(service.getUuid()));
-                        }
-                        gattCharacteristicCallBack.onServices(parcelUuidList);
+                    final List<BluetoothGattService> services = gatt.getServices();
+                    for (BluetoothGattService service : services) {
+                        parcelUuidList.add(new ParcelUuid(service.getUuid()));
                     }
+                    gattCharacteristicCallBack.onServices(parcelUuidList);
                 });
             }
 

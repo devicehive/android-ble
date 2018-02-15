@@ -39,6 +39,7 @@ public abstract class BleInitializer {
      */
     protected void init() {
         final BluetoothManager bluetoothManager = (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
+        assert bluetoothManager != null;
         bluetoothAdapter = bluetoothManager.getAdapter();
     }
 

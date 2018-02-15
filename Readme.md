@@ -76,4 +76,4 @@ Starting with **Android M (API 23)** due to changes in BLE devices discovery int
 
 DeviceHive is developed by DataArt Apps and distributed under Open Source MIT license. This basically means you can do whatever you want with the software as long as the copyright notice is included. This also means you don't have to contribute the end product or modified sources back to Open Source, but if you feel like sharing, you are highly encouraged to do so!
 
-© Copyright 2016 DataArt Apps · All Rights Reserved
+© Copyright 2015-2018 DataArt Apps · All Rights Reserved

@@ -17,8 +17,8 @@ import android.widget.Toast;
 import com.dataart.btle_android.MainActivity;
 import com.dataart.btle_android.R;
 import com.dataart.btle_android.btle_gateway.server.BluetoothServer;
-import com.dataart.btle_android.devicehive.BTLEDevicePreferences;
 import com.dataart.btle_android.devicehive.BTLEDeviceHive;
+import com.dataart.btle_android.devicehive.BTLEDevicePreferences;
 import com.github.devicehive.client.service.DeviceCommand;
 
 import timber.log.Timber;
@@ -62,6 +62,7 @@ public class BluetoothLeService extends Service {
         super.onCreate();
         Timber.d("onCreate");
         final BluetoothManager mBluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+        assert mBluetoothManager != null;
         mBluetoothAdapter = mBluetoothManager.getAdapter();
         if (!mBluetoothAdapter.isEnabled()) {
             send(ACTION_BT_PERMISSION_REQUEST);

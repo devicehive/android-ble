@@ -9,9 +9,9 @@ import com.dataart.btle_android.btle_gateway.gateway_helpers.ValidationHelper;
 import com.dataart.btle_android.btle_gateway.model.BTLECharacteristic;
 import com.dataart.btle_android.btle_gateway.model.BTLEDevice;
 import com.dataart.btle_android.btle_gateway.server.BluetoothServer;
-import com.github.devicehive.client.service.DeviceCommand;
-import com.github.devicehive.client.service.Device;
 import com.github.devicehive.client.model.Parameter;
+import com.github.devicehive.client.service.Device;
+import com.github.devicehive.client.service.DeviceCommand;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
@@ -114,9 +114,7 @@ public class BTLEGateway {
                     bluetoothServerGateway.gattConnect(address, () -> {
                         final String data = String.format(context.getString(R.string.is_disconnected), address);
                         sendNotification(context, leCommand, data);
-                    }, (boolean ok, String reason) -> {
-                        commandStatusResult(context, command, ok, reason);
-                    });
+                    }, (boolean ok, String reason) -> commandStatusResult(context, command, ok, reason));
                     return;
 
                 case GATT_DISCONNECT:
@@ -127,9 +125,7 @@ public class BTLEGateway {
                     }
 
                     Timber.d("Disconnecting from" + address);
-                    bluetoothServerGateway.gattDisconnect(address, (boolean ok, String reason) -> {
-                        commandStatusResult(context, command, ok, reason);
-                    });
+                    bluetoothServerGateway.gattDisconnect(address, (boolean ok, String reason) -> commandStatusResult(context, command, ok, reason));
                     return;
 
                 case GATT_PRIMARY:
@@ -167,14 +163,12 @@ public class BTLEGateway {
 //                            final String json = new Gson().toJson(sValue);
 //                            sendNotification(dh, leCommand, json);
                         }
-                    }, (boolean ok, String reason) -> {
-                        commandStatusResult(context, command, ok, reason);
-                    });
+                    }, (boolean ok, String reason) -> commandStatusResult(context, command, ok, reason));
                     return;
                 }
 
                 case GATT_WRITE: {
-                    final String sValue = (String) (params != null ? params.get("value") : null);
+                    final String sValue = (params != null) ? params.get("value") : null;
 
                     validationError = validationHelper.validateWrite(leCommand.getCommand(), address, serviceUUID, characteristicUUID, sValue);
                     if (validationError != null) {
@@ -190,9 +184,7 @@ public class BTLEGateway {
 //                            final String json = new Gson().toJson(state);
 //                            sendNotification(dh, leCommand, json);
                         }
-                    }, (boolean ok, String reason) -> {
-                        commandStatusResult(context, command, ok, reason);
-                    });
+                    }, (boolean ok, String reason) -> commandStatusResult(context, command, ok, reason));
                     return;
                 }
 
@@ -209,9 +201,7 @@ public class BTLEGateway {
                             final String sValue = HexHelper.printHexBinary(value);
                             sendNotification(context, leCommand, sValue);
                         }
-                    }, (boolean ok, String reason) -> {
-                        commandStatusResult(context, command, ok, reason);
-                    });
+                    }, (boolean ok, String reason) -> commandStatusResult(context, command, ok, reason));
                     return;
 
                 case GATT_NOTIFICATION_STOP:
@@ -228,9 +218,7 @@ public class BTLEGateway {
                             final String sValue = HexHelper.printHexBinary(value);
                             sendNotification(context, leCommand, sValue);
                         }
-                    }, (boolean ok, String reason) -> {
-                        commandStatusResult(context, command, ok, reason);
-                    });
+                    }, (boolean ok, String reason) -> commandStatusResult(context, command, ok, reason));
                     return;
 
                 case UNKNOWN:
@@ -284,9 +272,7 @@ public class BTLEGateway {
             public void onServices(List<ParcelUuid> uuidList) {
                 successWithObject(context, command, uuidList);
             }
-        }, (boolean ok, String reason) -> {
-            commandStatusResult(context, command, ok, reason);
-        });
+        }, (boolean ok, String reason) -> commandStatusResult(context, command, ok, reason));
     }
 
     private void gattCharacteristics(Context context, String address, DeviceCommand command, @SuppressWarnings("UnusedParameters") final LeCommand leCommand) {
@@ -295,9 +281,7 @@ public class BTLEGateway {
             public void onCharacteristics(ArrayList<BTLECharacteristic> characteristics) {
                 successWithObject(context, command, characteristics);
             }
-        }, (boolean ok, String reason) -> {
-            commandStatusResult(context, command, ok, reason);
-        });
+        }, (boolean ok, String reason) -> commandStatusResult(context, command, ok, reason));
     }
 
     public enum LeCommand {

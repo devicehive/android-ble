@@ -7,7 +7,6 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
-import android.os.Handler;
 
 import com.dataart.btle_android.R;
 import com.dataart.btle_android.btle_gateway.GattCharacteristicCallBack;
@@ -52,8 +51,8 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
         this.connectedListener = connectedListener;
     }
 
-    public boolean isConnectionStateChanged() {
-        return connectionStateChanged;
+    public boolean isConnectionStateNotChanged() {
+        return !connectionStateChanged;
     }
 
     public void setServicesDiscoveredCallback(ServicesDiscoveredCallback servicesDiscoveredCallback) {
@@ -376,10 +375,8 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
                 if (status == BluetoothGatt.GATT_SUCCESS) {
                     statusListener.onStatus(true, context.getString(R.string.status_json_success));
                 } else {
-                    int resId = R.string.status_fail;
                     switch (status) {
                         case BluetoothGatt.GATT_WRITE_NOT_PERMITTED:
-                            resId = R.string.status_fail_write_not_permitted;
                             break;
 //                TODO: handle other BluetoothGatt error codes
                     }

@@ -15,7 +15,6 @@ public class BTLEApplication extends MultiDexApplication {
 
     private static BTLEApplication application;
 
-
     public static BTLEApplication getApplication() {
         return application;
     }

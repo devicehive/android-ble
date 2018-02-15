@@ -17,6 +17,7 @@ import io.reactivex.functions.Consumer;
 
 /**
  * Created by Constantine Mars on 12/15/15.
+ * PermissionsHelper class
  */
 @TargetApi(Build.VERSION_CODES.M)
 public class PermissionsHelper {
