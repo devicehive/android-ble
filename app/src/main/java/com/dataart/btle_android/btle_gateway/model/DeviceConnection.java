@@ -9,9 +9,9 @@ import com.dataart.btle_android.btle_gateway.gatt_callbacks.InteractiveGattCallb
  * Structure to store single gatt connection callback in one place
  */
 public class DeviceConnection {
-    private String address;
-    private BluetoothGatt gatt;
-    private InteractiveGattCallback callback;
+    private final String address;
+    private final BluetoothGatt gatt;
+    private final InteractiveGattCallback callback;
 
     public DeviceConnection(String address, BluetoothGatt gatt, InteractiveGattCallback callback) {
         this.address = address;

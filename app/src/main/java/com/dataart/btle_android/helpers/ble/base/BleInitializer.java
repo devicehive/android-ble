@@ -48,6 +48,7 @@ public abstract class BleInitializer {
      */
     public abstract void start();
 
+    @SuppressWarnings("UnusedReturnValue")
     public boolean enableBluetooth() {
         if (bluetoothAdapter == null) {
             Timber.e(activity.getString(R.string.bt_not_supported));

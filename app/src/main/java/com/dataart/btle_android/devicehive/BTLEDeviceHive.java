@@ -23,7 +23,7 @@ public class BTLEDeviceHive {
     }
 
     private DeviceHive deviceHive;
-    private BTLEDevicePreferences prefs;
+    private final BTLEDevicePreferences prefs;
 
     private CommandListener commandListener;
     private DeviceListener deviceListener;

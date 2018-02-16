@@ -5,9 +5,9 @@ package com.dataart.btle_android.btle_gateway.model;
  */
 public class BTLECharacteristic {
 
-    public String device;
-    public String characteristicUUID;
-    public String serviceUUID;
+    public final String device;
+    public final String characteristicUUID;
+    public final String serviceUUID;
 
     public BTLECharacteristic(String deviceUUID, String serviceUUID, String characteristicUUID) {
         this.serviceUUID = serviceUUID;

@@ -27,7 +27,7 @@ public class BTLEGateway {
 
     public static final String DEVICE = "device";
     public static final String SERVICE_UUID = "serviceUUID";
-    private BluetoothServer bluetoothServerGateway;
+    private final BluetoothServer bluetoothServerGateway;
     private Device dhDevice = null;
 
     public BTLEGateway(BluetoothServer bluetoothServer) {
@@ -110,7 +110,7 @@ public class BTLEGateway {
                         return;
                     }
 
-                    Timber.d("Connecting to " + address);
+                    Timber.d("Connecting to %s", address);
                     bluetoothServerGateway.gattConnect(address, () -> {
                         final String data = String.format(context.getString(R.string.is_disconnected), address);
                         sendNotification(context, leCommand, data);
@@ -124,7 +124,7 @@ public class BTLEGateway {
                         return;
                     }
 
-                    Timber.d("Disconnecting from" + address);
+                    Timber.d("Disconnecting from %s", address);
                     bluetoothServerGateway.gattDisconnect(address, (boolean ok, String reason) -> commandStatusResult(context, command, ok, reason));
                     return;
 
@@ -156,6 +156,7 @@ public class BTLEGateway {
                     }
 
                     bluetoothServerGateway.gattRead(address, serviceUUID, characteristicUUID, new GattCharacteristicCallBack() {
+                        @SuppressWarnings("EmptyMethod")
                         @Override
                         public void onRead(byte[] value) {
 //                            no notifications needed
@@ -227,7 +228,7 @@ public class BTLEGateway {
                     return;
             }
         } catch (Exception e) {
-            Timber.e("error:" + e.toString());
+            Timber.e("error: %s", e.toString());
             failWithReason(context, command, e.toString());
             return;
         }
@@ -253,7 +254,7 @@ public class BTLEGateway {
     }
 
     private void sendNotification(Context context, final LeCommand leCommand, final String data) {
-        Timber.d("Notification: " + data);
+        Timber.d("Notification: %s", data);
         if (dhDevice != null) {
             ArrayList<Parameter> parameters = new ArrayList<>();
             parameters.add(new Parameter(context.getString(R.string.data), data));

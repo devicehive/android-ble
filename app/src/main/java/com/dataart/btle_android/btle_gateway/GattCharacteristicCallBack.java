@@ -19,6 +19,7 @@ public class GattCharacteristicCallBack {
     public void onRead(byte[] value) {
     }
 
+    @SuppressWarnings("EmptyMethod")
     public void onWrite(int status) {
     }
 }

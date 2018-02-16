@@ -38,15 +38,15 @@ public class BluetoothServer extends BluetoothGattCallback {
 
     public static final int COMMAND_SCAN_DELAY = 10 * 1000; // 10 sec
 
-    private Context context;
+    private final Context context;
     private BluetoothAdapter bluetoothAdapter = null;
     //    Stores list of currently connected devices with adress, gatt and callback
-    private Map<String, DeviceConnection> activeConnections = new HashMap<>();
+    private final Map<String, DeviceConnection> activeConnections = new HashMap<>();
 
-    private ArrayList<LeScanResult> deviceList = new ArrayList<>();
+    private final ArrayList<LeScanResult> deviceList = new ArrayList<>();
 
     private BleScanner scanner;
-    private BleScanner.ScanCallback scanCallback = this::onDeviceFound;
+    private final BleScanner.ScanCallback scanCallback = this::onDeviceFound;
 
     public BluetoothServer(Context context) {
         this.context = context;
@@ -135,9 +135,9 @@ public class BluetoothServer extends BluetoothGattCallback {
 
     protected void addDevice(final LeScanResult device) {
         deviceList.add(device);
-        Timber.d("BTdeviceName " + device.getDevice().getName());
-        Timber.d("BTdeviceAdress " + device.getDevice().getAddress());
-        Timber.d("scanRecord " + Arrays.toString(device.getScanRecord()));
+        Timber.d("BTdeviceName %s", device.getDevice().getName());
+        Timber.d("BTdeviceAdress %s", device.getDevice().getAddress());
+        Timber.d("scanRecord %s", Arrays.toString(device.getScanRecord()));
     }
 
     private LeScanResult getResultByUDID(final String mac) {
@@ -230,6 +230,7 @@ public class BluetoothServer extends BluetoothGattCallback {
         return connectAndSave(address, device, null, null);
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     DeviceConnection connectAndSave(String address, BluetoothDevice device, InteractiveGattCallback.OnConnectedListener connectedListener) {
         return connectAndSave(address, device, null, null, connectedListener);
     }
@@ -250,7 +251,7 @@ public class BluetoothServer extends BluetoothGattCallback {
         applyForDevice(address, new DeviceOperation() {
             @Override
             public void call(BluetoothDevice device) {
-                Timber.d("connecting to " + address);
+                Timber.d("connecting to %s", address);
 
 //              We can store mutliple connections - and each should have it's own callback
                 final InteractiveGattCallback callback = connectAndSave(address, device, disconnectListener, statusListener).getCallback();
@@ -270,7 +271,7 @@ public class BluetoothServer extends BluetoothGattCallback {
                     }
                 }.start();
 
-                Timber.d("connection added. connections now: " + activeConnections.size());
+                Timber.d("connection added. connections now: %s", activeConnections.size());
             }
 
             @Override
@@ -284,10 +285,10 @@ public class BluetoothServer extends BluetoothGattCallback {
         applyForConnection(address, new ConnectionOperation() {
             @Override
             public void call(DeviceConnection connection) {
-                Timber.d("disconnecting from " + address);
+                Timber.d("disconnecting from %s", address);
                 connection.getGatt().disconnect();
                 activeConnections.remove(address);
-                Timber.d("disconnected. connections left: " + activeConnections.size());
+                Timber.d("disconnected. connections left: %s", activeConnections.size());
                 statusListener.onStatus(true, "");
             }
 
@@ -404,7 +405,7 @@ public class BluetoothServer extends BluetoothGattCallback {
                 connection.getCallback().setNotificationSubscription(new InteractiveGattCallback.NotificationSubscription(sUUID, cUUID, address, context, isOn, statusListener) {
                     @Override
                     public void onNotification(byte[] value) {
-                        Timber.d("onNotification: 0x" + String.valueOf(Hex.encodeHex(value)));
+                        Timber.d("onNotification: 0x%s", String.valueOf(Hex.encodeHex(value)));
                         gattCharachteristicCallBack.onRead(value);
                     }
                 });

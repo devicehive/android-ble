@@ -8,8 +8,8 @@ import android.os.Parcelable;
  */
 public class BTLEDevice implements Parcelable {
 
-    private String name;
-    private String address;
+    private final String name;
+    private final String address;
 
     public BTLEDevice(String name, String address) {
         this.name = name;

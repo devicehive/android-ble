@@ -10,8 +10,8 @@ import android.content.Context;
 public class CmdResult {
     protected String serviceUUID;
     protected String characteristicUUID;
-    protected String device;
-    protected Context context;
+    protected final String device;
+    protected final Context context;
 
     public CmdResult(String serviceUUID, String characteristicUUID, String device, Context context) {
         this.serviceUUID = serviceUUID;

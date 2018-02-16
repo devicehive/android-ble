@@ -123,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
         serviceButton = findViewById(R.id.service_button);
         //noinspection ConstantConditions
         serviceButton.setOnClickListener(v -> {
-            Timber.d(validateValues()+"");
+            Timber.d(String.valueOf(validateValues()));
             if (validateValues()) {
                 bleInitializer.start();
             }
@@ -197,7 +197,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startService() {
-        Timber.d("HERE " + isServiceStarted);
+        Timber.d("HERE %s", isServiceStarted);
         if (!isServiceStarted) {
             Timber.d("Started");
             saveValues();

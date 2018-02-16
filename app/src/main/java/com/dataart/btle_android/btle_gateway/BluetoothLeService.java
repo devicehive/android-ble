@@ -18,7 +18,6 @@ import com.dataart.btle_android.MainActivity;
 import com.dataart.btle_android.R;
 import com.dataart.btle_android.btle_gateway.server.BluetoothServer;
 import com.dataart.btle_android.devicehive.BTLEDeviceHive;
-import com.dataart.btle_android.devicehive.BTLEDevicePreferences;
 import com.github.devicehive.client.service.DeviceCommand;
 
 import timber.log.Timber;
@@ -82,8 +81,6 @@ public class BluetoothLeService extends Service {
         if (mBluetoothAdapter.isEnabled()) {
             mBluetoothServer.scanStart();
         }
-
-        final BTLEDevicePreferences prefs = BTLEDevicePreferences.getInstance();
 
         mDeviceHive.setCommandListener(commandListener);
 

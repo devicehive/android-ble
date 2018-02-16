@@ -27,21 +27,21 @@ import timber.log.Timber;
  */
 public class InteractiveGattCallback extends BluetoothGattCallback {
     private boolean servicesDiscovered = false;
-    private String address;
+    private final String address;
     private BluetoothGatt gatt;
     private ReadCharacteristicOperation readOperation;
     private WriteCharacteristicOperation writeOperation;
     private NotificationSubscription notificationSubscription;
     private ServicesDiscoveredCallback servicesDiscoveredCallback;
     private CharacteristicsDiscoveringCallback characteristicsDiscoveringCallback;
-    private InteractiveGattCallback.StatusListener statusListener;
-    private Context context;
-    private DisconnectListener disconnectListener;
-    private OnConnectedListener connectedListener;
+    private final InteractiveGattCallback.StatusListener statusListener;
+    private final Context context;
+    private final DisconnectListener disconnectListener;
+    private final OnConnectedListener connectedListener;
     private boolean connectionStateChanged = false;
 //    Mapping from short to long service naming
-    private Map<String, String> services = new HashMap<>();
-    private Map<String, String> characteristics = new HashMap<>();
+    private final Map<String, String> services = new HashMap<>();
+    private final Map<String, String> characteristics = new HashMap<>();
 
     public InteractiveGattCallback(String address, InteractiveGattCallback.StatusListener statusListener, Context context, DisconnectListener disconnectListener, OnConnectedListener connectedListener) {
         this.address = address;
@@ -164,7 +164,7 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
 
     @Override
     public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-        Timber.d("onCharacteristicRead. notificationSubscription=" + (notificationSubscription != null ? 1 : 0));
+        Timber.d("onCharacteristicRead. notificationSubscription=%d", (notificationSubscription != null) ? 1 : 0);
         if (readOperation != null) {
             readOperation.onResult(characteristic, status);
 //            Reset readOperation for future calls
@@ -177,7 +177,7 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
 
     @Override
     public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-        Timber.d("onCharacteristicChanged. notificationSubscription=" + (notificationSubscription != null ? 1 : 0));
+        Timber.d("onCharacteristicChanged. notificationSubscription=%d", (notificationSubscription != null) ? 1 : 0);
         if (notificationSubscription !=null){
             notificationSubscription.onNotification(characteristic.getValue());
         }
@@ -270,8 +270,8 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
 
     abstract public static class NotificationSubscription extends CmdResult {
         private static final String DESCRIPTOR_UUID = "00002902-0000-1000-8000-00805f9b34fb";
-        private InteractiveGattCallback.StatusListener statusListener;
-        private boolean isOn;
+        private final InteractiveGattCallback.StatusListener statusListener;
+        private final boolean isOn;
 
         protected NotificationSubscription(String serviceUUID, String characteristicUUID, String device, Context context,
                                            boolean isOn, InteractiveGattCallback.StatusListener statusListener) {
@@ -353,7 +353,7 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
     }
 
     public class WriteCharacteristicOperation extends CharacteristicOperation {
-        private byte[] value;
+        private final byte[] value;
 
         public WriteCharacteristicOperation(String device, String serviceUUID, String characteristicUUID, GattCharacteristicCallBack callBack, byte[] value, final InteractiveGattCallback.StatusListener statusListener, Context context) {
             super(device, serviceUUID, characteristicUUID, callBack, statusListener, context);
@@ -387,8 +387,8 @@ public class InteractiveGattCallback extends BluetoothGattCallback {
     }
 
     public abstract class CharacteristicOperation extends CmdResult {
-        protected GattCharacteristicCallBack callBack;
-        protected InteractiveGattCallback.StatusListener statusListener;
+        protected final GattCharacteristicCallBack callBack;
+        protected final InteractiveGattCallback.StatusListener statusListener;
 
         public CharacteristicOperation(String device, String serviceUUID, String characteristicUUID, GattCharacteristicCallBack callBack, InteractiveGattCallback.StatusListener statusListener, Context context) {
 //            first time we init operation with short or long uuid - no matter which format

@@ -10,10 +10,10 @@ import com.dataart.btle_android.helpers.ble.base.BleScanner;
 import timber.log.Timber;
 
 class ScanCallbacks {
-    private ConnectionOperation operation;
-    private BleScanner.ScanCallback localCallback;
+    private final ConnectionOperation operation;
+    private final BleScanner.ScanCallback localCallback;
     private BleScanner scanner;
-    private BluetoothServer server;
+    private final BluetoothServer server;
 
     public ScanCallbacks(BluetoothServer server, final String address, final ConnectionOperation operation) {
         this.operation = operation;

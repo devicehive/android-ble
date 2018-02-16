@@ -6,9 +6,9 @@ import java.util.Objects;
 
 class LeScanResult {
 
-    private BluetoothDevice mDevice;
-    private int mRssi;
-    private byte[] mScanRecord;
+    private final BluetoothDevice mDevice;
+    private final int mRssi;
+    private final byte[] mScanRecord;
 
     public LeScanResult(BluetoothDevice device, int rssi, byte[] scanRecord) {
         mDevice = device;

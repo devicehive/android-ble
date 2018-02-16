@@ -14,17 +14,18 @@ import android.support.annotation.Nullable;
 
 import com.dataart.btle_android.R;
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.common.api.Status;
+import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
-import com.google.android.gms.location.LocationSettingsResult;
+import com.google.android.gms.location.LocationSettingsResponse;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 
 import timber.log.Timber;
 
@@ -33,7 +34,7 @@ import timber.log.Timber;
  * Android M with Google Play Services requires Location enabled before starting BLE devices discovery
  * This helper implements turning on Location services programmatically
  */
-public class LocationHelper implements ResultCallback<LocationSettingsResult>, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
+public class LocationHelper implements OnCompleteListener<LocationSettingsResponse>, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
     private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
     private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
             UPDATE_INTERVAL_IN_MILLISECONDS / 2;
@@ -41,8 +42,8 @@ public class LocationHelper implements ResultCallback<LocationSettingsResult>, G
     private LocationSettingsRequest mLocationSettingsRequest;
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
-    private LocationEnabledListener listener;
-    private Activity activity;
+    private final LocationEnabledListener listener;
+    private final Activity activity;
     private boolean waitForResume = false;
 
     public LocationHelper(LocationEnabledListener listener, Activity activity) {
@@ -93,43 +94,32 @@ public class LocationHelper implements ResultCallback<LocationSettingsResult>, G
     }
 
     @Override
-    public void onResult(@NonNull LocationSettingsResult locationSettingsResult) {
-        final Status status = locationSettingsResult.getStatus();
-        switch (status.getStatusCode()) {
-            case LocationSettingsStatusCodes.SUCCESS:
-                Timber.i(activity.getString(R.string.location_settings_ok));
-                doJob();
-                break;
-            case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
-                Timber.e(activity.getString(R.string.location_fail));
+    public void onComplete(@NonNull Task<LocationSettingsResponse> task) {
+        try {
+            LocationSettingsResponse response = task.getResult(ApiException.class);
+            Timber.i(activity.getString(R.string.location_settings_ok) + " " + response.toString());
+            doJob();
+        } catch (ApiException exception) {
+            switch (exception.getStatusCode()) {
+                case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
+                    Timber.e(activity.getString(R.string.location_fail));
 
-                try {
-                    // Show the dialog by calling startResolutionForResult(), and check the result
-                    // in onActivityResult().
-                    status.startResolutionForResult(activity, REQUEST_CHECK_SETTINGS);
-                } catch (IntentSender.SendIntentException e) {
-                    Timber.e(activity.getString(R.string.pi_fail));
-                }
-                break;
-            case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
-                Timber.e(activity.getString(R.string.loc_settings_inadequate));
-                break;
+                    try {
+                        ResolvableApiException resolvable = (ResolvableApiException) exception;
+                        // Show the dialog by calling startResolutionForResult(), and check the result
+                        // in onActivityResult().
+                        resolvable.startResolutionForResult(
+                                activity,
+                                REQUEST_CHECK_SETTINGS);
+                    } catch (IntentSender.SendIntentException e) {
+                        Timber.e(activity.getString(R.string.pi_fail));
+                    }
+                    break;
+                case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+                    Timber.e(activity.getString(R.string.loc_settings_inadequate));
+                    break;
+            }
         }
-    }
-
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -176,14 +166,11 @@ public class LocationHelper implements ResultCallback<LocationSettingsResult>, G
 
 //        If location isn't enabled - check whether we can call Google Play Services or user to manually
 //        switch Location
-        final int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(activity.getApplicationContext());
+        final int status = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(activity.getApplicationContext());
         if (status == ConnectionResult.SUCCESS) {
-            PendingResult<LocationSettingsResult> result =
-                    LocationServices.SettingsApi.checkLocationSettings(
-                            mGoogleApiClient,
-                            mLocationSettingsRequest
-                    );
-            result.setResultCallback(this);
+            Task<LocationSettingsResponse> result =
+                    LocationServices.getSettingsClient(activity).checkLocationSettings(mLocationSettingsRequest);
+            result.addOnCompleteListener(this);
         } else {
 //            If no services available - the only thing we can do is to
 //            ask user to switch Location manually
@@ -203,9 +190,23 @@ public class LocationHelper implements ResultCallback<LocationSettingsResult>, G
 
     }
 
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+    }
+
     public interface LocationEnabledListener {
         void onLocationEnabled();
     }
 
 }
-
