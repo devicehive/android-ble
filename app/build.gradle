@@ -8,10 +8,9 @@ android {
         applicationId "com.dataart.btle_android"
         minSdkVersion 19
         targetSdkVersion 27
-        versionCode 2
-        versionName "2.0"
+        versionCode 3
+        versionName "3.0"
         multiDexEnabled true
-
     }
     buildTypes {
         release {
