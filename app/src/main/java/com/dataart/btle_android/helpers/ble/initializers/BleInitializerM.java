@@ -11,7 +11,7 @@ import com.dataart.btle_android.helpers.LocationHelper;
 import com.dataart.btle_android.helpers.PermissionsHelper;
 import com.dataart.btle_android.helpers.ble.base.BleInitializer;
 
-import rx.functions.Action1;
+import io.reactivex.functions.Consumer;
 import timber.log.Timber;
 
 /**
@@ -20,14 +20,14 @@ import timber.log.Timber;
  * Marshmallow-specific BLE helper
  */
 public class BleInitializerM extends BleInitializerL {
-    private static String[] permissions = new String[]{
+    private static final String[] permissions = new String[]{
             Manifest.permission.BLUETOOTH,
             Manifest.permission.BLUETOOTH_ADMIN,
             Manifest.permission.ACCESS_FINE_LOCATION
     };
-    private Action1<String[]> onError;
-    private Action1<String> onSuccess;
-    private LocationHelper locationHelper;
+    private final Consumer<String[]> onError;
+    private final Consumer<String> onSuccess;
+    private final LocationHelper locationHelper;
 
     public BleInitializerM(Activity activity, BleInitializer.InitCompletionCallback initCompletionCallback) {
         super(activity, initCompletionCallback);
@@ -69,7 +69,7 @@ public class BleInitializerM extends BleInitializerL {
         super.start();
     }
 
-    public void requestPermissions() {
+    private void requestPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (PermissionsHelper.checkPermissions(
                     activity,

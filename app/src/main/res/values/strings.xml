@@ -2,14 +2,9 @@
     <string name="app_name">DeviceHive BLE Gateway</string>
     <string name="device_hive">DeviceHive</string>
 
-    <string name="menu_devices">BLE Devices</string>
-    <string name="menu_gateway">Gateway</string>
-
     <string name="settings_server_url">Server URL</string>
     <string name="settings_gateway_id">Gateway ID</string>
-    <string name="settings_username">Username</string>
-    <string name="settings_password">Password</string>
-    <string name="settings_accesskey">Access Key</string>
+    <string name="settings_refresh_token">Refresh Token</string>
     <string name="settings_restart_hint">You have to restart the service in order to apply new parameters</string>
 
     <string name="button_restart">Restart</string>
@@ -17,24 +12,13 @@
     <string name="button_stop">Stop service</string>
 
     <string name="default_server_url">http://playground.devicehive.com/api/rest</string>
-    <string name="default_gateway_id">devicehive_ble_andoid</string>
-    <string name="default_accesskey">8Gff/CCqkLYkuYHwa2oXf2GCmpyaLsuOlVYkttL93LQ=</string>
+    <string name="default_gateway_id">devicehive-ble-android</string>
 
     <string name="error_message_btle_not_supported">Bluetooth LE is not supported.\nApplication will close itself</string>
     <string name="error_message_bt_not_supported">Bluetooth not supported.\nApplication will close itself</string>
     <string name="error_message_empty_server_url">Server URL is required</string>
     <string name="error_message_empty_gateway_id">Gateway ID is required</string>
-    <string name="error_message_empty_username">Username is required</string>
-    <string name="error_message_empty_password">Password is required</string>
-    <string name="error_message_empty_accesskey">Access key is required</string>
-
-    <string name="info_message_save_settings">Settings were saved</string>
-
-    <string name="navigation_drawer_open">Open navigation drawer</string>
-    <string name="navigation_drawer_close">Close navigation drawer</string>
-
-    <string name="action_settings">Settings</string>
-    <string name="unknown_device">Unknown device</string>
+    <string name="error_message_empty_refresh_token">Refresh token is required</string>
 
     <string name="notification_bt_off">Bluetooth is off. Please turn on Bluetooth to continue working with DeviceHive BLE Gateway</string>
     <string name="notification_bt_on">BLE Service is working…</string>
@@ -43,45 +27,24 @@
     <string name="status_json_fail">fail</string>
     <string name="status_json_not_found">not found</string>
 
-    <string name="status_fail">fail</string>
-    <string name="status_waiting">waiting for completion</string>
-    <string name="status_fail_write_not_permitted">write not permitted</string>
-    <string name="status_fail_read_not_permitted">read not permitted</string>
-
-    <string name="connection_failed">connection failed</string>
-    <string name="connection_timeout">connection timeout reached</string>
     <string name="status_timeout">timeout reached</string>
     <string name="status_notfound_timeout">timeout reached. device is not discovered</string>
     <string name="device_not_found">device %1$s is not discovered</string>
     <string name="connection_not_established">connection to %1$s is not established</string>
-    <string name="read_ch_failed">failed to read characteristic %1$s from service %2$s</string>
-    <string name="no_such_characteristic">no such characteristic: %1$s in service %2$s</string>
-    <string name="no_such_service">no such service: %1$s</string>
     <string name="gatt_null">gatt is null - probably not connected</string>
-    <string name="gatt_failure">gatt failure with status </string>
     <string name="connection_failed_result">failed with status=%1$d, state=%2$d</string>
     <string name="is_disconnected">%1$s is disconnected</string>
-    <string name="value">value: %1$s</string>
-    <string name="status">status: %1$d</string>
     <string name="unknown_command">unknown command</string>
+    <string name="failed">Failed</string>
+    <string name="completed">Completed</string>
+    <string name="reason">reason</string>
+    <string name="result">result</string>
+    <string name="data">data</string>
     <string name="status_service_uuid_nf">service uuid not found</string>
     <string name="status_char_uuid_nf">characteristic uuid not found</string>
-    <string name="fail_address">invalid args. device address required</string>
-    <string name="fail_service">invalid args. service UUID required</string>
-    <string name="fail_characteristic">invalid args. characteristic UUID required</string>
-    <string name="fail_val">invalid args. write operation requires value</string>
 
-    <string name="location_satisfied">All location settings are satisfied</string>
-    <string name="location_unsatisfied">Location settings are not satisfied. Show the user a dialog to upgrade location settings</string>
-    <string name="intent_not_started">PendingIntent unable to execute request</string>
-    <string name="location_cant_be_fixed">Location settings are inadequate, and cannot be fixed here. Dialog not created</string>
-    <string name="location_changes_applied">User agreed to make required location settings changes</string>
-    <string name="loccation_changes_not_applied">User chose not to make required location settings changes</string>
     <string name="bt_unable_init">Unable to initialize BluetoothManager</string>
     <string name="bt_unable_get_btm">Unable to obtain a BluetoothAdapter</string>
-
-    <string name="sdk_version_warning_title">Unsupported SDK version</string>
-    <string name="sdk_version_warning">Bluetooth LE is supported starting with SDK 18 (Android Jelly Bean MR2).\nPlease, update your Android version or try on another device</string>
 
     <string name="bt_enabled">Bluetooth enabled</string>
     <string name="bt_enabling_started">Bluetooth is disabled. Enabling…</string>

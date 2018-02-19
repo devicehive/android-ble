@@ -1,8 +1,11 @@
 package com.dataart.btle_android;
 
+import android.support.multidex.MultiDex;
 import android.support.multidex.MultiDexApplication;
 
-import com.dataart.btle_android.devicehive.BTLEDeviceHive;
+import com.dataart.btle_android.devicehive.BTLEDevicePreferences;
+
+import timber.log.Timber;
 
 /**
  * Created by alrybakov
@@ -12,8 +15,6 @@ public class BTLEApplication extends MultiDexApplication {
 
     private static BTLEApplication application;
 
-    private BTLEDeviceHive device;
-
     public static BTLEApplication getApplication() {
         return application;
     }
@@ -21,13 +22,12 @@ public class BTLEApplication extends MultiDexApplication {
     @Override
     public void onCreate() {
         super.onCreate();
-
         application = this;
-        device = BTLEDeviceHive.newInstance(getApplicationContext());
-    }
-
-    public BTLEDeviceHive getDevice() {
-        return device;
+        MultiDex.install(this);
+        BTLEDevicePreferences.getInstance().init(this);
+        if (BuildConfig.DEBUG){
+            Timber.plant(new Timber.DebugTree());
+        }
     }
 
 }

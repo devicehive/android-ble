@@ -27,7 +27,6 @@
 
 
             <View
-                android:id="@+id/focus_grabber"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:focusableInTouchMode="true" />
@@ -37,6 +36,7 @@
                 android:layout_marginTop="@dimen/padding">
 
                 <TextView
+                    android:labelFor="@+id/server_url_edit"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/settings_server_url"
@@ -57,6 +57,7 @@
                 android:layout_height="wrap_content">
 
                 <TextView
+                    android:labelFor="@+id/settings_gateway_id"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/settings_gateway_id"
@@ -76,13 +77,14 @@
             <LinearLayout style="@style/ListItem">
 
                 <TextView
+                    android:labelFor="@+id/refresh_token_edit"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/settings_accesskey"
+                    android:text="@string/settings_refresh_token"
                     android:textAppearance="@android:style/TextAppearance.Medium" />
 
                 <EditText
-                    android:id="@+id/accesskey_edit"
+                    android:id="@+id/refresh_token_edit"
                     style="@style/SingleLineEditText"
                     android:imeOptions="actionNext" />
             </LinearLayout>
@@ -90,7 +92,6 @@
             <View style="@style/ListItemDivider" />
 
             <RelativeLayout
-                android:id="@+id/ip_conf_buttons_frame"
                 style="@style/ViewWithPadding"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -100,7 +101,7 @@
                     android:id="@+id/service_button"
                     android:layout_width="160dp"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentStart="true"
                     android:text="@string/button_start" />
 
                 <Button
@@ -119,10 +120,7 @@
                 style="@style/ViewWithPadding"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_toEndOf="@+id/service_button"
-                android:drawableLeft="@drawable/ic_information"
-                android:editable="false"
+                android:drawableStart="@drawable/ic_information"
                 android:gravity="center"
                 android:text="@string/settings_restart_hint"
                 android:textAppearance="@android:style/TextAppearance.Medium"

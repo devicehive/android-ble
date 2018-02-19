@@ -7,8 +7,6 @@ import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanResult;
 import android.os.Build;
 
-import java.util.List;
-
 /**
  * Created by Constantine Mars on 6/13/16.
  * <p>
@@ -20,7 +18,7 @@ public class BleScannerL extends BleScannerJ {
 
     private BluetoothLeScanner scanner;
 
-    private android.bluetooth.le.ScanCallback callback;
+    private final android.bluetooth.le.ScanCallback callback;
 
     public BleScannerL(ScanCallback scanCallback, BluetoothAdapter bluetoothAdapter) {
         super(scanCallback, bluetoothAdapter);
@@ -39,16 +37,6 @@ public class BleScannerL extends BleScannerJ {
                 scanCallback.onDeviceFound(device, rssi, scanRecord);
 
                 super.onScanResult(callbackType, result);
-            }
-
-            @Override
-            public void onBatchScanResults(List<ScanResult> results) {
-                super.onBatchScanResults(results);
-            }
-
-            @Override
-            public void onScanFailed(int errorCode) {
-                super.onScanFailed(errorCode);
             }
         };
     }
