@@ -11,15 +11,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.IBinder;
-import android.support.v4.app.NotificationCompat;
 import android.widget.Toast;
-
+import androidx.core.app.NotificationCompat;
 import com.dataart.btle_android.MainActivity;
 import com.dataart.btle_android.R;
 import com.dataart.btle_android.btle_gateway.server.BluetoothServer;
 import com.dataart.btle_android.devicehive.BTLEDeviceHive;
 import com.github.devicehive.client.service.DeviceCommand;
-
 import timber.log.Timber;
 
 /**
