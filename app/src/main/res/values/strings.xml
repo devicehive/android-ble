@@ -11,7 +11,7 @@
     <string name="button_start">Start service</string>
     <string name="button_stop">Stop service</string>
 
-    <string name="default_server_url">http://playground.devicehive.com/api/rest</string>
+    <string name="default_server_url">https://playground.devicehive.com/api/rest</string>
     <string name="default_gateway_id">devicehive-ble-android</string>
 
     <string name="error_message_btle_not_supported">Bluetooth LE is not supported.\nApplication will close itself</string>

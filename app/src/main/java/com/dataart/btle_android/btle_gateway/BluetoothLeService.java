@@ -1,5 +1,7 @@
 package com.dataart.btle_android.btle_gateway;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -10,6 +12,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Build;
 import android.os.IBinder;
 import android.widget.Toast;
 import androidx.core.app.NotificationCompat;
@@ -31,6 +34,8 @@ public class BluetoothLeService extends Service {
             .concat("ACTION_BT_PERMISSION_REQUEST");
 
     private final static int LE_NOTIFICATION_ID = 1;
+    private final static String LE_NOTIFICATION_NAME = "DeviceHive";
+    private final static String LE_NOTIFICATION_CHANNEL_ID = "devicehive";
 
     private NotificationManager mNotificationManager;
     private NotificationCompat.Builder mBuilder;
@@ -47,7 +52,11 @@ public class BluetoothLeService extends Service {
     }
 
     public static void start(final Context context) {
-        context.startService(new Intent(context, BluetoothLeService.class));
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            context.startForegroundService(new Intent(context, BluetoothLeService.class));
+        } else {
+            context.startService(new Intent(context, BluetoothLeService.class));
+        }
     }
 
     public static void stop(final Context context) {
@@ -84,7 +93,13 @@ public class BluetoothLeService extends Service {
 
         mDeviceHive.registerDevice();
 
-        setNotification();
+        Notification notification = prepareNotification();
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            startForeground(LE_NOTIFICATION_ID, notification);
+        } else {
+            mNotificationManager.notify(LE_NOTIFICATION_ID, mBuilder.build());
+        }
         return START_NOT_STICKY;
     }
 
@@ -154,13 +169,20 @@ public class BluetoothLeService extends Service {
         sendBroadcast(intent);
     }
 
-    private void setNotification() {
+    private Notification prepareNotification() {
         final Intent resultIntent = new Intent(this, MainActivity.class);
         final TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
         stackBuilder.addParentStack(MainActivity.class);
         stackBuilder.addNextIntent(resultIntent);
         final PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-        mBuilder = new NotificationCompat.Builder(this, "channel_id_1")
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(LE_NOTIFICATION_CHANNEL_ID, LE_NOTIFICATION_NAME, NotificationManager.IMPORTANCE_HIGH);
+            channel.enableVibration(false);
+            channel.setShowBadge(true);
+            mNotificationManager.createNotificationChannel(channel);
+        }
+
+        mBuilder = new NotificationCompat.Builder(this, LE_NOTIFICATION_CHANNEL_ID)
                 .setContentText(getString(R.string.notification_bt_on))
                 .setContentTitle(getString(R.string.device_hive))
                 .setSmallIcon(R.drawable.ic_le_service)
@@ -168,7 +190,11 @@ public class BluetoothLeService extends Service {
                 .setOngoing(true)
                 .setContentIntent(resultPendingIntent);
 
-        mNotificationManager.notify(LE_NOTIFICATION_ID, mBuilder.build());
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            mBuilder.setChannelId(LE_NOTIFICATION_CHANNEL_ID);
+        }
+
+        return mBuilder.build();
     }
 
 }

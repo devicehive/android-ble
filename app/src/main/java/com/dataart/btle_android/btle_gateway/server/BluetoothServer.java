@@ -241,7 +241,12 @@ public class BluetoothServer extends BluetoothGattCallback {
 
     private DeviceConnection connectAndSave(String address, BluetoothDevice device, InteractiveGattCallback.DisconnectListener disconnectListener, InteractiveGattCallback.StatusListener statusListener, InteractiveGattCallback.OnConnectedListener connectedListener) {
         final InteractiveGattCallback callback = new InteractiveGattCallback(address, statusListener, context, disconnectListener, connectedListener);
-        BluetoothGatt gatt = device.connectGatt(context, false, callback);
+        BluetoothGatt gatt = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            gatt = device.connectGatt(context, false, callback, BluetoothDevice.TRANSPORT_LE);
+        } else {
+            gatt = device.connectGatt(context, false, callback);
+        }
         DeviceConnection connection = new DeviceConnection(address, gatt, callback);
         activeConnections.put(address, connection);
         return connection;
