@@ -23,7 +23,6 @@ import com.dataart.btle_android.btle_gateway.BluetoothLeService;
 import com.dataart.btle_android.devicehive.BTLEDevicePreferences;
 import com.dataart.btle_android.helpers.BleHelpersFactory;
 import com.dataart.btle_android.helpers.ble.base.BleInitializer;
-import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -47,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
     private TextInputLayout refreshTokenEditTextParent;
     private TextView hintText;
     private FloatingActionButton serviceButton;
-    private MaterialButton restartServiceButton;
+    private FloatingActionButton restartServiceButton;
     private BTLEDevicePreferences prefs;
     private boolean isServiceStarted;
     private final View.OnClickListener restartClickListener = new View.OnClickListener() {
@@ -216,12 +215,12 @@ public class MainActivity extends AppCompatActivity {
 
     private void onServiceRunning() {
         isServiceStarted = true;
-        serviceButton.setImageDrawable(ContextCompat.getDrawable(this, android.R.drawable.ic_media_pause));
+        serviceButton.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_stop));
     }
 
     private void onServiceStopped() {
         isServiceStarted = false;
-        serviceButton.setImageDrawable(ContextCompat.getDrawable(this, android.R.drawable.ic_media_play));
+        serviceButton.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_play_arrow));
     }
 
     private boolean isRestartRequired() {
@@ -238,7 +237,7 @@ public class MainActivity extends AppCompatActivity {
         if (isServiceStarted && isRestartRequired()) {
             hintText.setVisibility(View.VISIBLE);
             restartServiceButton.setVisibility(View.VISIBLE);
-            serviceButton.setVisibility(View.GONE);
+            serviceButton.setVisibility(View.INVISIBLE);
         } else {
             hintText.setVisibility(View.GONE);
             restartServiceButton.setVisibility(View.GONE);
