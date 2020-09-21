@@ -17,11 +17,14 @@ import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import timber.log.Timber;
+
+import static java.lang.Math.pow;
 
 public class BTLEGateway {
 
@@ -253,11 +256,60 @@ public class BTLEGateway {
         }.start();
     }
 
+    private static Integer shortSignedAtOffset(byte[] c, int offset) {
+        Integer lowerByte = (int) c[offset] & 0xFF;
+        Integer upperByte = (int) c[offset+1]; // // Interpret MSB as signed
+        return (upperByte << 8) + lowerByte;
+    }
+
+    private static Integer shortUnsignedAtOffset(byte[] c, int offset) {
+        Integer lowerByte = (int) c[offset] & 0xFF;
+        Integer upperByte = (int) c[offset+1] & 0xFF;
+        return (upperByte << 8) + lowerByte;
+    }
+
+    private double extractAmbientTemperature(byte [] v) {
+        int offset = 2;
+        return shortUnsignedAtOffset(v, offset) / 128.0;
+    }
+
+    private double extractTargetTemperature(byte [] v, double ambient) {
+        Integer twoByteValue = shortSignedAtOffset(v, 0);
+
+        double Vobj2 = twoByteValue.doubleValue();
+        Vobj2 *= 0.00000015625;
+
+        double Tdie = ambient + 273.15;
+
+        double S0 = 5.593E-14; // Calibration factor
+        double a1 = 1.75E-3;
+        double a2 = -1.678E-5;
+        double b0 = -2.94E-5;
+        double b1 = -5.7E-7;
+        double b2 = 4.63E-9;
+        double c2 = 13.4;
+        double Tref = 298.15;
+        double S = S0 * (1 + a1 * (Tdie - Tref) + a2 * pow((Tdie - Tref), 2));
+        double Vos = b0 + b1 * (Tdie - Tref) + b2 * pow((Tdie - Tref), 2);
+        double fObj = (Vobj2 - Vos) + c2 * pow((Vobj2 - Vos), 2);
+        double tObj = pow(pow(Tdie, 4) + (fObj / S), .25);
+
+        return tObj - 273.15;
+    }
+
     private void sendNotification(Context context, final LeCommand leCommand, final String data) {
         Timber.d("Notification: %s", data);
         if (dhDevice != null) {
             ArrayList<Parameter> parameters = new ArrayList<>();
             parameters.add(new Parameter(context.getString(R.string.data), data));
+            try {
+                byte value[] = new BigInteger(data, 16).toByteArray();
+                if (value.length ==5) for (int i=0; i < 4; i++) value[i] = value[i+1];
+                float ambient = (float)extractAmbientTemperature(value);
+                float target = (float)extractTargetTemperature(value, ambient);
+                parameters.add(new Parameter("ambient", String.format("%.1f", ambient)));
+                parameters.add(new Parameter("target", String.format("%.1f", target)));
+            } catch (Exception e){}
             dhDevice.sendNotification(leCommand.getCommand(), parameters);
         }
     }
