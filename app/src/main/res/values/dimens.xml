@@ -3,4 +3,8 @@
          https://developer.android.com/design/patterns/navigation-drawer.html -->
     <dimen name="padding">10dp</dimen>
     <dimen name="toolbar_elevation">4dp</dimen>
+    <dimen name="margin_half">8dp</dimen>
+    <dimen name="space_height">80dp</dimen>
+    <dimen name="logo_size">80dp</dimen>
+    <dimen name="margin_and_a_half">24dp</dimen>
 </resources>

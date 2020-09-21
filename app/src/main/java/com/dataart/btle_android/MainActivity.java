@@ -13,18 +13,24 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
+
 import com.dataart.btle_android.btle_gateway.BluetoothLeService;
 import com.dataart.btle_android.devicehive.BTLEDevicePreferences;
 import com.dataart.btle_android.helpers.BleHelpersFactory;
 import com.dataart.btle_android.helpers.ble.base.BleInitializer;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
+
 import java.util.Objects;
 import java.util.UUID;
+
 import timber.log.Timber;
 
 
@@ -33,12 +39,15 @@ public class MainActivity extends AppCompatActivity {
     private BleInitializer bleInitializer;
 
     private BluetoothManager mBluetoothManager;
-    private EditText serverUrlEditText;
-    private EditText gatewayIdEditText;
-    private EditText refreshTokenEditText;
+    private TextInputEditText serverUrlEditText;
+    private TextInputLayout serverUrlEditTextParent;
+    private TextInputEditText gatewayIdEditText;
+    private TextInputLayout gatewayIdEditTextParent;
+    private TextInputEditText refreshTokenEditText;
+    private TextInputLayout refreshTokenEditTextParent;
     private TextView hintText;
-    private Button serviceButton;
-    private Button restartServiceButton;
+    private FloatingActionButton serviceButton;
+    private MaterialButton restartServiceButton;
     private BTLEDevicePreferences prefs;
     private boolean isServiceStarted;
     private final View.OnClickListener restartClickListener = new View.OnClickListener() {
@@ -80,11 +89,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
-        Toolbar myToolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(myToolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle(R.string.app_name);
-        }
 //        BleInitializer will start service on initialization success
         bleInitializer = BleHelpersFactory.getInitializer(this, bluetoothAdapter -> startService());
         init();
@@ -111,8 +115,11 @@ public class MainActivity extends AppCompatActivity {
         prefs = BTLEDevicePreferences.getInstance();
 
         serverUrlEditText = findViewById(R.id.server_url_edit);
+        serverUrlEditTextParent = findViewById(R.id.server_url_parent);
         gatewayIdEditText = findViewById(R.id.settings_gateway_id);
+        gatewayIdEditTextParent = findViewById(R.id.settings_gateway_id_parent);
         refreshTokenEditText = findViewById(R.id.refresh_token_edit);
+        refreshTokenEditTextParent = findViewById(R.id.refresh_token_parent);
         hintText = findViewById(R.id.hintText);
 
         resetValues();
@@ -209,12 +216,12 @@ public class MainActivity extends AppCompatActivity {
 
     private void onServiceRunning() {
         isServiceStarted = true;
-        serviceButton.setText(R.string.button_stop);
+        serviceButton.setImageDrawable(ContextCompat.getDrawable(this, android.R.drawable.ic_media_pause));
     }
 
     private void onServiceStopped() {
         isServiceStarted = false;
-        serviceButton.setText(R.string.button_start);
+        serviceButton.setImageDrawable(ContextCompat.getDrawable(this, android.R.drawable.ic_media_play));
     }
 
     private boolean isRestartRequired() {
@@ -251,7 +258,7 @@ public class MainActivity extends AppCompatActivity {
         gatewayIdEditText.setText(
                 TextUtils.isEmpty(gatewayId)
                         ? getString(R.string.default_gateway_id) + "-" +
-                            UUID.randomUUID().toString().substring(0, 4)
+                        UUID.randomUUID().toString().substring(0, 4)
                         : gatewayId
         );
 
@@ -264,9 +271,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void resetErrors() {
-        serverUrlEditText.setError(null);
-        gatewayIdEditText.setError(null);
-        refreshTokenEditText.setError(null);
+        serverUrlEditTextParent.setError(null);
+        gatewayIdEditTextParent.setError(null);
+        refreshTokenEditTextParent.setError(null);
     }
 
     private boolean validateValues() {
@@ -277,13 +284,13 @@ public class MainActivity extends AppCompatActivity {
         final String refreshToken = refreshTokenEditText.getText().toString();
 
         if (TextUtils.isEmpty(serverUrl)) {
-            serverUrlEditText.setError(getString(R.string.error_message_empty_server_url));
+            serverUrlEditTextParent.setError(getString(R.string.error_message_empty_server_url));
             serverUrlEditText.requestFocus();
         } else if (TextUtils.isEmpty(gatewayId)) {
-            gatewayIdEditText.setError(getString(R.string.error_message_empty_gateway_id));
+            gatewayIdEditTextParent.setError(getString(R.string.error_message_empty_gateway_id));
             gatewayIdEditText.requestFocus();
         } else if (TextUtils.isEmpty(refreshToken)) {
-            refreshTokenEditText.setError(getString(R.string.error_message_empty_refresh_token));
+            refreshTokenEditTextParent.setError(getString(R.string.error_message_empty_refresh_token));
             refreshTokenEditText.requestFocus();
         } else {
             return true;
