@@ -1,15 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 27
-    buildToolsVersion "27.0.3"
-
+    compileSdkVersion 29
     defaultConfig {
         applicationId "com.dataart.btle_android"
-        minSdkVersion 19
-        targetSdkVersion 27
-        versionCode 3
-        versionName "3.0"
+        minSdkVersion 21
+        targetSdkVersion 29
+        versionCode 4
+        versionName "4.0"
         multiDexEnabled true
     }
     buildTypes {
@@ -27,22 +25,23 @@ android {
 ext {
     devicehive = "3.1.2"
     commons = "1.11"
-    rxandroid = "2.0.1"
-    rxjava = "2.1.7"
-    guava = "23.6-android"
-    gson = "2.8.2"
-    timber = "4.6.0"
+    rxandroid = "2.1.1"
+    rxjava = "2.2.19"
+    guava = "24.1-jre"
+    gson = "2.8.6"
+    timber = "4.7.1"
     support = "27.0.2"
-    gms = "11.8.0"
-    multidex = "1.0.2"
+    gms = "17.0.0"
+    materialVersion = '1.3.0-alpha02'
+    constraintLayoutVersion = '2.0.1'
 }
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation "com.android.support:appcompat-v7:${support}"
-    implementation "com.android.support:design:${support}"
-
+    implementation "com.google.android.material:material:$materialVersion"
     implementation "com.google.code.gson:gson:${gson}"
+
+    implementation "androidx.constraintlayout:constraintlayout:$constraintLayoutVersion"
 
     implementation "com.jakewharton.timber:timber:${timber}"
 
@@ -58,5 +57,4 @@ dependencies {
     implementation "com.google.guava:guava:${guava}"
 
     implementation "com.github.devicehive:devicehive-java:${devicehive}"
-    implementation "com.android.support:multidex:${multidex}"
 }

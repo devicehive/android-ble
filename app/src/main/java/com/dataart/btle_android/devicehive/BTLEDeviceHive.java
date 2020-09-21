@@ -88,10 +88,11 @@ public class BTLEDeviceHive {
                     deviceListener.onDeviceReceived(device);
                     device.subscribeCommands(new CommandFilter(), new DeviceCommandsCallback() {
                         public void onSuccess(List<DeviceCommand> commands) {
-                            for(DeviceCommand command: commands) {
+                            for (DeviceCommand command : commands) {
                                 notifyListenersCommandReceived(command);
                             }
                         }
+
                         public void onFail(FailureData failureData) {
                         }
                     });
@@ -107,7 +108,7 @@ public class BTLEDeviceHive {
         Thread thread = new Thread() {
             public void run() {
                 deviceListener.onDeviceReceived(null);
-                deviceHive.unsubscribeAllCommands();
+                if (deviceHive != null) deviceHive.unsubscribeAllCommands();
                 deviceHive = null;
             }
         };

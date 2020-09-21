@@ -1,132 +1,155 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <android.support.v7.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary"
-        android:elevation="@dimen/toolbar_elevation"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-        tools:targetApi="lollipop" />
-
-    <ScrollView
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/toolbar">
+        android:fillViewport="true"
+        android:scrollbars="none"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <LinearLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_height="match_parent"
+            android:padding="@dimen/padding">
 
+            <ImageView
+                android:id="@+id/logo"
+                android:layout_width="@dimen/logo_size"
+                android:layout_height="@dimen/logo_size"
+                android:layout_marginBottom="@dimen/margin_and_a_half"
+                android:src="@mipmap/ic_launcher"
+                app:layout_constraintBottom_toTopOf="@id/server_url_parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_chainStyle="packed" />
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:focusableInTouchMode="true" />
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/server_url_parent"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/margin_half"
+                app:layout_constraintBottom_toTopOf="@id/settings_gateway_id_parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/logo">
 
-            <LinearLayout
-                style="@style/ListItem"
-                android:layout_marginTop="@dimen/padding">
-
-                <TextView
-                    android:labelFor="@+id/server_url_edit"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/settings_server_url"
-                    android:textAppearance="@android:style/TextAppearance.Medium" />
-
-                <EditText
+                <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/server_url_edit"
-                    style="@style/SingleLineEditText"
-                    android:imeOptions="actionNext"
-                    android:inputType="textUri" />
-            </LinearLayout>
-
-            <View style="@style/ListItemDivider" />
-
-            <LinearLayout
-                style="@style/ListItem"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <TextView
-                    android:labelFor="@+id/settings_gateway_id"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/settings_gateway_id"
-                    android:textAppearance="@android:style/TextAppearance.Medium" />
-
-                <EditText
-                    android:id="@+id/settings_gateway_id"
-                    style="@style/SingleLineEditText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:hint="@string/settings_server_url"
                     android:imeOptions="actionNext"
-                    android:text="@string/default_gateway_id" />
-            </LinearLayout>
+                    android:lines="1"
+                    android:inputType="text"
+                    android:maxLines="1" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-            <View style="@style/ListItemDivider" />
-
-            <LinearLayout style="@style/ListItem">
-
-                <TextView
-                    android:labelFor="@+id/refresh_token_edit"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/settings_refresh_token"
-                    android:textAppearance="@android:style/TextAppearance.Medium" />
-
-                <EditText
-                    android:id="@+id/refresh_token_edit"
-                    style="@style/SingleLineEditText"
-                    android:imeOptions="actionNext" />
-            </LinearLayout>
-
-            <View style="@style/ListItemDivider" />
-
-            <RelativeLayout
-                style="@style/ViewWithPadding"
-                android:layout_width="match_parent"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/settings_gateway_id_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp">
+                android:layout_marginBottom="@dimen/margin_half"
+                app:layout_constraintBottom_toTopOf="@id/refresh_token_parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/server_url_parent">
 
-                <Button
-                    android:id="@+id/service_button"
-                    android:layout_width="160dp"
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/settings_gateway_id"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentStart="true"
-                    android:text="@string/button_start" />
+                    android:hint="@string/settings_gateway_id"
+                    android:imeOptions="actionNext"
+                    android:lines="1"
+                    android:inputType="text"
+                    android:maxLines="1"
+                    android:text="@string/default_gateway_id" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-                <Button
-                    android:id="@+id/save_button"
-                    android:layout_width="160dp"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/refresh_token_parent"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_constraintBottom_toTopOf="@id/hintText"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/settings_gateway_id_parent">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/refresh_token_edit"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentStart="true"
-                    android:layout_alignParentTop="true"
-                    android:text="@string/button_restart"
-                    android:visibility="gone" />
+                    android:hint="@string/settings_refresh_token"
+                    android:imeOptions="actionDone"
+                    android:lines="1"
+                    android:inputType="text"
+                    android:maxLines="1" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-            </RelativeLayout>
-
-            <TextView
+            <androidx.appcompat.widget.AppCompatTextView
                 android:id="@+id/hintText"
                 style="@style/ViewWithPadding"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:drawableStart="@drawable/ic_information"
+                android:layout_marginTop="@dimen/margin_half"
+                android:layout_marginBottom="@dimen/margin_half"
                 android:gravity="center"
                 android:text="@string/settings_restart_hint"
                 android:textAppearance="@android:style/TextAppearance.Medium"
-                android:textColor="#ff858585"
-                android:visibility="gone" />
+                android:textColor="@color/hint_color"
+                android:visibility="gone"
+                app:drawableStartCompat="@drawable/ic_information"
+                app:layout_constraintBottom_toTopOf="@id/space"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/refresh_token_parent"
+                tools:visibility="visible" />
 
-        </LinearLayout>
-    </ScrollView>
-</RelativeLayout>
+            <Space
+                android:id="@+id/space"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/space_height"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/hintText" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/service_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_play_arrow"
+        app:layout_anchor="@id/bottomBar" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/save_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_repeat"
+        android:visibility="gone"
+        app:layout_anchor="@id/service_button"
+        app:layout_anchorGravity="center"
+        tools:visibility="visible" />
+
+    <com.google.android.material.bottomappbar.BottomAppBar
+        android:id="@+id/bottomBar"
+        style="@style/Widget.MaterialComponents.BottomAppBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:backgroundTint="?attr/colorBackgroundFloating"
+        app:fabAlignmentMode="center"
+        app:hideOnScroll="true"
+        app:layout_scrollFlags="scroll|snap" />
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+
