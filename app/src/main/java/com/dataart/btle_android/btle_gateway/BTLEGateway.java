@@ -328,7 +328,7 @@ public class BTLEGateway {
           parameters.add(new Parameter("latitude",
               String.format(Locale.getDefault(), "%.1f", location.getLatitude())));
           parameters.add(new Parameter("longitude",
-              String.format(Locale.getDefault(), "%.1f", location.getLatitude())));
+              String.format(Locale.getDefault(), "%.1f", location.getLongitude())));
         }
       } catch (Exception e) {
         e.printStackTrace();
