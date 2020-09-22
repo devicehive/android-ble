@@ -36,7 +36,9 @@
         </activity>
 
         <service android:name=".btle_gateway.BluetoothLeService" android:enabled="true"/>
-
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="PLACE_YOUR_TOKEN"/>
     </application>
 
 </manifest>
