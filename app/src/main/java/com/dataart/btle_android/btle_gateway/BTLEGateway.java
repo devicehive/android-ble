@@ -21,6 +21,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 import timber.log.Timber;
 
@@ -258,22 +259,22 @@ public class BTLEGateway {
 
     private static Integer shortSignedAtOffset(byte[] c, int offset) {
         Integer lowerByte = (int) c[offset] & 0xFF;
-        Integer upperByte = (int) c[offset+1]; // // Interpret MSB as signed
+        Integer upperByte = (int) c[offset + 1]; // // Interpret MSB as signed
         return (upperByte << 8) + lowerByte;
     }
 
     private static Integer shortUnsignedAtOffset(byte[] c, int offset) {
         Integer lowerByte = (int) c[offset] & 0xFF;
-        Integer upperByte = (int) c[offset+1] & 0xFF;
+        Integer upperByte = (int) c[offset + 1] & 0xFF;
         return (upperByte << 8) + lowerByte;
     }
 
-    private double extractAmbientTemperature(byte [] v) {
+    private double extractAmbientTemperature(byte[] v) {
         int offset = 2;
         return shortUnsignedAtOffset(v, offset) / 128.0;
     }
 
-    private double extractTargetTemperature(byte [] v, double ambient) {
+    private double extractTargetTemperature(byte[] v, double ambient) {
         Integer twoByteValue = shortSignedAtOffset(v, 0);
 
         double Vobj2 = twoByteValue.doubleValue();
@@ -303,13 +304,16 @@ public class BTLEGateway {
             ArrayList<Parameter> parameters = new ArrayList<>();
             parameters.add(new Parameter(context.getString(R.string.data), data));
             try {
-                byte value[] = new BigInteger(data, 16).toByteArray();
-                if (value.length ==5) for (int i=0; i < 4; i++) value[i] = value[i+1];
-                float ambient = (float)extractAmbientTemperature(value);
-                float target = (float)extractTargetTemperature(value, ambient);
-                parameters.add(new Parameter("ambient", String.format("%.1f", ambient)));
-                parameters.add(new Parameter("target", String.format("%.1f", target)));
-            } catch (Exception e){}
+                byte[] value = new BigInteger(data, 16).toByteArray();
+                if (value.length == 5) System.arraycopy(value, 1, value, 0, 4);
+
+                float ambient = (float) extractAmbientTemperature(value);
+                float target = (float) extractTargetTemperature(value, ambient);
+                parameters.add(new Parameter("ambient", String.format(Locale.getDefault(), "%.1f", ambient)));
+                parameters.add(new Parameter("target", String.format(Locale.getDefault(), "%.1f", target)));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             dhDevice.sendNotification(leCommand.getCommand(), parameters);
         }
     }
